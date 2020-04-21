@@ -342,7 +342,7 @@ defineFeature(feature, (test) => {
 
     and('I expect an error message for the failing lambda', () => {
       expect(JSON.stringify(stdoutSpy.mock.calls)).toContain(
-        `Push Error: The code of function 'TestFunction7' you are trying to push is not a valid lambda.`,
+        `Push Error: The code of function 'TestFunction7'`,
       );
     });
 
@@ -464,7 +464,7 @@ defineFeature(feature, (test) => {
 
     and('I expect an error message for the failing lambda', () => {
       expect(JSON.stringify(stdoutSpy.mock.calls)).toContain(
-        `Push Error: The code of function 'TestFunction7' you are trying to push is not a valid lambda.`,
+        `Push Error: The code of function 'TestFunction7'`,
       );
     });
 
@@ -569,7 +569,7 @@ defineFeature(feature, (test) => {
 
     then('I expect an error message', () => {
       expect(JSON.stringify(stdoutSpy.mock.calls)).toContain(
-        `Push Error: Lambda description can not be null. Please add a description in the config.json`,
+        `Push Error: Lambda description can not be null`,
       );
     });
   });
