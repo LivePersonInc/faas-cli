@@ -9,8 +9,8 @@ after_success:
   - codecov
 
 node_js:
-  - 10
   - lts/*
+  - 13.13.0
 notifications:
   slack:
     if: type = pull_request

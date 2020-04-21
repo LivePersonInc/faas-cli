@@ -89,7 +89,7 @@ export class PushController {
       }
     } catch (error) {
       if (error.name !== 'ListrError') {
-        this.pushView.showErrorMessage(error.message || error.error.errorMsg);
+        this.pushView.showErrorMessage(error.message || error.error?.errorMsg);
       }
     }
   }

@@ -69,17 +69,15 @@ defineFeature(feature, (test) => {
   let consoleSpy;
   let stdoutSpy;
 
+  afterEach(() => {
+    fs.removeSync(testDir);
+  });
+
   beforeEach(() => {
     fs.ensureDirSync(testDir);
     consoleSpy = jest.spyOn(global.console, 'log');
     stdoutSpy = jest.spyOn(process.stdout, 'write').mockImplementation();
     jest.spyOn(os, 'tmpdir').mockReturnValue(testDir);
-  });
-
-  afterEach(() => {
-    consoleSpy = undefined;
-    stdoutSpy = undefined;
-    fs.removeSync(testDir);
   });
 
   afterAll(() => {
@@ -426,6 +424,7 @@ defineFeature(feature, (test) => {
       );
     });
   });
+
   test('Pushing all lambdas with one failing', ({ given, when, then, and }) => {
     given('I am authorized', async () => {
       await fileService.writeTempFile({
