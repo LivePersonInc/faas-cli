@@ -34,6 +34,7 @@ defineFeature(feature, (test) => {
 
   afterAll(async () => {
     fs.remove(join(__dirname, 'faas-tmp.json'));
+    jest.resetAllMocks();
   });
 
   test('Run the login command for the first time', async ({

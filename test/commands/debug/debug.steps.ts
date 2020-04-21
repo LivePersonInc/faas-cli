@@ -5,6 +5,10 @@ import { DebugController } from '../../../src/controller/debug.controller';
 const feature = loadFeature('test/commands/debug/debug.feature');
 
 defineFeature(feature, (test) => {
+  beforeAll(() => {
+    jest.resetAllMocks();
+  });
+
   const consoleSpy = jest.spyOn(global.console, 'log').mockImplementation();
   jest.mock('child_process', () => {
     return {

@@ -4,6 +4,10 @@ import * as fs from 'fs-extra';
 import * as os from 'os';
 import { join } from 'path';
 
+beforeAll(() => {
+  jest.resetAllMocks();
+});
+
 jest.mock('../../../src/service/faas.service', () =>
   jest.requireActual('../../__mocks__/faas.service.ts'),
 );
@@ -14,12 +18,6 @@ jest.mock('../../../src/service/faasFactory.service', () =>
 import { InvokeController } from '../../../src/controller/invoke.controller';
 import { FileService } from '../../../src/service/file.service';
 
-jest.mock('../../../src/service/faas.service', () =>
-  jest.requireActual('../../__mocks__/faas.service.ts'),
-);
-jest.mock('../../../src/service/faasFactory.service', () =>
-  jest.requireActual('../../__mocks__/faasFactory.service.ts'),
-);
 
 const feature = loadFeature('test/commands/invoke/invoke.feature');
 defineFeature(feature, (test) => {

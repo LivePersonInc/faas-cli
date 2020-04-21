@@ -6,7 +6,7 @@ import { join } from 'path';
 import { UndeployController } from '../../../src/controller/deployment/undeploy.controller';
 import { UndeployView } from '../../../src/view/undeploy.view';
 import { FileService } from '../../../src/service/file.service';
-import { Prompt } from '../../../src/view/printer';
+import { Prompt, TaskList } from '../../../src/view/printer';
 
 jest.mock('../../../src/service/faas.service', () =>
   jest.requireActual('../../__mocks__/faas.service.ts'),
@@ -133,6 +133,8 @@ defineFeature(feature, async (test) => {
     when,
     then,
   }) => {
+    const tasklist = new TaskList({ concurrent: true });
+
     given('I have a valid token', async () => {
       await fileService.writeTempFile({
         '123456789': {
@@ -158,11 +160,13 @@ defineFeature(feature, async (test) => {
           join(testDir, 'functions', 'TestFunction5', 'config.json'),
           JSON.stringify({ name: 'TestFunction5' }),
         );
+        const undeployView = new UndeployView({ tasklist });
         const fileServiceLocal = new FileService({
           cwd: join(testDir, 'functions', 'TestFunction5'),
         });
         const deployController = new UndeployController({
           fileService: fileServiceLocal,
+          undeployView,
         });
         await deployController.undeploy({
           lambdaFunctions: [],
@@ -177,9 +181,9 @@ defineFeature(feature, async (test) => {
         expect(consoleSpy).toBeCalledWith(
           expect.stringMatching(/Undeploying following functions/),
         );
-        expect(JSON.stringify(stdoutSpy.mock.calls)).toContain(
-          'Undeploying TestFunction5',
-        );
+        expect(tasklist.getTasks()).toEqual([
+          { task: expect.any(Function), title: 'Undeploying TestFunction5' },
+        ]);
       },
     );
   });

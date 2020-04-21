@@ -27,6 +27,10 @@ defineFeature(feature, (test) => {
     fs.removeSync(testDir);
   });
 
+  afterAll(() => {
+    jest.resetAllMocks();
+  });
+
   async function createTempFile() {
     await fileService.writeTempFile({
       '123456789': {

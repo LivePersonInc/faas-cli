@@ -21,6 +21,10 @@ defineFeature(feature, (test) => {
     consoleSpy.mockReset();
   }
 
+  afterAll(() => {
+    jest.resetAllMocks();
+  });
+
   test('Run the init command', async ({ when, then, and }) => {
     let initController: InitController;
     const tasklist = new TaskList({ renderer: 'silent' });

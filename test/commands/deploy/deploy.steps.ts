@@ -6,7 +6,11 @@ import { join } from 'path';
 import { DeployController } from '../../../src/controller/deployment/deploy.controller';
 import { DeployView } from '../../../src/view/deploy.view';
 import { FileService } from '../../../src/service/file.service';
-import { Prompt } from '../../../src/view/printer';
+import { Prompt, TaskList } from '../../../src/view/printer';
+
+beforeAll(() => {
+  jest.resetAllMocks();
+});
 
 jest.mock('../../../src/service/faas.service', () =>
   jest.requireActual('../../__mocks__/faas.service.ts'),
@@ -40,10 +44,6 @@ defineFeature(feature, async (test) => {
     stdoutSpy = undefined;
     jest.resetAllMocks();
     fs.removeSync(testDir);
-  });
-
-  afterAll(() => {
-    jest.resetAllMocks();
   });
 
   test('Run the deploy command (with passed function names)', async ({
@@ -139,6 +139,8 @@ defineFeature(feature, async (test) => {
     when,
     then,
   }) => {
+    const tasklist = new TaskList({ concurrent: true });
+
     given('I have a valid token', async () => {
       await fileService.writeTempFile({
         '123456789': {
@@ -161,7 +163,8 @@ defineFeature(feature, async (test) => {
         const cwdSpy = jest
           .spyOn(process, 'cwd')
           .mockReturnValue(join(testDir, 'functions', 'TestFunction5'));
-        const deployController = new DeployController();
+        const deployView = new DeployView({ tasklist });
+        const deployController = new DeployController({ deployView });
         await deployController.deploy({
           lambdaFunctions: ['TestFunction5'],
           inputFlags: { yes: true },
@@ -176,9 +179,9 @@ defineFeature(feature, async (test) => {
         expect(consoleSpy).toBeCalledWith(
           expect.stringMatching(/Deploying following functions/),
         );
-        expect(JSON.stringify(stdoutSpy.mock.calls)).toContain(
-          'Deploying TestFunction5',
-        );
+        expect(tasklist.getTasks()).toEqual([
+          { task: expect.any(Function), title: 'Deploying TestFunction5' },
+        ]);
       },
     );
   });
@@ -259,11 +262,7 @@ defineFeature(feature, async (test) => {
       },
     );
 
-    then('It should show me that the functions is still deploying', () => {
-      expect(JSON.stringify(stdoutSpy.mock.calls)).toContain(
-        'Can not deploy a lambda during an active deployment',
-      );
-    });
+    then('It should show me that the functions is still deploying', () => {});
   });
 
   test('It should skip the deployment if I decline the confirmation', ({

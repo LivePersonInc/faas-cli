@@ -82,6 +82,10 @@ defineFeature(feature, (test) => {
     fs.removeSync(testDir);
   });
 
+  afterAll(() => {
+    jest.resetAllMocks();
+  });
+
   test('Initiating Push of a function without confirming it', ({
     given,
     when,

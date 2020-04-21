@@ -4,6 +4,11 @@ import * as os from 'os';
 import { join } from 'path';
 import { FileService } from '../../../src/service/file.service';
 import { GetController } from '../../../src/controller/get.controller';
+import { GetView } from '../../../src/view/get.view';
+
+beforeAll(() => {
+  jest.resetAllMocks();
+});
 
 jest.mock('../../../src/service/faas.service', () =>
   jest.requireActual('../../__mocks__/faas.service.ts'),
@@ -19,19 +24,16 @@ const fileService = new FileService({ cwd: testDir });
 
 defineFeature(feature, (test) => {
   let consoleSpy;
-  let stdoutSpy;
 
   beforeEach(() => {
     fs.ensureDirSync(testDir);
-    consoleSpy = jest.spyOn(global.console, 'log');
-    stdoutSpy = jest.spyOn(process.stdout, 'write').mockImplementation();
+    consoleSpy = jest.spyOn(global.console, 'log').mockImplementation();
     jest.spyOn(os, 'tmpdir').mockReturnValue(testDir);
   });
 
   afterEach(() => {
     jest.resetAllMocks();
     consoleSpy = undefined;
-    stdoutSpy = undefined;
   });
 
   afterAll(() => {
@@ -39,6 +41,11 @@ defineFeature(feature, (test) => {
   });
 
   test('Run the Get command for all resources', ({ given, when, then }) => {
+    const cliUx = {
+      table: jest.fn(),
+    };
+    const getView = new GetView({ cliUx });
+
     given('I am authorized', async () => {
       await fileService.writeTempFile({
         '123456789': {
@@ -53,7 +60,7 @@ defineFeature(feature, (test) => {
     when(
       'I run the get command with functions/deployments/account parameter',
       async () => {
-        const getController = new GetController();
+        const getController = new GetController({ getView });
         await getController.get({
           domains: ['functions', 'deployments', 'account'],
         });
@@ -63,17 +70,22 @@ defineFeature(feature, (test) => {
     then(
       'It should display information about functions/deployments/account',
       () => {
-        const stringsToCheck = [
-          'TestFunction1                 Draft          27.01.2020 - 10:59:43 CET               testUser@gmail.com                      bot_connectors_error_hook',
-          'TestFunction2                 Modified       05.02.2020 - 15:47:42 CET               testUser1@gmail.com                     No Event',
-          'TestFunction5                 Productive     27.01.2020 - 10:59:43 CET               testUser@gmail.com                      No Event',
-          'TestFunction2                 05.02.2020 - 15:47:42 CET     05.02.2020 - 15:47:42 CET     undefined                     -',
-          'TestFunction5                 Up to date                    05.02.2020 - 15:47:42 CET     undefined                     -',
-          '0% (Invocations since',
-        ];
-        stringsToCheck.forEach((string) => {
-          expect(JSON.stringify(stdoutSpy.mock.calls)).toContain(string);
-        });
+        expect(JSON.stringify(cliUx.table.mock.calls[0])).toContain(
+          'TestFunction1',
+        );
+        expect(JSON.stringify(cliUx.table.mock.calls[0])).toContain('Draft');
+        expect(JSON.stringify(cliUx.table.mock.calls[0])).toContain(
+          'bot_connectors_error_hook',
+        );
+        expect(JSON.stringify(cliUx.table.mock.calls[1])).toContain(
+          'TestFunction2',
+        );
+        expect(JSON.stringify(cliUx.table.mock.calls[1])).toContain(
+          'Undeployed changes from',
+        );
+        expect(consoleSpy).toBeCalledWith(
+          expect.stringMatching(/0% \(Invocations since/),
+        );
       },
     );
   });

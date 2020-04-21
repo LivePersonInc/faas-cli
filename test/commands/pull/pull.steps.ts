@@ -66,6 +66,10 @@ defineFeature(feature, (test) => {
     fs.removeSync(testDir);
   });
 
+  afterAll(() => {
+    jest.resetAllMocks();
+  });
+
   test('Pull a new function', ({ given, when, then }) => {
     const functionName = 'TestFunction2';
     given('I am authorized', async () => {
