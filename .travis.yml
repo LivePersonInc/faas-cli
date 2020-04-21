@@ -1,0 +1,17 @@
+language: node_js
+install:
+  - npm install codecov -g
+  - npm ci
+script:
+  - npm test
+
+after_success:
+  - codecov
+
+node_js:
+  - 10
+  - lts/*
+notifications:
+  slack:
+    if: type = pull_request
+    secure: Fw9YgWNE+9XgAHHW8QmcSr1fM1ExKNPhUTf564be/KwhSBZUDlnkQUFIo/TXjpxJWTV4UL4poEOAl5tcAWv98BeZKcpeGmV2LzXZXVMiXcWNBrytR88TcFN7AzC3Yf5QV4IKpev/y/BI/1+VUBKL7AULVu6wd+N5TjOjCivCYbyH9xBn0iuywx+8J9HtCryf0EgKj2n3RCuH4nUdPHIjDmOwTxQ5aKzDRUEMYE+FT21lx+Aq/MJXGdbH30eUEQoXSzuV9qN2XH+MloZBXAEfL1i0GGcLkof0ihV+a+hjvug1y6ph0xuqzMegxfrAs9GbpIte3CbmQgumw3LHmYhNmWVnzFB+UvuCZFFn/jkw3chtuFvBdoxiFSVWXBo5L/qohV00apmK+GooxVxIUmL5yZ75xZvsHcGdCPYqt8+X+WruCVMl6j9kYtdFGGwpJdQKYNo3DNMJJEJqzenE9he9frwPIGi4ZwQbrnjIme2FRwNHlKdfVSbqnbBYCSFbdOWpW4BzdTztWBY44uNFPjYEswV6uJgIC6Y8YLRrTncj+1Hm74RLedpOgWGnoavXkA58fpRtffEqTCd1OOYkOPYwhBoKr6OkHD3rfF3dysN63Tf6WjuPeMiqxuhgJn6YeaIDjnFbmLzV/+rc5x0HX67MKx+pneNGzajfnoCI1t60Tko=
