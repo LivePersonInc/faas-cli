@@ -1,0 +1,83 @@
+[
+  {
+    "name": "TestFunction1",
+    "description": "Description TestFunction1",
+    "environmentVariables": [
+      {
+        "key": "TestKey",
+        "value": "TestValue"
+      }
+    ]
+  },
+  {
+    "name": "TestFunction2",
+    "description": "Description TestFunction2",
+    "environmentVariables": [
+      {
+        "key": "",
+        "value": ""
+      }
+    ]
+  },
+  {
+    "name": "TestFunction3",
+    "description": "Description TestFunction3",
+    "environmentVariables": [
+      {
+        "key": "",
+        "value": ""
+      }
+    ]
+  },
+  {
+    "name": "TestFunction4",
+    "description": "Description TestFunction4",
+    "environmentVariables": [
+      {
+        "key": "",
+        "value": ""
+      }
+    ]
+  },
+  {
+    "name": "TestFunction5",
+    "description": "Description TestFunction5",
+    "environmentVariables": [
+      {
+        "key": "",
+        "value": ""
+      }
+    ]
+  },
+  {
+    "name": "TestFunction6",
+    "description": "Description TestFunction6",
+    "environmentVariables": [
+      {
+        "key": "TestKey",
+        "value": "TestValue"
+      }
+    ],
+    "event": "bot_connectors_error_hook"
+  },
+  {
+    "name": "TestFunction7",
+    "description": "Description TestFunction7",
+    "environmentVariables": [
+      {
+        "key": "",
+        "value": ""
+      }
+    ]
+  },
+  {
+    "name": "TestFunction8",
+    "description": "Description TestFunction8",
+    "environmentVariables": [
+      {
+        "key": "",
+        "value": ""
+      }
+    ]
+  }
+]

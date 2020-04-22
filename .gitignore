@@ -1,0 +1,15 @@
+*-debug.log
+*-error.log
+/.vscode
+/.nyc_output
+/dist
+/lib
+/tmp
+/yarn.lock
+node_modules
+/coverage
+/test/**/*.yaml
+/.idea
+/bin/example/bin/lp-faas-toolbelt/*
+!/bin/example/bin/lp-faas-toolbelt/package.json
+/functions

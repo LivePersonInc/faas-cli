@@ -1,0 +1,16 @@
+export enum LpServices {
+    MSG_HIST = 'msgHist',
+    AGENT_VEP = 'agentVep',
+    ACCOUNT_CONFIG_READ_ONLY = 'accountConfigReadOnly',
+    ACCOUNT_CONFIG_READ_WRITE = 'accountConfigReadWrite',
+    ASYNC_MESSAGING = 'asyncMessaging',
+    ASYNC_MESSAGING_EN = 'asyncMessagingEnt',
+    ENG_HIST_DOMAIN = 'engHistDomain',
+    RTBF = 'rtbf',
+    AUDITLOG = 'auditlog',
+    SMT = 'smt',
+    PUSHER = 'pusher',
+    LE_DATA_REPORTING = 'leDataReporting',
+    MSG_EWT_API = 'msgEwtAPI',
+    MSDKGW = 'msdkgw',
+}
