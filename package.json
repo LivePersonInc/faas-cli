@@ -1,5 +1,5 @@
 {
-  "name": "liveperson-functions-cli",
+  "name": "faas-cli",
   "description": "LivePerson Functions CLI",
   "version": "0.0.0",
   "author": {
