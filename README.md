@@ -32,7 +32,7 @@ Before you start using lpf, you have to make it available on your computer. Even
 ### Npm
 
 ```
-> npm install -g faas-cli
+> npm install -g liveperson-functions-cli
 ```
 
 > Please make sure you have all user rights on your computer or run the commands with sudo or the cmd as admin, otherwise some operations will fail due to missing rights
