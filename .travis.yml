@@ -1,17 +1,17 @@
 language: node_js
 install:
-  - npm install codecov -g
-  - npm ci
+- npm install codecov -g
+- npm ci
 script:
-  - npm test
-
+- npm test
 after_success:
-  - codecov
-
+- codecov
 node_js:
-  - lts/*
-  - 13.13.0
+- lts/*
+- 13.13.0
 notifications:
   slack:
     if: type = pull_request
     secure: Fw9YgWNE+9XgAHHW8QmcSr1fM1ExKNPhUTf564be/KwhSBZUDlnkQUFIo/TXjpxJWTV4UL4poEOAl5tcAWv98BeZKcpeGmV2LzXZXVMiXcWNBrytR88TcFN7AzC3Yf5QV4IKpev/y/BI/1+VUBKL7AULVu6wd+N5TjOjCivCYbyH9xBn0iuywx+8J9HtCryf0EgKj2n3RCuH4nUdPHIjDmOwTxQ5aKzDRUEMYE+FT21lx+Aq/MJXGdbH30eUEQoXSzuV9qN2XH+MloZBXAEfL1i0GGcLkof0ihV+a+hjvug1y6ph0xuqzMegxfrAs9GbpIte3CbmQgumw3LHmYhNmWVnzFB+UvuCZFFn/jkw3chtuFvBdoxiFSVWXBo5L/qohV00apmK+GooxVxIUmL5yZ75xZvsHcGdCPYqt8+X+WruCVMl6j9kYtdFGGwpJdQKYNo3DNMJJEJqzenE9he9frwPIGi4ZwQbrnjIme2FRwNHlKdfVSbqnbBYCSFbdOWpW4BzdTztWBY44uNFPjYEswV6uJgIC6Y8YLRrTncj+1Hm74RLedpOgWGnoavXkA58fpRtffEqTCd1OOYkOPYwhBoKr6OkHD3rfF3dysN63Tf6WjuPeMiqxuhgJn6YeaIDjnFbmLzV/+rc5x0HX67MKx+pneNGzajfnoCI1t60Tko=
+    rooms:
+      secure: DX4t2C6gNtInJG30Ezw3E3x/5pVP5OPQ0q9aCVZ0sFfROqXUhRfhiB473ij8s1FIIe71iFHs8uRTE+sXCsiOfvxEQIciE3ZYYCKyNo7jQuFl73Q5pA2JvdTkLVpUvQcIkoobAef+Wf1jqFfKT9mKqShmc9IuUTz1BAuxx5vN79DaEB8i11JZWhWQK4LRs37PuCtnl0EkrArX0tBpM1Ovesl98aBwVthCEjqpg/1MzytocvTQNiuwVkDchRQga29v4kSnHFGqKJeuwGWJT/tLlIjVoZLtuUUZNmi6n5WytNUKXDTe1F5yMyuROx39ZCJuyumYgbEq1ePIcVqoxl0MXqcOwWV9n0ajNFZGqi/Vbfc7FN8VvRgquhP6bOiGbe6hg+pZEhFSPsgIh/tALv187aLoe+/Jwy8FVea0FaoTpiL3ItYXqolntdwDzQgeMZBBm+Sj3wuP0tNoShSS77B4QBEAvSeLl887V0eWWedzy5EdSVxdOHgicN9EiKlZ3cFssYPyD+DjXhPU/nhlQ2LDR5lBUDfQfIeNZmELvF9XGU2AycCa3GI6/yWVO58t5PnOvvCl97FfHw44puGyLooVFhUlhNq0hGnhlU3Xg/i4O3lmrV63HKOJamSCnmOrTU37mOPlNNSbTheO6KyO+uhb77NcvcYcm3szLpkrJ8qGbpU=
