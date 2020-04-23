@@ -126,7 +126,7 @@
     },
     "warn-if-update-available": {
       "timeoutInDays": 2,
-      "npmjsRegistry": "faas-cli"
+      "npmjsRegistry": "liveperson-functions-cli"
     }
   },
   "repository": {
