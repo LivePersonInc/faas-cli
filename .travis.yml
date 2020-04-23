@@ -1,14 +1,15 @@
 language: node_js
 install:
-- npm install codecov -g
-- npm ci
+  - npm install codecov -g
+  - npm ci
 script:
-- npm test
+  - npm test
 after_success:
-- codecov
+  - codecov
 node_js:
-- lts/*
-- 13.13.0
+  - lts/*
+  - 13.13.0
 notifications:
   slack:
+    if: type = pull_request
     secure: PB/84IyVcDow2fZVkKXIR4O0eLnq2/c9emuVTtJYC7Nlk3hFJ7uE8Vnaq6WhDpAa8wne8jY1pAP4cg/vjW/QfjgeDFT38ICOgdfHt4ZjaMbooCZ6s1Qa/nWZyV5Jv2njjGBZqkQYABG0Gb9kFmB7GGdadbWVD8H1H+fw1DQcEKwub9o5RMaIu29uMbGnTCDkyh57MoXPSyDgU0RfqAQ9RpJgc1GjOqXBg7b78bKQRkcSKuuY6lCJdqavobhPCTme3w+Z2N7C5vqrDswNqgJoIhC1bQoHbf4BmXMtkRFmOu0OSEFr196iu5rvbXrljxjQUyIpzWie44vDboj/8e0r9/0XiO7cRze9s5hXaYntXqW4r9SEL2CVs/6DkplBjPfrIB8cHJUHNz7gCjYERujQFMrUS5a+vroMJ4Yq8Z6QLunDbyHLjAgaUecX2ntw/GcJUQkdZ7icEvlOKHLFaxqyU07tNTzOZ0EuAdjYd7afJ8Q6HPn/wr9oNermlPgJ5Xm73wwxjMr10R2ruC0jk8Tn7pWyHIkvzludyOJnwQy4GlLKK9w4C+KLX5+s2OWJfl8gQcfEqw0/TSyUR3rBtOYa3nXkaWUKM425OHxNh2V2IWJ5GzZiX7PO/zCfcOxix7oCxTAsuAqqp9+JH+hNrHZIPGRjRrlYZVVsj9LRUx101M4=
