@@ -8,11 +8,10 @@ after_success:
   - codecov
 node_js:
   - lts/*
-  - 13.13.0
+branches:
+  only:
+    - master
 notifications:
   slack:
     if: type = pull_request
-    rooms:
-      - secure: BXBqtph+T1DSzFsONrZSK3ke61xGlgVOFx6R4TpOXAJ+pqP3qT0M3+WnrBZGA6or0VGIo/+k96mlfugFEff89q8lP5DZrIz2sKEkPjLjns01yTOHfArW+QnFig9aUeAVPdvOXh+WnJEIC7aSD/+VhnbfVb5eN2CdJVBfw/Eldmwf2fsG5W5sKgCGmXDINi9AkVMlgxuD7xrFPnzUNfg7jekDbR3XT23nX6HVtOfal+XuHmmgc2vdklvCLZEpDZXbhdNPP2Os7wUWrlXictTbGlivIro1y5ht2K7nERbr+/wapSXq8r8wU44CVpVI+B4vgR1yHEQle0rucsNTo4BQL9V5tWilpNnxGwOqLMAs/FbZjICgM0cpyVL88ljmotE9Doo4YppK99pozQu0tedyJv4WSeLS+Fq1pAgC+MM+n3213bZU2kLz6MqCieh/iikl9+v+AoqdZ8Hbvf3osE9jkvQhPvVGie7dorTtOJ6EJZExUARKNTyf/EMKUqQWQ/oNBp4A+YqrUkrPdn1XuY+aBlipPugX5DR/SFYoX+sGYbKei1ZoMMgicHU4VcbZ71iZ5+HMlhAz9OWnOEwRG7XgoWIGghJ3AbeTm3zKdEdTakpyQ/KQ+MoaIFNr8U0MJ7XohUm6pduvpO71cPuVUQfmpDcvcu3UWzkoXonxOkwg3Gs=
-    on_success: always
-    on_failure: always
+    secure: kRG90ZNNzlzwuRpuTpNjQ201h9V76PMSqj8oOgQmJ73gf7X46tw6iS1hkMdQ7PUMmnyT5H+x+zh4p2TkKs6/8nDLkcrCWuWCwxPmxdgjcUA1oVUCWTaOHe+QMJnoWMQI31L/XV57+6YqUR8xDF1T3Yo6hH1LeqF/uXLtFhgpKDLxMlZY5A0iwRXVGJSElr3t+pzq+o5Cf90W6UdX4ftBSaiPwMaqrC/Rb8KiTV5IwXPVqoUO3yb8+il3eGgS2vqXXNP6D1OSw6b3xdr+pLF/i9fnm684FNNFEuIj2pl+GDCMH9vQzSpgzdY2YRuREqN5hadNRUmCAX0mZ+TclY+ZGoT0BU4H3ZyggNZv6l9N3/jRWYoBiMOnLvVPSbPkI25R+LVmYIgMnhHYBgTpUNvtZqz0Y0yfUJBw8ua77v68YkIQs4FOgDgDoSKmAC6eHp/PKw/prRSJixx3VnH4F1bhaTh13VcAXKKXmSxwATUlL05QyH3Znsaw43R3kFkkc7bJIjru4potr+aQd4su2+3xNs0U9pe3J/hsHbFJ3ImYWrUaDvkV3j2Tb4meOJoxl9rrzIVFPe2SLC2PpLa2HO6UibjKCTQYR7A5aydgg4vctzhwc8RvBhZ9nLwfNZ5xv1UYRfrjjhPIiYVy+6pjfG4+KBzDlrVbSdSMvMU9LXmrb5A=
