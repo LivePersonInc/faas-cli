@@ -114,23 +114,23 @@ export class DefaultStructureService {
     );
   }
 
-  private copyIntellijSettings(): void {
+ private copyIntellijSettings(): void {
     this.fileService.copy(
-      join(__dirname, '..', '..', 'bin', 'example', '.idea'),
+      join(__dirname, '..', '..', 'bin', 'example', 'idea'),
       join(this.cwd, '.idea'),
     );
   }
 
   private copyVsCodeSettings(): void {
     this.fileService.copy(
-      join(__dirname, '..', '..', 'bin', 'example', '.vscode'),
+      join(__dirname, '..', '..', 'bin', 'example', 'vscode'),
       join(this.cwd, '.vscode'),
     );
   }
 
   private copyGitIgnore(): void {
     this.fileService.copy(
-      join(__dirname, '..', '..', 'bin', 'example', '.gitignore'),
+      join(__dirname, '..', '..', 'bin', 'example', 'gitignore'),
       join(this.cwd, '.gitignore'),
     );
   }
