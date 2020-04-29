@@ -14,7 +14,7 @@ import template = require('lodash.template');
  */
 function parseBorder(message: string): string {
   const [text] = message.match(/Update available .* /) as any[];
-  const spaceToAdd = 57 - text.length;
+  const spaceToAdd = 70 - text.length;
   const spaces = ' '.repeat(spaceToAdd);
   return message.replace(text, text + spaces);
 }
@@ -33,12 +33,12 @@ export async function warnIfUpdateAvailable(config: IConfig): Promise<void> {
   const {
     timeoutInDays = 2,
     message = `
-    ╔════════════════════════════════════════╗
-    ║                                        ║
+    ╔════════════════════════════════════════════════════╗
+    ║                                                    ║
     ║  Update available <%= chalk.yellowBright(config.version) %> -> <%= chalk.greenBright(latest) %>.   ║
-    ║  Run <%= chalk.greenBright('npm i -g lpf') %> to update            ║
-    ║                                        ║
-    ╚════════════════════════════════════════╝
+    ║  Run <%= chalk.greenBright('npm i -g liveperson-functions-cli') %> to update   ║
+    ║                                                    ║
+    ╚════════════════════════════════════════════════════╝
 `,
     npmjsRegistry = 'liveperson-functions-cli',
   } = (config.pjson.oclif as any)['warn-if-update-available'] || {};

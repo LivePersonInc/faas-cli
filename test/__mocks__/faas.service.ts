@@ -9,6 +9,7 @@ import {
   getLimitCounts,
   getLambdaCounts,
   getInvocationCounts,
+  getEvents,
 } from './faasEndpoint';
 import { FileService } from '../../src/service/file.service';
 import { ILambda, IRuntime } from '../../src/types';
@@ -128,7 +129,7 @@ export class FaasService {
           });
           if (!foundLambdas && !collectNonExistingLambas) {
             throw new Error(`Function ${name} were not found on the platform.
-          Please make sure the function with the name ${name} is available on the LivePerson Functions platform.`);
+            Please make sure the function with the name ${name} was pushed to the LivePerson Functions platform`);
           }
           return foundLambdas || { name };
         }),
@@ -205,6 +206,10 @@ export class FaasService {
     }
   }
 
+  public async getEvents(): Promise<any> {
+    return this.doFetch({ urlPart: '/events', method: 'GET' });
+  }
+
   private async getCsdsEntry(csdsType: string): Promise<string> {
     return `${csdsType}.liveperson.com`;
   }
@@ -243,6 +248,8 @@ export class FaasService {
         response = getLambdaByUUID(url);
       } else if (method === 'GET' && urlPart.includes('lambdas')) {
         response = getAllLambdas(url);
+      } else if (method === 'GET' && urlPart.includes('events')) {
+        response = getEvents();
       }
       return JSON.parse(response.body);
     } catch (error) {

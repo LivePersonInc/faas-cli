@@ -152,4 +152,30 @@ ${chalk.bold(
     }
     `);
   }
+
+  /**
+   * Prints the events with the mapped names
+   * @param {*} events - Events from the api
+   * @returns {void}
+   * @memberof GetView
+   */
+  public printEvents(events: any): void {
+    this.log.print('');
+    this.cliUx.table(events, {
+      eventName: {
+        header: 'Event name',
+        minWidth: 40,
+      },
+      eventId: {
+        header: 'EventId',
+        minWidth: 40,
+      },
+    });
+    this.log.print('');
+    this.log.print('For further informations please have a look at');
+    this.log.print(
+      'https://developers.liveperson.com/liveperson-functions-development-events-templates.html',
+    );
+    this.log.print('');
+  }
 }

@@ -1,0 +1,93 @@
+[
+  {
+    "eventId": "bot_connectors_custom_integration",
+    "eventName": "Third-Party Bots Custom Integration",
+    "description": "Use this event to implement a Custom Integration for Bot Connectors",
+    "lambdaLimit": 15
+  },
+  {
+    "eventId": "bot_connectors_error_hook",
+    "eventName": "Third-Party Bots Error-Hook",
+    "description": "Use this event to implement a Error-Hook Function for Third-Party Bots",
+    "lambdaLimit": 15
+  },
+  {
+    "eventId": "bot_connectors_post_hook",
+    "eventName": "Third-Party Bots Post-Hook",
+    "description": "Use this event to implement a Post-Hook Function for Third-Party Bots",
+    "lambdaLimit": 15
+  },
+  {
+    "eventId": "bot_connectors_pre_hook",
+    "eventName": "Third-Party Bots Pre-Hook",
+    "description": "Use this event to implement a Pre-Hook Function for Third-Party Bots",
+    "lambdaLimit": 15
+  },
+  {
+    "eventId": "controllerbot_messaging_conversation_end",
+    "eventName": "Messaging Conversation End",
+    "description": "Triggered when the conversation is closed by Agent/Consumer",
+    "lambdaLimit": 1
+  },
+  {
+    "eventId": "controllerbot_messaging_conversation_idle",
+    "eventName": "Messaging Conversation Idle",
+    "description": "Triggered when Agent/Consumer is not responsive or the conversation is in queue for over X secs/mins",
+    "lambdaLimit": 1
+  },
+  {
+    "eventId": "controllerbot_messaging_conversation_routing",
+    "eventName": "Messaging Conversation Routing",
+    "description": "Triggered when the conversation is transferred to a different skill",
+    "lambdaLimit": 1
+  },
+  {
+    "eventId": "controllerbot_messaging_mid_conversation_msg",
+    "eventName": "Messaging Line in Off-Hours",
+    "description": "Consumer writes a message to a conversation that started in working hours, but in meantime the contact center switched to off hours",
+    "lambdaLimit": 1
+  },
+  {
+    "eventId": "controllerbot_messaging_new_conversation",
+    "eventName": "Messaging New Conversation",
+    "description": "Triggered on each of the CONSUMER_OPEN_NEW_CONVERSATION_XXX system message event types and includes flags in the payload with specific sub-type",
+    "lambdaLimit": 1
+  },
+  {
+    "eventId": "controllerbot_messaging_participants_change",
+    "eventName": "Messaging Participants Change",
+    "description": "There is a change in the participants list when ASSIGNED_AGENT, AGENT, or AGENT_MANAGER joins/leaves the conversation",
+    "lambdaLimit": 1
+  },
+  {
+    "eventId": "controllerbot_messaging_ttr",
+    "eventName": "Messaging TTR",
+    "description": "Triggered when the consumer is asking/canceling an urgent response or the agent manually updates the response time",
+    "lambdaLimit": 1
+  },
+  {
+    "eventId": "conversational_command",
+    "eventName": "Conversational Command",
+    "description": "Use this event to implement a Conversational Command that can be invoked from within the agent workspace in LiveEngage by typing \"/\".",
+    "lambdaLimit": 30
+  },
+  {
+    "eventId": "denver_post_survey_email_transcript",
+    "eventName": "Chat Post Survey E-Mail Transcript",
+    "description": "Triggered after conversation is finished and CSAT survey has been collected",
+    "lambdaLimit": 10
+  },
+  {
+    "eventId": "surveybot_messaging_survey_ended",
+    "eventName": "Messaging Survey Ended",
+    "description": "Triggered when the survey ended",
+    "lambdaLimit": 1
+  },
+  {
+    "eventId": "surveybot_messaging_survey_started",
+    "eventName": "Messaging Survey Started",
+    "description": "Triggered when the survey started",
+    "lambdaLimit": 1
+  }
+]
+

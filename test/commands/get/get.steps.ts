@@ -58,17 +58,17 @@ defineFeature(feature, (test) => {
     });
 
     when(
-      'I run the get command with functions/deployments/account parameter',
+      'I run the get command with functions/deployments/account/events parameter',
       async () => {
         const getController = new GetController({ getView });
         await getController.get({
-          domains: ['functions', 'deployments', 'account'],
+          domains: ['functions', 'deployments', 'account', 'events'],
         });
       },
     );
 
     then(
-      'It should display information about functions/deployments/account',
+      'It should display information about functions/deployments/account/events',
       () => {
         expect(JSON.stringify(cliUx.table.mock.calls[0])).toContain(
           'TestFunction1',
@@ -168,7 +168,7 @@ defineFeature(feature, (test) => {
     given('I have no lambdas in my account', () => {});
 
     when(
-      'I run the get command with functions/deployments/account parameter',
+      'I run the get command with functions/deployments/account/events parameter',
       async () => {
         const getController = new GetController();
         await getController.get({ domains: ['account'] });

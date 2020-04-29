@@ -4,7 +4,7 @@ import { parseInput } from '../shared/utils';
 
 export default class Get extends Command {
   static description =
-    'Get information about different domains (deployments, functions and account)';
+    'Get information about different domains (deployments, functions, account and events)';
 
   public static flags = {
     help: flags.help({ char: 'h' }),
@@ -18,6 +18,7 @@ export default class Get extends Command {
     '> <%= config.bin %> get account',
     '> <%= config.bin %> get functions deployments',
     '> <%= config.bin %> get functions deployments account',
+    '> <%= config.bin %> get functions deployments account events',
   ];
 
   private getController: GetController = new GetController();
