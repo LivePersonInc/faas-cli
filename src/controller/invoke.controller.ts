@@ -98,7 +98,7 @@ export class InvokeController {
     if (!currentLambda) {
       throw new Error(
         `Function ${this.lambdaToInvoke.name} were not found on the platform.
-Please make sure the function with the name ${this.lambdaToInvoke.name} is available on the LivePerson Functions platform.`,
+Please make sure the function with the name ${this.lambdaToInvoke.name} was pushed to the LivePerson Functions platform`,
       );
     }
 
