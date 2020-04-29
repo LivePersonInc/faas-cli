@@ -20,7 +20,7 @@ export class GetController {
     }: IGetControllerConfig = {},
   ) {
     this.getView = getView;
-    this.domains = ['functions', 'deployments', 'account'];
+    this.domains = ['functions', 'deployments', 'account', 'events'];
   }
 
   /**
@@ -85,6 +85,12 @@ export class GetController {
       if (domains.includes('account')) {
         const accountInfo = await faasService.getAccountStatistic();
         this.getView.printAccountInformation(accountInfo);
+      }
+
+      /* istanbul ignore else */
+      if (domains.includes('events')) {
+        const events = await faasService.getEvents();
+        this.getView.printEvents(events);
       }
     } catch (error) {
       this.getView.showErrorMessage(error.message || error.error.errorMsg);

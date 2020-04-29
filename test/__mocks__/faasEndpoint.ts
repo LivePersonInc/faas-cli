@@ -176,4 +176,11 @@ export function getInvocationCounts() {
   };
 }
 
+export function getEvents() {
+  const events = fileService.read(join(__dirname, 'faasEvents.json'));
+  return {
+    body: JSON.stringify(events),
+  };
+}
+
 resetAttempts();
