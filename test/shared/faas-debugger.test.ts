@@ -170,8 +170,8 @@ callback(null, 'Hello World');
 `,
     );
 
-    copySync('./bin/example/.vscode', join(testDir, '.vscode'));
-    copySync('./bin/example/.idea', join(testDir, '.idea'));
+    copySync('./bin/example/vscode', join(testDir, '.vscode'));
+    copySync('./bin/example/idea', join(testDir, '.idea'));
 
     process.env.DEBUG_FUNCTION = 'DebugFunction';
     process.env.DEBUG_PORT = '55555';

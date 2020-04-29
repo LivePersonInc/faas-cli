@@ -114,7 +114,7 @@ export class DefaultStructureService {
     );
   }
 
- private copyIntellijSettings(): void {
+  private copyIntellijSettings(): void {
     this.fileService.copy(
       join(__dirname, '..', '..', 'bin', 'example', 'idea'),
       join(this.cwd, '.idea'),
@@ -156,6 +156,7 @@ export class DefaultStructureService {
       join(this.cwd, 'functions', this.functionName, 'config.json'),
     );
     file.name = this.functionName;
+    file.description = `${this.functionName} description`;
     this.fileService.write(path, file);
   }
 }
