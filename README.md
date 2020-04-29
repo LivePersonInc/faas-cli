@@ -14,20 +14,20 @@ For more information about LivePerson Functions see [developers.liveperson.com](
 - [Installation](#installation)
   - [Npm](#npm)
 - [Commands](#commands)
-  - [Help](#help)
-  - [Autocomplete](#autocomplete)
-  - [Version and Update](#version-and-update)
   - [Init](#init)
   - [Login](#login)
     - [SSO-Support](#sso-support)
   - [Logout](#logout)
-  - [Deploy](#deploy)
-  - [Undeploy](#undeploy)
   - [Pull](#pull)
   - [Push](#push)
+  - [Deploy](#deploy)
+  - [Undeploy](#undeploy)
   - [Invoke](#invoke)
   - [Debug](#debug)
   - [Get](#get)
+  - [Help](#help)
+  - [Autocomplete](#autocomplete)
+  - [Version and Update](#version-and-update)
 - [Local development and debugging](#local-development-and-debugging)
   - [Introduction](#introduction)
   - [Preparation](#preparation)
@@ -58,18 +58,6 @@ Before you start using lpf, you have to make it available on your computer. Even
 </thead>
 <tbody>
   <tr>
-    <td>Help</td>
-    <td>Shows help for the cli and the supported commands.</td>
-  </tr>
-  <tr>
-    <td>Autocomplete</td>
-    <td>Displays autocomplete instructions (only supports zsh and bash).</td>
-  </tr>
-  <tr>
-    <td>Version</td>
-    <td>Shows the current installed version.</td>
-  </tr>
-  <tr>
     <td>Init</td>
     <td>Initialize the project with the necessary files. If the project is already initialised it will add a new function.</td>
   </tr>
@@ -82,14 +70,6 @@ Before you start using lpf, you have to make it available on your computer. Even
     <td>Performs the logout.</td>
   </tr>
   <tr>
-    <td>Deploy</td>
-    <td>Deploys a function on the LivePerson functions platform. If the passed function is already deployed, it will be redeployed.</td>
-  </tr>
-  <tr>
-    <td>Undeploy</td>
-    <td>Undeploys a function on the LivePerson functions platform.</td>
-  </tr>
-  <tr>
     <td>Pull</td>
     <td>Pulls a function from the LivePerson functions platform.</td>
   </tr>
@@ -97,6 +77,14 @@ Before you start using lpf, you have to make it available on your computer. Even
     <td>Push</td>
     <td>Pushes a function to the LivePerson functions platform.</td>
   </tr>
+  <tr>
+    <td>Deploy</td>
+    <td>Deploys a function on the LivePerson functions platform. If the passed function is already deployed, it will be redeployed.</td>
+  </tr>
+  <tr>
+    <td>Undeploy</td>
+    <td>Undeploys a function on the LivePerson functions platform.</td>
+  </tr>  
   <tr>
     <td>Invoke</td>
     <td>Invokes a function (remote or local).</td>
@@ -109,86 +97,30 @@ Before you start using lpf, you have to make it available on your computer. Even
     <td>Get</td>
     <td>Get information about the passed domain. Possible domains are deployments, functions and account.</td>
   </tr>
+  <tr>
+    <td>Help</td>
+    <td>Shows help for the cli and the supported commands.</td>
+  </tr>
+  <tr>
+    <td>Autocomplete</td>
+    <td>Displays autocomplete instructions (only supports zsh and bash).</td>
+  </tr>
+  <tr>
+    <td>Version</td>
+    <td>Shows the current installed version.</td>
+  </tr>
 </tbody>
 </table>
-
-### Help
-
-If you ever need help while using lpf, there are three equivalent ways to get the comprehensive manual page (manpage) help for any of the lpf commands:
-```
-> lpf help
-
-> lpf help <command>
-
-> lpf <command> --help -h
-```
-
-For example, you can get the manpage help for the lpf login command by running
-
-```
-> lpf help login
-```
-
-### Autocomplete
-
-Displays autocomplete instructions (only supports zsh and bash)
-
-<details>
-<summary>Usage</summary>
-
-```
-> lpf autocomplete [--flag]
-```
-</details>
-
-<details>
-<summary>Options</summary>
-
-| Flag         | Description                                     |
-| ------------ | ----------------------------------------------- |
-| -h --help    | Show help for the login command                 |
-| -r --refresh | Refresh cache (ignores displaying instructions) |
-</details>
-
-<details>
-<summary>Example</summary>
-
-```
-> lpf autocomplete
-
-> lpf autocomplete bash
-
-> lpf autocomplete zsh
-
-> lpf autocomplete --refresh-cache
-```
-</details>
-
-### Version and Update
-
-The version command shows the current installed version of the CLI. 
-If a newer version is available the user will see an update information which shows his current version, the new version and a information about how to update to the new version.
-
-The update notification will appear one time and then it's muted for two days.
-
-<details>
-<summary>Example</summary>
-
-```
-> lpf version
-
-> lpf -v
-
-> lpf --version
-```
-</details>
-
 
 ### Init
 
 Initialize the project with the necessary files. If the project is already initialised it will add a new function with the passed functionname. 
 
-The folder name has to be same as the function name (saved in the config.json).
+The folder name has to be same as the function name (saved in the `config.json`).
+
+In the `config.json` of a function you can change the description, event, related input and environment variables of the function. 
+
+For the `event` field please use `lpf get events` to get the related event and paste the eventId as `event`.
 
 Follwoing files will be created: 
 
@@ -362,87 +294,6 @@ Futhermore it's possible to provide a delete flag, then the account will be dele
 ```
 </details>
 
-### Deploy
-
-Deploys a function on the LivePerson functions platform (function has to exist on the platform). If the passed function is already deployed, it will be redeployed.
-
-The command can be run from the root directory or functions folder, then it's necessary to pass a functionname. If the user runs the command inside a functions folder, it's not necessary and the command will take the function of the current directory.
-
-<details>
-<summary>Usage</summary>
-
-```
-> lpf deploy [parameter] [--flag]
-```
-</details>
-
-<details>
-<summary>Options</summary>
-
-| Parameter    | Description                                          |
-| ------------ | ---------------------------------------------------- |
-| functionname | Pass the function for deployment (mulitple possible) |
-
-| Flag          | Description                                                                   |
-| ------------- | ----------------------------------------------------------------------------- |
-| -h --help     | Show help for the deploy command                                              |
-| -y --yes      | Agrees to the approval of the deployment and prevents the confirmation dialog |
-| -w --no-watch | Hide informations about the deployment process                                |
-</details>
-
-<details>
-<summary>Example</summary>
-
-```
-> lpf deploy exampleFunction
-
-> lpf deploy exampleFunction --yes --no-watch
-
-> lpf deploy exampleFunction1 exampleFunction2 -y -w
-```
-</details>
-
-### Undeploy
-
-Undeploys a function on the LivePerson functions platform (function has to exist on the platform).
-
-The command can be run from the root directory or functions folder, then it's necessary to pass a functionname. If the user runs the command inside a functions folder, it's not necessary and the command will take the function of the current directory.
-
-
-<details>
-<summary>Usage</summary>
-
-```
-> lpf undeploy [parameter] [--flag]
-```
-</details>
-
-<details>
-<summary>Options</summary>
-
-| Parameter    | Description                                            |
-| ------------ | ------------------------------------------------------ |
-| functionname | Pass the function for undeployment (mulitple possible) |
-
-| Flag          | Description                                                                     |
-| ------------- | ------------------------------------------------------------------------------- |
-| -h --help     | Show help for the deploy command                                                |
-| -y --yes      | Agrees to the approval of the undeployment and prevents the confirmation dialog |
-| -w --no-watch | Hide informations about the undeployment process                                |
-</details>
-
-<details>
-<summary>Example</summary>
-
-```
-> lpf undeploy exampleFunction
-
-> lpf undeploy exampleFunction --yes --no-watch
-
-> lpf undeploy exampleFunction1 exampleFunction2 -y -w
-```
-</details>
-
 ### Pull
 
 Pulls a function from the LivePerson functions platform (function has to exist on the platform).
@@ -536,6 +387,93 @@ You can pass the --all flag, if you want to push all local functions to the plat
 ```
 </details>
 
+### Deploy
+
+Deploys a function on the LivePerson functions platform. 
+
+To undeploy a function it has to exist on the LivePerson functions platform. You can use the `push command` in order to ensure this.
+
+If the passed function is already deployed, it will be redeployed.
+
+The command can be run from the root directory or functions folder, then it's necessary to pass a functionname. If the user runs the command inside a functions folder, it's not necessary and the command will take the function of the current directory.
+
+<details>
+<summary>Usage</summary>
+
+```
+> lpf deploy [parameter] [--flag]
+```
+</details>
+
+<details>
+<summary>Options</summary>
+
+| Parameter    | Description                                          |
+| ------------ | ---------------------------------------------------- |
+| functionname | Pass the function for deployment (mulitple possible) |
+
+| Flag          | Description                                                                   |
+| ------------- | ----------------------------------------------------------------------------- |
+| -h --help     | Show help for the deploy command                                              |
+| -y --yes      | Agrees to the approval of the deployment and prevents the confirmation dialog |
+| -w --no-watch | Hide informations about the deployment process                                |
+</details>
+
+<details>
+<summary>Example</summary>
+
+```
+> lpf deploy exampleFunction
+
+> lpf deploy exampleFunction --yes --no-watch
+
+> lpf deploy exampleFunction1 exampleFunction2 -y -w
+```
+</details>
+
+### Undeploy
+
+Undeploys a function on the LivePerson functions platform.
+
+To undeploy a function it has to exist on the LivePerson functions platform. You can use the `push command` in order to ensure this.
+
+The command can be run from the root directory or functions folder, then it's necessary to pass a functionname. If the user runs the command inside a functions folder, it's not necessary and the command will take the function of the current directory.
+
+
+<details>
+<summary>Usage</summary>
+
+```
+> lpf undeploy [parameter] [--flag]
+```
+</details>
+
+<details>
+<summary>Options</summary>
+
+| Parameter    | Description                                            |
+| ------------ | ------------------------------------------------------ |
+| functionname | Pass the function for undeployment (mulitple possible) |
+
+| Flag          | Description                                                                     |
+| ------------- | ------------------------------------------------------------------------------- |
+| -h --help     | Show help for the deploy command                                                |
+| -y --yes      | Agrees to the approval of the undeployment and prevents the confirmation dialog |
+| -w --no-watch | Hide informations about the undeployment process                                |
+</details>
+
+<details>
+<summary>Example</summary>
+
+```
+> lpf undeploy exampleFunction
+
+> lpf undeploy exampleFunction --yes --no-watch
+
+> lpf undeploy exampleFunction1 exampleFunction2 -y -w
+```
+</details>
+
 ### Invoke
 
 Invokes a function (remote or local).
@@ -613,13 +551,14 @@ Starts a debug port in the range of 30500 - 31000 for a passed function.
 
 ### Get
 
-Get information about the passed domain. Possible domains are deployments, functions and account. 
+Get information about the passed domain. Possible domains are deployments, functions, account and events. 
 
 The following informations will be displayed:
 
 * Deployment: Name, Undeployed changes from, Last successful deployment, deployed by, deployment state
 * Function: Name, Status, last changed at, last changed by, Event
 * Account: Offers insights that are currently generated by the welcome page
+* Events: Event name and eventId
 
 <details>
 <summary>Usage</summary>
@@ -650,6 +589,79 @@ The following informations will be displayed:
 > lpf get functions deployments 
 
 > lpf get functions deployments account
+
+> lpf get functions deployments account events
+```
+</details>
+
+### Help
+
+If you ever need help while using lpf, there are three equivalent ways to get the comprehensive manual page (manpage) help for any of the lpf commands:
+```
+> lpf help
+
+> lpf help <command>
+
+> lpf <command> --help -h
+```
+
+For example, you can get the manpage help for the lpf login command by running
+
+```
+> lpf help login
+```
+
+### Autocomplete
+
+Displays autocomplete instructions (only supports zsh and bash)
+
+<details>
+<summary>Usage</summary>
+
+```
+> lpf autocomplete [--flag]
+```
+</details>
+
+<details>
+<summary>Options</summary>
+
+| Flag         | Description                                     |
+| ------------ | ----------------------------------------------- |
+| -h --help    | Show help for the login command                 |
+| -r --refresh | Refresh cache (ignores displaying instructions) |
+</details>
+
+<details>
+<summary>Example</summary>
+
+```
+> lpf autocomplete
+
+> lpf autocomplete bash
+
+> lpf autocomplete zsh
+
+> lpf autocomplete --refresh-cache
+```
+</details>
+
+### Version and Update
+
+The version command shows the current installed version of the CLI. 
+If a newer version is available the user will see an update information which shows his current version, the new version and a information about how to update to the new version.
+
+The update notification will appear one time and then it's muted for two days.
+
+<details>
+<summary>Example</summary>
+
+```
+> lpf version
+
+> lpf -v
+
+> lpf --version
 ```
 </details>
 
