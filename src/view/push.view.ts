@@ -145,12 +145,12 @@ ${
   Event:                  ${pushBody.eventId || 'No Event'}
   Dependencies:           ${
     pushBody.implementation.dependencies.length > 0
-      ? pushBody.implementation.dependencies.length
+      ? JSON.stringify(pushBody.implementation.dependencies)
       : '-'
   }
   Environment variables:  ${
     pushBody.implementation.environmentVariables.length > 0
-      ? pushBody.implementation.environmentVariables
+      ? JSON.stringify(pushBody.implementation.environmentVariables)
       : '-'
   }
 
