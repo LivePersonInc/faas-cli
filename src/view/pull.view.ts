@@ -113,13 +113,15 @@ export class PullView {
                 headers: [],
                 payload: {},
               },
-              environmentVariables: lambda.implementation.environmentVariables
-                .length > 0 || [
-                {
-                  key: '',
-                  value: '',
-                },
-              ],
+              environmentVariables:
+                lambda.implementation.environmentVariables.length > 0
+                  ? lambda.implementation.environmentVariables
+                  : [
+                      {
+                        key: '',
+                        value: '',
+                      },
+                    ],
             },
           );
           this.fileService.write(
