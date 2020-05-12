@@ -115,6 +115,7 @@ export class DefaultStructureService {
   }
 
   private copyIntellijSettings(): void {
+    // will be changed to .idea because '.' folder/files are ignored by npm publish
     this.fileService.copy(
       join(__dirname, '..', '..', 'bin', 'example', 'idea'),
       join(this.cwd, '.idea'),
@@ -122,6 +123,7 @@ export class DefaultStructureService {
   }
 
   private copyVsCodeSettings(): void {
+    // will be changed to .vscode because '.' folder/files are ignored by npm publish
     this.fileService.copy(
       join(__dirname, '..', '..', 'bin', 'example', 'vscode'),
       join(this.cwd, '.vscode'),
@@ -129,6 +131,7 @@ export class DefaultStructureService {
   }
 
   private copyGitIgnore(): void {
+    // will be changed to .ignore because '.' folder/files are ignored by npm publish
     this.fileService.copy(
       join(__dirname, '..', '..', 'bin', 'example', 'gitignore'),
       join(this.cwd, '.gitignore'),
