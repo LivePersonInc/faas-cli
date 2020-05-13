@@ -28,8 +28,7 @@ defineFeature(feature, (test) => {
   test('Run the init command', async ({ when, then, and }) => {
     let initController: InitController;
     const tasklist = new TaskList({ renderer: 'silent' });
-    const exec = jest.fn();
-    const initView = new InitView({ tasklist, exec });
+    const initView = new InitView({ tasklist });
 
     when('I run the init command with lpf init', async () => {
       fs.ensureDirSync(testDir);

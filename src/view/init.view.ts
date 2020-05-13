@@ -80,13 +80,19 @@ export class InitView {
     if (needDependencyInstallation) {
       this.tasklist.addTask({
         title: 'Install packages',
-        task: async (ctx) => {
+        task: async (ctx, task) => {
+          const command = `cd bin/lp-faas-toolbelt && ${
+            ctx.packageManager === 'npm' ? 'npm i' : 'yarn -i'
+          }`;
           /* istanbul ignore next */
-          if (ctx.packageManager === 'npm') {
-            this.exec('cd bin/lp-faas-toolbelt && npm i');
-          } else {
-            this.exec('cd bin/lp-faas-toolbelt && yarn -i');
-          }
+          return new Promise((resolve) => {
+            this.exec(command, (error: any) => {
+              if (error) {
+                task.skip(error.message);
+              }
+              resolve();
+            });
+          });
         },
       });
     }

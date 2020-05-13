@@ -27,7 +27,7 @@ export class DefaultStructureService {
    * @param {string} [functionName=''] - creates the necessary files for the init command
    * @memberof DefaultStructureService
    */
-  public create(functionName = ''): void {
+  public create(functionName = 'exampleFunction'): void {
     if (
       this.fileService.directoryOrFileExists(
         join(this.cwd, 'functions', functionName),
