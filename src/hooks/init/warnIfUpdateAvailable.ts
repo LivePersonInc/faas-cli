@@ -29,7 +29,13 @@ function parseBorder(message: string): string {
  * @param {IConfig} config - passed config from the oclif framework
  * @returns {Promise<void>} - update hint
  */
-export async function warnIfUpdateAvailable(config: IConfig): Promise<void> {
+export async function warnIfUpdateAvailable({
+  config,
+  id,
+}: {
+  config: IConfig;
+  id?: string;
+}): Promise<void> {
   const {
     timeoutInDays = 2,
     message = `
@@ -70,7 +76,7 @@ export async function warnIfUpdateAvailable(config: IConfig): Promise<void> {
       const staleAt = new Date(
         mtime.valueOf() + 1000 * 60 * 60 * 24 * timeoutInDays,
       );
-      return staleAt < new Date();
+      return id === 'version' || staleAt < new Date();
     } catch (error) {
       return true;
     }
@@ -97,14 +103,14 @@ export async function warnIfUpdateAvailable(config: IConfig): Promise<void> {
 
 /**
  * Runs the a hook every time the CLI gets initialised
- * @param { config } - oclif configuration
+ * @param opts - oclif options
  */
 /* istanbul ignore next */
-const hook: Hook<'init'> = async function ({ config }) {
+const hook: Hook<'init'> = async function (opts) {
   // need to seperate the function for the test,
   // because there is no context for the init command during the test
   /* istanbul ignore next */
-  await warnIfUpdateAvailable(config);
+  await warnIfUpdateAvailable({ id: opts.id, config: opts.config });
 };
 
 export default hook;
