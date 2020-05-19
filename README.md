@@ -391,7 +391,7 @@ You can pass the --all flag, if you want to push all local functions to the plat
 
 Deploys a function on the LivePerson functions platform. 
 
-To undeploy a function it has to exist on the LivePerson functions platform. You can use the `push command` in order to ensure this.
+To deploy a function it has to exist on the LivePerson functions platform. You can use the `push command` in order to ensure this.
 
 If the passed function is already deployed, it will be redeployed.
 
