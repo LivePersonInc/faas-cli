@@ -26,10 +26,22 @@ Feature: Invoke Command
     When I run the invoke command and pass the function name and local flag
     Then It invokes the command local and print the logs with error to the console
 
-  Scenario: Invoke a function local with a runtime longer than 30 seconds
+  Scenario: Invoke a function local which throws an error during invocation
     Given I have done the local init
-    Given I have a local function with the config.json (runtime is longer than 30 seconds)
+    Given I have a local function with the config.json (throw error implemented)
     When I run the invoke command and pass the function name and local flag
-    Then It invokes the command local and print an error that the functions runs longer than 30 seconds
+    Then It invokes the command local and print the logs with error to the console
+
+  Scenario: Invoke a function local which has an incorrect error format
+    Given I have done the local init
+    Given I have a local function with the config.json (incorrect error format implemented)
+    When I run the invoke command and pass the function name and local flag
+    Then It invokes the command local and print the logs with error to the console
+
+  Scenario: Invoke a function local with a runtime longer than 60 seconds
+    Given I have done the local init
+    Given I have a local function with the config.json (runtime is longer than 60 seconds)
+    When I run the invoke command and pass the function name and local flag
+    Then It invokes the command local and print an error that the functions runs longer than 60 seconds
 
 

@@ -17,7 +17,7 @@ interface IInvokeErrorLogs {
   errorLogs: any[];
 }
 
-const EXECUTION_EXCEED_TIMEOUT = 30000;
+const EXECUTION_EXCEED_TIMEOUT = 60000;
 
 function isLogLevel(input: any) {
   return Object.keys({
@@ -34,7 +34,7 @@ function didExecutionExceedTimewindow(timeStart: number, timeEnd: number) {
   return timeEnd - timeStart > EXECUTION_EXCEED_TIMEOUT;
 }
 
-function didExecutionFailWithError(result: any) {
+function didExecutionFailWithError(result: any[]) {
   return (
     result.filter((e: any) => e.level === 'Error' && e.message?.errorMsg)
       .length > 0
@@ -44,6 +44,15 @@ function didExecutionFailWithError(result: any) {
 function throwInvalidProjectFolderError() {
   console.log(
     'Could not find index.js. Please make sure you have set up a functions folder with index.js and config.json',
+  );
+}
+
+function didIncorrectErrorFormat(result: any[]) {
+  return result.some(
+    (e: any) =>
+      e.extras[0]?.originalFailure &&
+      e.message?.errorMsg.includes('incorrect format') &&
+      e.level === 'Warn',
   );
 }
 
@@ -122,8 +131,7 @@ export class FaasDebugger {
         detached: true,
       });
       const timeStart = performance.now();
-      childFork.on('message', (message) => {
-        const result = message as any[];
+      childFork.on('message', (result: any[]) => {
         const timeEnd = performance.now();
         if (didExecutionExceedTimewindow(timeStart, timeEnd)) {
           this.errorLogs = {
@@ -132,6 +140,27 @@ export class FaasDebugger {
               'Lambda did not call callback within execution time limit',
             errorLogs: result,
           };
+          console.log(JSON.stringify(this.errorLogs, null, 4));
+          return;
+        }
+        if (didIncorrectErrorFormat(result)) {
+          const error = result.filter(
+            (e) =>
+              e.extras[0]?.originalFailure &&
+              e.message?.errorMsg.includes('incorrect format') &&
+              e.level === 'Warn',
+          )[0];
+
+          this.errorLogs.errorCode = error.message.errorCode;
+          this.errorLogs.errorMsg = error.extras[0].originalFailure;
+          result[
+            result.findIndex(
+              (e) =>
+                e.level === 'Warn' &&
+                e.message?.errorMsg.includes('incorrect format'),
+            )
+          ].message = error.message.errorMsg;
+          this.errorLogs.errorLogs = result;
           console.log(JSON.stringify(this.errorLogs, null, 4));
           return;
         }
@@ -251,19 +280,19 @@ export class FaasDebugger {
     file = `${file}
 // This is an auto generated code during the invocation/debugging
 // It rewires the requirements and parsing the output
-try {
-  console = require('../../bin/rewire').InvokeLogger;
-  require("module").prototype.require = require('../../bin/rewire').proxy;
-  const input = require('functions/${this.lambdaToInvoke}/config').input;
-  lambda(input, (error, response) => {
-    if (error) console.error(error);
-    if (response) console.response(response);
+(async () => {
+  try {
+    console = require('../../bin/rewire').InvokeLogger;
+    require("module").prototype.require = require('../../bin/rewire').proxy;
+    const input = require('functions/${this.lambdaToInvoke}/config').input;
+    const response = await require('../../bin/rewire').convertToPromisifiedLambda((input, cb) => lambda(input, cb))(input);
+    console.response(response);
     process.send(console.getHistory());
-  });
-} catch (error) {
-  console.error(error);
-  process.send(console.getHistory());
-}
+  } catch (error) {
+    console.customError(error);
+    process.send(console.getHistory());
+  }
+})();
 `;
     writeFileSync(this.indexPath, file);
   }
@@ -276,13 +305,18 @@ try {
     const updatedCode = `${originalCode}
 // This is an auto generated code during the invocation/debugging
 // It rewires the requirements and parsing the output
-console = require('../../bin/rewire').DebugLogger;
-require("module").prototype.require = require('../../bin/rewire').proxy;
-lambda(require('functions/${process.argv[2]}/config').input, (error, response) => {
-    if (error) console.error(error);
-    if (response) console.response(response);
+(async () => {
+  try {
+    console = require('../../bin/rewire').DebugLogger;
+    require("module").prototype.require = require('../../bin/rewire').proxy;
+    const input = require('functions/${process.argv[2]}/config').input;
+    const response = await require('../../bin/rewire').convertToPromisifiedLambda((input, cb) => lambda(input, cb))(input);;
+    console.response(response);
     console.printHistory();
-});`;
+  } catch (error) {
+    console.customError(error);
+  }
+})();`;
     writeFileSync(join(this.functionPath, 'index.js'), updatedCode);
   }
 
