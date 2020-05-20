@@ -202,8 +202,7 @@ class FaasDebugger {
     }
     updateLambdaFunctionForInvoke() {
         let file = fs_1.readFileSync(this.indexPath, 'utf8');
-        file = `${file}
-// This is an auto generated code during the invocation/debugging
+        file = `// This is an auto generated code during the invocation/debugging
 // It rewires the requirements and parsing the output
 (async () => {
   try {
@@ -218,13 +217,16 @@ class FaasDebugger {
     process.send(console.getHistory());
   }
 })();
-`;
+
+// #######################################################################################################
+// Your code starts here
+
+${file}`;
         fs_1.writeFileSync(this.indexPath, file);
     }
     updateLambdaFunctionForDebugging() {
         const originalCode = fs_1.readFileSync(path_1.join(this.functionPath, 'index.js'), 'utf8');
-        const updatedCode = `${originalCode}
-// This is an auto generated code during the invocation/debugging
+        const updatedCode = `// This is an auto generated code during the invocation/debugging
 // It rewires the requirements and parsing the output
 (async () => {
   try {
@@ -237,7 +239,12 @@ class FaasDebugger {
   } catch (error) {
     console.customError(error);
   }
-})();`;
+})();
+
+// #######################################################################################################
+// Your code starts here
+
+${originalCode}`;
         fs_1.writeFileSync(path_1.join(this.functionPath, 'index.js'), updatedCode);
     }
     revertLambdaFunction(invoke = false) {
@@ -245,7 +252,9 @@ class FaasDebugger {
         /* istanbul ignore else */
         if (updatedCode.includes('This is an auto generated code')) {
             // eslint-disable-next-line @typescript-eslint/no-unused-vars
-            const [originalCode, _] = updatedCode.split('\n// This is an auto generated code');
+            const [_, originalCode] = updatedCode.split(`// Your code starts here
+
+`);
             fs_1.writeFileSync(invoke ? this.indexPath : path_1.join(this.functionPath, 'index.js'), originalCode);
         }
     }
