@@ -17,6 +17,9 @@ jest.mock('../../../src/service/faasFactory.service', () =>
 
 import { InvokeController } from '../../../src/controller/invoke.controller';
 import { FileService } from '../../../src/service/file.service';
+import { DefaultStructureService } from '../../../src/service/defaultStructure.service';
+import { InitView } from '../../../src/view/init.view';
+import { InitController } from '../../../src/controller/init.controller';
 
 const feature = loadFeature('test/commands/invoke/invoke.feature');
 defineFeature(feature, (test) => {
@@ -24,6 +27,8 @@ defineFeature(feature, (test) => {
   const testDir = join(__dirname, 'test');
   let consoleSpy;
   const fileService = new FileService();
+
+  jest.spyOn(process.stdout, 'write').mockImplementation();
 
   beforeEach(() => {
     consoleSpy = jest.spyOn(global.console, 'log').mockImplementation();
@@ -222,6 +227,130 @@ defineFeature(feature, (test) => {
         (e) => e === 'TestKey',
       );
       expect(containsTestKey).toBeTruthy();
+    });
+
+    then(
+      'It invokes the command local and print the logs to the console',
+      () => {
+        expect(consoleSpy).toBeCalledWith(
+          expect.stringContaining('Hello World'),
+        );
+      },
+    );
+  });
+
+  test('Invoke a function local and an update of the bin folder is required', ({
+    given,
+    when,
+    then,
+  }) => {
+    fs.ensureDirSync(testDir);
+    fs.writeFileSync(
+      join(testDir, 'package.json'),
+      JSON.stringify({
+        version: '1.0.0',
+      }),
+    );
+    fs.ensureDirSync(join(testDir, 'bin', 'lp-faas-toolbelt'));
+    fs.writeFileSync(
+      join(testDir, 'bin', 'lp-faas-toolbelt', 'package.json'),
+      JSON.stringify({
+        version: '0.0.9',
+      }),
+    );
+
+    given('I have done the local init', () => {
+      fs.ensureDirSync(join(testDir, 'functions', 'InvokeFunctionLocal'));
+    });
+
+    given('I have a local function with the config.json', () => {
+      fs.writeFileSync(
+        join(testDir, 'functions', 'InvokeFunctionLocal', 'config.json'),
+        JSON.stringify({
+          name: 'InvokeFunctionLocal',
+          event: null,
+          input: {
+            headers: [],
+            payload: {},
+          },
+          environmentVariables: [
+            {
+              key: 'TestKey',
+              value: 'TestValue',
+            },
+          ],
+        }),
+      );
+      fs.writeFileSync(
+        join(testDir, 'functions', 'InvokeFunctionLocal', 'index.js'),
+        `function lambda(input, callback) {
+  callback(null, 'Hello World');
+}
+`,
+      );
+      fs.copySync(
+        join(
+          process.cwd(),
+          '..',
+          '..',
+          '..',
+          '..',
+          'bin',
+          'example',
+          'bin',
+          'rewire.js',
+        ),
+        join(testDir, 'bin', 'rewire.js'),
+      );
+    });
+
+    when(
+      'I run the invoke command and pass the function name and local flag',
+      async () => {
+        process.env.DEBUG_PATH = 'true';
+
+        const mockFileService = new FileService({
+          dirname: join(testDir, 'test', 'test'),
+        });
+
+        const defaultStructureService = new DefaultStructureService();
+        defaultStructureService.create = jest.fn(() => {
+          fs.copySync(
+            join(testDir, 'package.json'),
+            join(testDir, 'bin', 'lp-faas-toolbelt', 'package.json'),
+          );
+        });
+        const initView = new InitView({ defaultStructureService });
+        const initController = new InitController({
+          initView,
+        });
+
+        const invokeController = new InvokeController({
+          initController,
+          fileService: mockFileService,
+        });
+        await invokeController.invoke({
+          lambdaFunctions: ['InvokeFunctionLocal'],
+          inputFlags: { local: true },
+        });
+      },
+    );
+
+    then('It should set the passed env variables', () => {
+      const containsTestKey = Object.keys(process.env).some(
+        (e) => e === 'TestKey',
+      );
+      expect(containsTestKey).toBeTruthy();
+    });
+
+    then('Bin folder gets updated', async () => {
+      const toolbeltPackage = JSON.parse(
+        await fs.readFile(
+          join(testDir, 'bin', 'lp-faas-toolbelt', 'package.json'),
+          'utf8',
+        ),
+      );
+      expect(toolbeltPackage.version).toBe('1.0.0');
     });
 
     then(

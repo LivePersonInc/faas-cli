@@ -14,6 +14,7 @@ interface ITaskListConfig {
   packageManager: PackageManager;
   needDependencyInstallation: boolean;
   functionNames?: string[];
+  update?: boolean;
 }
 
 export class InitView {
@@ -57,6 +58,7 @@ export class InitView {
     packageManager,
     needDependencyInstallation,
     functionNames,
+    update = false,
   }: ITaskListConfig): Promise<void> {
     if (functionNames?.length) {
       functionNames.forEach((entry) => {
@@ -69,9 +71,9 @@ export class InitView {
       });
     } else {
       this.tasklist.addTask({
-        title: 'Initialise example function',
+        title: `${update ? 'Update files' : 'Initialise example function'}`,
         task: async () => {
-          this.defaultStructureService.create();
+          this.defaultStructureService.create(undefined, update);
         },
       });
     }
