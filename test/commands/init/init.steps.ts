@@ -92,7 +92,7 @@ defineFeature(feature, (test) => {
       fs.ensureDirSync(testDir);
       fs.writeFileSync(
         join(testDir, 'bin', 'lp-faas-toolbelt', 'package-lock.json'),
-        {},
+        JSON.stringify({}),
       );
       fs.ensureDirSync(
         join(testDir, 'bin', 'lp-faas-toolbelt', 'node_modules'),
