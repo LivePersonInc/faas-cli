@@ -37,7 +37,7 @@ For more information about LivePerson Functions see [developers.liveperson.com](
 
 ## Installation
 
-Before you start using lpf, you have to make it available on your computer. Even if it's already installed, it's probably a good idea to update to the latest version. You can either install it as a package, via another installer or download the source code.
+Before you start using lpf, you have to make it available on your computer. Even if it's already installed, it's probably a good idea to update to the latest version. You can install it as a npm package.
 
 ### Npm
 
