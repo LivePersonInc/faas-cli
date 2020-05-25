@@ -1,9 +1,9 @@
 import { join } from 'path';
 import { FileService } from '../service/file.service';
 import { factory } from '../service/faasFactory.service';
-import { IInvokeResponse } from '../service/faas.service';
 import { InvokeView } from '../view/invoke.view';
 import { FaasDebugger } from '../shared/faas-debugger';
+import { InitController } from './init.controller';
 
 interface IInvokeConfig {
   lambdaFunctions: string[];
@@ -13,41 +13,27 @@ interface IInvokeConfig {
 interface IInvokeControllerConfig {
   invokeView?: InvokeView;
   fileService?: FileService;
-}
-
-interface IInvokeErrorLogs {
-  errorCode: string;
-  errorMsg: string;
-  errorLogs: any[];
+  initController?: InitController;
 }
 
 export class InvokeController {
-  private result: IInvokeResponse;
-
-  private errorLogs: IInvokeErrorLogs;
-
   private invokeView: InvokeView;
 
   private fileService: FileService;
 
   private lambdaToInvoke: any;
 
+  private initController: InitController;
+
   constructor({
     invokeView = new InvokeView(),
     fileService = new FileService(),
+    initController = new InitController(),
   }: IInvokeControllerConfig = {}) {
-    this.result = {
-      result: {},
-      logs: [],
-    };
-    this.errorLogs = {
-      errorCode: '',
-      errorMsg: '',
-      errorLogs: [],
-    };
     this.invokeView = invokeView;
     this.fileService = fileService;
     this.lambdaToInvoke = {};
+    this.initController = initController;
   }
 
   /**
@@ -61,6 +47,10 @@ export class InvokeController {
     inputFlags,
   }: IInvokeConfig): Promise<void> {
     try {
+      if (this.fileService.needUpdateBinFolder()) {
+        await this.initController.init({ update: true });
+      }
+
       const localLambdaInformation = this.fileService.collectLocalLambdaInformation(
         lambdaFunctions,
       );

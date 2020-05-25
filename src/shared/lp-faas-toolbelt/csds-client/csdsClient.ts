@@ -1,13 +1,13 @@
-import { ErrorCodes } from '../errors/errorCodes';
-import { InternalError } from '../errors/internalError';
-import { httpClient } from '../http-client/httpClient';
-import { Environment } from '../shared/const';
-import { ICsdsClient } from './ICsdsClient';
 import * as fs from 'fs';
 import * as os from 'os';
 import { join } from 'path';
 import { system } from 'systeminformation';
 import * as crypto from 'crypto';
+import { ErrorCodes } from '../errors/errorCodes';
+import { InternalError } from '../errors/internalError';
+import { httpClient } from '../http-client/httpClient';
+import { Environment } from '../shared/const';
+import { ICsdsClient } from './ICsdsClient';
 
 interface IServiceDomainTuple {
   service: string;
@@ -25,7 +25,7 @@ export class CsdsClient implements ICsdsClient {
    */
   constructor(
     private ttlInSeconds: number = 600,
-    private accountId: string | undefined = getAccountId(),
+    private accountId: string | undefined = undefined,
     private lastCacheTimestamp: number = 0,
   ) {
     this.domains = [];
@@ -45,10 +45,17 @@ export class CsdsClient implements ICsdsClient {
       return domain.baseURI;
     }
 
-    throw new InternalError(ErrorCodes.Csds.NotFound, `Service "${service}" could not be found.`);
+    throw new InternalError(
+      ErrorCodes.Csds.NotFound,
+      `Service "${service}" could not be found.`,
+    );
   }
 
   private async getCachedDomains(): Promise<IServiceDomainTuple[]> {
+    if (!this.accountId) {
+      this.accountId = await getAccountId();
+    }
+
     if (!this.isCacheExpired()) {
       return this.domains;
     }
@@ -76,11 +83,15 @@ export class CsdsClient implements ICsdsClient {
   }
 
   private getUrl(): string {
-    return `http://${this.getCsdsDomain()}/api/account/${this.accountId}/service/baseURI.json?version=1.0`;
+    return `http://${this.getCsdsDomain()}/api/account/${
+      this.accountId
+    }/service/baseURI.json?version=1.0`;
   }
 
   private getCsdsDomain(): string {
-    return process.env.CSDS_DOMAIN ? process.env.CSDS_DOMAIN : this.deriveCsdsDomainFromAccountId();
+    return process.env.CSDS_DOMAIN
+      ? process.env.CSDS_DOMAIN
+      : this.deriveCsdsDomainFromAccountId();
   }
 
   private deriveCsdsDomainFromAccountId(): string {
@@ -94,21 +105,30 @@ export class CsdsClient implements ICsdsClient {
   }
 }
 
-function getAccountId() {
-  if (process.env[Environment.General.Account]) {
-    return process.env[Environment.General.Account];
-  }
-
+async function getAccountId() {
   try {
-    const tempFile = fs.readFileSync(join(os.tmpdir(), 'faas-tmp.yaml'), 'utf8');
-    return Object.keys(tempFile).find((e) => tempFile[e].active);
-  } catch {
+    if (process.env[Environment.General.Account]) {
+      return process.env[Environment.General.Account];
+    }
+    const tempFile = JSON.parse(
+      fs.readFileSync(join(os.tmpdir(), 'faas-tmp.json'), 'utf8'),
+    );
+    const decryptedTempfile = await decrypt(tempFile);
+    return Object.keys(decryptedTempfile).find(
+      (e) => decryptedTempfile[`${e}`].active,
+    );
+  } catch (error) {
+    console.log(error);
     throw new Error(`For local usage of the CSDS Client an accountId is required.
       Please login or set the env variable BRAND_ID`);
   }
 }
 
-async function getCrpytoConfig(): Promise<{ algorithm: string; key: Buffer; iv: string }> {
+async function getCrpytoConfig(): Promise<{
+  algorithm: string;
+  key: Buffer;
+  iv: string;
+}> {
   let systemUUID: string;
   try {
     const { uuid } = await system();

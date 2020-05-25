@@ -8,6 +8,7 @@ export type PackageManager = 'npm' | 'yarn';
 
 interface IInitOptions {
   functionNames?: string[];
+  update?: boolean;
 }
 
 interface IInitControllerConfig {
@@ -26,6 +27,8 @@ export class InitController {
 
   private cwd: string;
 
+  private update: boolean;
+
   constructor(
     /* istanbul ignore next */ {
       initView = new InitViewDefault(),
@@ -38,6 +41,7 @@ export class InitController {
     this.exec = exec;
     this.fileService = fileService;
     this.cwd = cwd;
+    this.update = false;
   }
 
   /**
@@ -46,8 +50,12 @@ export class InitController {
    * @returns {Promise<void>} - init view
    * @memberof InitController
    */
-  public async init({ functionNames }: IInitOptions = {}): Promise<void> {
+  public async init({
+    functionNames,
+    update = false,
+  }: IInitOptions = {}): Promise<void> {
     try {
+      this.update = update;
       const packageManager = this.determinePackageManager();
       const needDependencyInstallation: boolean = this.needDependencyInstallation(
         packageManager,
@@ -56,6 +64,7 @@ export class InitController {
         packageManager,
         needDependencyInstallation,
         functionNames,
+        update: this.update,
       });
     } catch (error) {
       /* istanbul ignore else */
@@ -82,6 +91,7 @@ export class InitController {
 
   private needDependencyInstallation(packageManager: PackageManager): boolean {
     return (
+      this.update ||
       (packageManager === 'npm' &&
         !this.fileService.directoryOrFileExists(
           join(this.cwd, 'bin', 'lp-faas-toolbelt', 'package-lock.json'),

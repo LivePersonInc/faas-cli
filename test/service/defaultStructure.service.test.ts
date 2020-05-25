@@ -97,4 +97,20 @@ describe('Default structure service', () => {
       );
     }
   });
+
+  it('should only create the bin folder for the update', () => {
+    defaultStructureService.create(undefined, true);
+
+    expect(fs.existsSync(join(testDir, 'README.md'))).toBeFalsy();
+    expect(fs.existsSync(join(testDir, '.vscode'))).toBeFalsy();
+    expect(fs.existsSync(join(testDir, '.idea'))).toBeFalsy();
+
+    expect(
+      fs.existsSync(join(testDir, 'bin', 'faas-debugger.js')),
+    ).toBeTruthy();
+    expect(fs.existsSync(join(testDir, 'bin', 'rewire.js'))).toBeTruthy();
+    expect(
+      fs.existsSync(join(testDir, 'bin', 'lp-faas-toolbelt/')),
+    ).toBeTruthy();
+  });
 });

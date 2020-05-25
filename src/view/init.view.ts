@@ -14,6 +14,7 @@ interface ITaskListConfig {
   packageManager: PackageManager;
   needDependencyInstallation: boolean;
   functionNames?: string[];
+  update?: boolean;
 }
 
 export class InitView {
@@ -57,6 +58,7 @@ export class InitView {
     packageManager,
     needDependencyInstallation,
     functionNames,
+    update = false,
   }: ITaskListConfig): Promise<void> {
     if (functionNames?.length) {
       functionNames.forEach((entry) => {
@@ -69,9 +71,9 @@ export class InitView {
       });
     } else {
       this.tasklist.addTask({
-        title: 'Initialise example function',
+        title: `${update ? 'Update files' : 'Initialise example function'}`,
         task: async () => {
-          this.defaultStructureService.create();
+          this.defaultStructureService.create(undefined, update);
         },
       });
     }
@@ -80,13 +82,19 @@ export class InitView {
     if (needDependencyInstallation) {
       this.tasklist.addTask({
         title: 'Install packages',
-        task: async (ctx) => {
+        task: async (ctx, task) => {
+          const command = `cd bin/lp-faas-toolbelt && ${
+            ctx.packageManager === 'npm' ? 'npm i' : 'yarn -i'
+          }`;
           /* istanbul ignore next */
-          if (ctx.packageManager === 'npm') {
-            this.exec('cd bin/lp-faas-toolbelt && npm i');
-          } else {
-            this.exec('cd bin/lp-faas-toolbelt && yarn -i');
-          }
+          return new Promise((resolve) => {
+            this.exec(command, (error: any) => {
+              if (error) {
+                task.skip(error.message);
+              }
+              resolve();
+            });
+          });
         },
       });
     }

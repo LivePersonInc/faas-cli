@@ -20,20 +20,23 @@ describe('warn if update is available', () => {
   );
 
   it('should show a message with the new update note', async () => {
-    const config = {
-      pjson: {
-        oclif: {
-          'warn-if-update-available': {
-            timeoutInDays: 0,
-            npmjsRegistry: 'liveperson-functions-cli',
+    const opts = {
+      config: {
+        pjson: {
+          oclif: {
+            'warn-if-update-available': {
+              timeoutInDays: 0,
+              npmjsRegistry: 'liveperson-functions-cli',
+            },
           },
         },
+        cacheDir: __dirname,
+        version: '0.0.0',
       },
-      cacheDir: __dirname,
-      version: '0.0.0',
+      id: 'push',
     } as any;
 
-    await warnIfUpdateAvailable(config);
+    await warnIfUpdateAvailable(opts);
 
     expect(consoleSpy).toBeCalledWith(
       expect.stringMatching(/Update available/),
@@ -41,20 +44,23 @@ describe('warn if update is available', () => {
   }, 500);
 
   it('should show a message if the version file is missing', async () => {
-    const config = {
-      pjson: {
-        oclif: {
-          'warn-if-update-available': {
-            timeoutInDays: 0,
-            npmjsRegistry: 'liveperson-functions-cli',
+    const opts = {
+      config: {
+        pjson: {
+          oclif: {
+            'warn-if-update-available': {
+              timeoutInDays: 0,
+              npmjsRegistry: 'liveperson-functions-cli',
+            },
           },
         },
+        cacheDir: __dirname,
+        version: '0.0.0',
       },
-      cacheDir: __dirname,
-      version: '0.0.0',
+      id: 'push',
     } as any;
 
-    await warnIfUpdateAvailable(config);
+    await warnIfUpdateAvailable(opts);
 
     expect(consoleSpy).toBeCalledWith(
       expect.stringMatching(/Update available/),
@@ -62,15 +68,18 @@ describe('warn if update is available', () => {
   });
 
   it('should show a message if the configuration in package.json is missing', async () => {
-    const config = {
-      pjson: {
-        oclif: {},
+    const opts = {
+      config: {
+        pjson: {
+          oclif: {},
+        },
+        cacheDir: __dirname,
+        version: '0.0.0',
       },
-      cacheDir: __dirname,
-      version: '0.0.0',
+      id: 'push',
     } as any;
 
-    await warnIfUpdateAvailable(config);
+    await warnIfUpdateAvailable(opts);
 
     expect(consoleSpy).toBeCalledWith(
       expect.stringMatching(/Update available/),
@@ -78,20 +87,23 @@ describe('warn if update is available', () => {
   });
 
   it('should show a message that there was an error during fetching lastest version ', async () => {
-    const config = {
-      pjson: {
-        oclif: {
-          'warn-if-update-available': {
-            timeoutInDays: 0,
-            npmjsRegistry: 'liveperson-functions-cli-error',
+    const opts = {
+      config: {
+        pjson: {
+          oclif: {
+            'warn-if-update-available': {
+              timeoutInDays: 0,
+              npmjsRegistry: 'liveperson-functions-cli-error',
+            },
           },
         },
+        cacheDir: __dirname,
+        version: '0.0.0',
       },
-      cacheDir: __dirname,
-      version: '0.0.0',
+      id: 'push',
     } as any;
 
-    await warnIfUpdateAvailable(config);
+    await warnIfUpdateAvailable(opts);
 
     expect(consoleSpy).toBeCalledWith(
       'Error during fetching latest npm version:',
