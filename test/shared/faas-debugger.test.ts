@@ -25,6 +25,8 @@ jest.mock('child_process', () => {
 describe('debugger', () => {
   const testDir = join(__dirname, 'test');
 
+  jest.spyOn(process.stdout, 'write').mockImplementation();
+
   beforeEach(() => {
     ensureDirSync(testDir);
   });

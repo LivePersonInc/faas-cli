@@ -9,6 +9,7 @@ import {
   Prompt,
   TaskList,
 } from './printer';
+import { FileService } from '../service/file.service';
 
 interface IPushViewConfig {
   emoji?: any;
@@ -17,6 +18,7 @@ interface IPushViewConfig {
   prompt?: Prompt;
   tasklist?: TaskList;
   error?: ErrorMessage;
+  fileService?: FileService;
 }
 
 export class PushView {
@@ -32,6 +34,8 @@ export class PushView {
 
   private readonly emoji: any;
 
+  private readonly fileService: FileService;
+
   constructor(
     /* istanbul ignore next */ {
       chalk = chalkDefault,
@@ -40,6 +44,7 @@ export class PushView {
       tasklist = new TaskList({ exitOnError: false, concurrent: true }),
       prompt = new Prompt(),
       emoji = emojiDefault,
+      fileService = new FileService(),
     }: IPushViewConfig = {},
   ) {
     this.emoji = emoji;
@@ -48,6 +53,7 @@ export class PushView {
     this.prompt = prompt;
     this.tasklist = tasklist;
     this.error = error;
+    this.fileService = fileService;
   }
 
   /**
@@ -129,6 +135,19 @@ export class PushView {
   }
 
   private preparePromptMessage(pushBody, accountId) {
+    const event = pushBody.eventId || 'No Event';
+    let eventHint = '';
+    if (pushBody.version !== -1) {
+      const localConfig = this.fileService.getFunctionConfig(pushBody.name);
+      /* istanbul ignore else */
+      if (localConfig.event !== event) {
+        eventHint = `${this.chalk.yellow(
+          `The remote and local event are different (${event} | ${localConfig.event}).
+  Events cannot be changed after the creation of a function!`,
+        )}
+        `;
+      }
+    }
     const message = `Do you want to approve and ${
       pushBody.version === -1
         ? this.chalk.green('create')
@@ -139,10 +158,11 @@ ${
     ? ''
     : this.chalk.red('Caution: This action can NOT be reverted!\n')
 }
+  ${eventHint}
   AccountId:              ${this.chalk.green(accountId)}
   Name:                   ${pushBody.name}
   Description:            ${pushBody.description}
-  Event:                  ${pushBody.eventId || 'No Event'}
+  Event:                  ${event}
   Dependencies:           ${
     pushBody.implementation.dependencies.length > 0
       ? JSON.stringify(pushBody.implementation.dependencies)
