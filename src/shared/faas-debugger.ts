@@ -277,12 +277,15 @@ export class FaasDebugger {
 
   private updateLambdaFunctionForInvoke() {
     let file = readFileSync(this.indexPath, 'utf8');
-    file = `// This is an auto generated code during the invocation/debugging
+    file = `require("module").prototype.require = require('../../bin/rewire').proxy; // Rewire require
+
+${file}
+
+// This is an auto generated code during the invocation/debugging
 // It rewires the requirements and parsing the output
 (async () => {
   try {
     console = require('../../bin/rewire').InvokeLogger;
-    require("module").prototype.require = require('../../bin/rewire').proxy;
     const input = require('functions/${this.lambdaToInvoke}/config').input;
     const response = await require('../../bin/rewire').convertToPromisifiedLambda((input, cb) => lambda(input, cb))(input);
     console.response(response);
@@ -291,12 +294,7 @@ export class FaasDebugger {
     console.customError(error);
     process.send(console.getHistory());
   }
-})();
-
-// #######################################################################################################
-// Your code starts here
-
-${file}`;
+})();`;
     writeFileSync(this.indexPath, file);
   }
 
@@ -305,12 +303,15 @@ ${file}`;
       join(this.functionPath, 'index.js'),
       'utf8',
     );
-    const updatedCode = `// This is an auto generated code during the invocation/debugging
+    const updatedCode = `require("module").prototype.require = require('../../bin/rewire').proxy; // Rewire require
+
+${originalCode}
+
+// This is an auto generated code during the invocation/debugging
 // It rewires the requirements and parsing the output
 (async () => {
   try {
     console = require('../../bin/rewire').DebugLogger;
-    require("module").prototype.require = require('../../bin/rewire').proxy;
     const input = require('functions/${process.argv[2]}/config').input;
     const response = await require('../../bin/rewire').convertToPromisifiedLambda((input, cb) => lambda(input, cb))(input);;
     console.response(response);
@@ -318,12 +319,7 @@ ${file}`;
   } catch (error) {
     console.customError(error);
   }
-})();
-
-// #######################################################################################################
-// Your code starts here
-
-${originalCode}`;
+})();`;
     writeFileSync(join(this.functionPath, 'index.js'), updatedCode);
   }
 
@@ -335,12 +331,16 @@ ${originalCode}`;
     /* istanbul ignore else */
     if (updatedCode.includes('This is an auto generated code')) {
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
-      const [_, originalCode] = updatedCode.split(`// Your code starts here
+      const [_1, originalCode1] = updatedCode.split(`// Rewire require
 
 `);
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      const [originalCode2, _2] = originalCode1.split(`
+
+// This is an auto`);
       writeFileSync(
         invoke ? this.indexPath : join(this.functionPath, 'index.js'),
-        originalCode,
+        originalCode2,
       );
     }
   }
