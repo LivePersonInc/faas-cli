@@ -331,11 +331,11 @@ ${originalCode}
     /* istanbul ignore else */
     if (updatedCode.includes('This is an auto generated code')) {
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
-      const [_1, originalCode1] = updatedCode.split(`// Rewire require
+      const [, originalCode1] = updatedCode.split(`// Rewire require
 
 `);
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
-      const [originalCode2, _2] = originalCode1.split(`
+      const [originalCode2] = originalCode1.split(`
 
 // This is an auto`);
       writeFileSync(

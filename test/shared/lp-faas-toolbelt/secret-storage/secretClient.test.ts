@@ -1,4 +1,4 @@
-import { VaultSecretClient } from '../../../src/shared/lp-faas-toolbelt/secret-storage/secretClient';
+import { VaultSecretClient } from '../../../../src/shared/lp-faas-toolbelt/secret-storage/secretClient';
 
 describe('faas toolbelt - secret storage', () => {
   it('should read a secret from the local storage', async () => {

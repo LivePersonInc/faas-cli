@@ -1,6 +1,6 @@
 {
   "name": "lp-faas-toolbelt",
-  "version": "0.0.8",
+  "version": "0.0.9",
   "description": "",
   "main": "lp-faas-toolbelt/index.js",
   "scripts": {
@@ -17,6 +17,8 @@
     "request": "2.88.2",
     "request-promise-native": "1.0.8",
     "systeminformation": "^4.23.5",
-    "tslib": "^1.11.1"
+    "tslib": "^1.11.1",
+    "bent": "7.3.10",
+    "uuid": "8.3.0"
   }
 }
