@@ -1,6 +1,6 @@
 import { Toolbelt } from '../../../../src/shared/lp-faas-toolbelt/index';
 
-describe.only('Context Service Client', () => {
+describe('Context Service Client', () => {
   it('should throw an error if the env variable CONTEXT_SERVICE_ENVIRONMENT is not set correctly', async () => {
     expect(() => {
       Toolbelt.ContextServiceClient({

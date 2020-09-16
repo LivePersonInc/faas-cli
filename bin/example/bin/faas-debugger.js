@@ -1,13 +1,4 @@
 "use strict";
-var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
-    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
-    return new (P || (P = Promise))(function (resolve, reject) {
-        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
-        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
-        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
-        step((generator = generator.apply(thisArg, _arguments || [])).next());
-    });
-};
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.FaasDebugger = void 0;
 /* eslint-disable no-console */
@@ -64,29 +55,25 @@ class FaasDebugger {
             ? Number.parseInt(process.env.DEBUG_PORT, 10)
             : null;
     }
-    runLocalInvocation() {
-        return __awaiter(this, void 0, void 0, function* () {
-            try {
-                this.updateLambdaFunctionForInvoke();
-                this.setEnvironmentVariables(true);
-                yield this.createChildProcessForInvokeLocal();
-            }
-            catch (_a) {
-                throwInvalidProjectFolderError();
-            }
-        });
+    async runLocalInvocation() {
+        try {
+            this.updateLambdaFunctionForInvoke();
+            this.setEnvironmentVariables(true);
+            await this.createChildProcessForInvokeLocal();
+        }
+        catch (_a) {
+            throwInvalidProjectFolderError();
+        }
     }
-    runDebugging() {
-        return __awaiter(this, void 0, void 0, function* () {
-            try {
-                this.updateLambdaFunctionForDebugging();
-                this.setEnvironmentVariables();
-                yield this.createChildProcessForDebugging();
-            }
-            catch (_a) {
-                throwInvalidProjectFolderError();
-            }
-        });
+    async runDebugging() {
+        try {
+            this.updateLambdaFunctionForDebugging();
+            this.setEnvironmentVariables();
+            await this.createChildProcessForDebugging();
+        }
+        catch (_a) {
+            throwInvalidProjectFolderError();
+        }
     }
     createChildProcessForInvokeLocal() {
         return new Promise((resolve) => {
@@ -156,49 +143,47 @@ class FaasDebugger {
             });
         });
     }
-    createChildProcessForDebugging() {
-        return __awaiter(this, void 0, void 0, function* () {
-            /* istanbul ignore next */
-            if (!this.port) {
-                /* eslint-disable */
-                const getPort = require('./lp-faas-toolbelt/node_modules/get-port');
-                /* eslint-enable */
-                this.port = yield getPort({ port: getPort.makeRange(30500, 31000) });
-            }
-            this.udpatePortForFiles();
-            const args = [
-                `--inspect-brk=${this.port}`,
-                path_1.join(this.functionPath, 'index.js'),
-            ];
-            const child = child_process_1.spawn('node', args, {
-                detached: false,
-                stdio: 'pipe',
-                serialization: 'advanced',
-            });
-            child.stdout.on('data', (e) => {
-                // eslint-disable-next-line no-console
-                if (isLogLevel(e.toString()))
-                    console.log(e.toString());
-            });
-            child.stderr.on('data', (e) => {
-                // eslint-disable-next-line no-console
-                if (isLogLevel(e.toString()))
-                    console.log(e.toString());
-            });
-            child.on('exit', () => {
-                this.revertLambdaFunction();
-                child.kill();
-            });
-            /* istanbul ignore next */
-            process.on('SIGINT', () => {
-                // eslint-disable-next-line no-console
-                console.log('Interrupted lambda invocation');
-            });
-            /* istanbul ignore next */
-            process.on('SIGHUP', () => {
-                // eslint-disable-next-line no-console
-                console.log('Interrupted lambda invocation');
-            });
+    async createChildProcessForDebugging() {
+        /* istanbul ignore next */
+        if (!this.port) {
+            /* eslint-disable */
+            const getPort = require('./lp-faas-toolbelt/node_modules/get-port');
+            /* eslint-enable */
+            this.port = await getPort({ port: getPort.makeRange(30500, 31000) });
+        }
+        this.udpatePortForFiles();
+        const args = [
+            `--inspect-brk=${this.port}`,
+            path_1.join(this.functionPath, 'index.js'),
+        ];
+        const child = child_process_1.spawn('node', args, {
+            detached: false,
+            stdio: 'pipe',
+            serialization: 'advanced',
+        });
+        child.stdout.on('data', (e) => {
+            // eslint-disable-next-line no-console
+            if (isLogLevel(e.toString()))
+                console.log(e.toString());
+        });
+        child.stderr.on('data', (e) => {
+            // eslint-disable-next-line no-console
+            if (isLogLevel(e.toString()))
+                console.log(e.toString());
+        });
+        child.on('exit', () => {
+            this.revertLambdaFunction();
+            child.kill();
+        });
+        /* istanbul ignore next */
+        process.on('SIGINT', () => {
+            // eslint-disable-next-line no-console
+            console.log('Interrupted lambda invocation');
+        });
+        /* istanbul ignore next */
+        process.on('SIGHUP', () => {
+            // eslint-disable-next-line no-console
+            console.log('Interrupted lambda invocation');
         });
     }
     setEnvironmentVariables(invoke = false) {

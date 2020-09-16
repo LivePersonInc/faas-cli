@@ -331,7 +331,7 @@ ${originalCode}
     /* istanbul ignore else */
     if (updatedCode.includes('This is an auto generated code')) {
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
-      const [, originalCode1] = updatedCode.split(`// Rewire require
+      const [_, originalCode1] = updatedCode.split(`// Rewire require
 
 `);
       // eslint-disable-next-line @typescript-eslint/no-unused-vars

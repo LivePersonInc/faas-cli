@@ -99,7 +99,7 @@ export class DeployView {
       this.tasklist.addTask({
         title: `Deploying ${entry.name}`,
         // eslint-disable-next-line consistent-return
-        task: async (_ctx, task) => {
+        task: async (_, task) => {
           const faasService = await factory.get();
           const response = await faasService.deploy(entry.uuid);
           if (response.uuid) {

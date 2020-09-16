@@ -1,8 +1,6 @@
 import { ErrorCodes } from './constants';
 import { SDKError } from '../types/errors/sdkError';
 
-let timerID: NodeJS.Timeout; // Required in order to allow cleanup of timeouts
-
 /**
  * Small helper functions that runs the provided task in race against a setTimeout with the specified
  * deadline. Further it will cleanup the timeout in any case. Ensuring it does not clock up.
@@ -10,6 +8,7 @@ let timerID: NodeJS.Timeout; // Required in order to allow cleanup of timeouts
  * @param deadlineInMs time until task should be finished
  */
 export async function runTaskWithDeadline(task: Promise<unknown>, deadlineInMs: number): Promise<unknown> {
+    let timerID: (NodeJS.Timeout | undefined) = undefined; // Required in order to allow cleanup of timeouts
     const deadline = new Promise(
         (_, reject) =>
             (timerID = setTimeout(
