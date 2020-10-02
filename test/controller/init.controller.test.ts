@@ -33,7 +33,7 @@ describe('Init controller', () => {
       fileService,
     }).init();
     expect(tasklist.getTasks()).toEqual([
-      { task: expect.any(Function), title: 'Initialise example function' },
+      { task: expect.any(Function), title: 'Initializing structure' },
       { task: expect.any(Function), title: 'Install packages' },
     ]);
     fs.removeSync(testDir);

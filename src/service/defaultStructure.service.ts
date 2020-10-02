@@ -32,11 +32,12 @@ export class DefaultStructureService {
    * @param {string} [functionName=''] - creates the necessary files for the init command
    * @memberof DefaultStructureService
    */
-  public create(functionName = 'exampleFunction', update?: boolean): void {
+  public create(functionName?, update?: boolean): void {
     if (update) {
       this.createDefaultServices();
     } else {
       if (
+        functionName &&
         this.fileService.directoryOrFileExists(
           join(this.cwd, 'functions', functionName),
         )
@@ -47,7 +48,6 @@ export class DefaultStructureService {
       } else {
         this.createFunctionsFolder(functionName);
       }
-
       /* istanbul ignore else */
       if (
         !this.fileService.directoryOrFileExists(join(this.cwd, 'README.md'))
@@ -87,7 +87,7 @@ export class DefaultStructureService {
       }
 
       /* istanbul ignore else */
-      if (this.fileService) {
+      if (this.fileService && this.functionName) {
         this.renameFunction();
       }
     }
@@ -98,21 +98,25 @@ export class DefaultStructureService {
    * @param {string} [functionName] - function name
    * @memberof DefaultStructureService
    */
-  public createFunctionsFolder(functionName?: string, takeRoot = false): void {
+  public createFunctionsFolder(functionName: string, takeRoot = false): void {
     const path = takeRoot ? this.fileService.getRoot() : this.cwd;
-    this.functionName = functionName || 'exampleFunction';
-    this.fileService.copy(
-      join(
-        this.dirname,
-        '..',
-        '..',
-        'bin',
-        'example',
-        'functions',
-        'exampleFunction',
-      ),
-      join(path, 'functions', this.functionName),
-    );
+    this.functionName = functionName;
+    if (functionName) {
+      this.fileService.copy(
+        join(
+          this.dirname,
+          '..',
+          '..',
+          'bin',
+          'example',
+          'functions',
+          'exampleFunction',
+        ),
+        join(path, 'functions', this.functionName),
+      );
+    } else {
+      this.copySettings();
+    }
   }
 
   private createReadme(): void {
