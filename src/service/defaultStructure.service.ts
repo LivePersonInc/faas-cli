@@ -32,7 +32,7 @@ export class DefaultStructureService {
    * @param {string} [functionName=''] - creates the necessary files for the init command
    * @memberof DefaultStructureService
    */
-  public create(functionName?, update?: boolean): void {
+  public create(functionName?: string, update?: boolean): void {
     if (update) {
       this.createDefaultServices();
     } else {
@@ -87,7 +87,7 @@ export class DefaultStructureService {
       }
 
       /* istanbul ignore else */
-      if (this.fileService && this.functionName) {
+      if (this.fileService && functionName) {
         this.renameFunction();
       }
     }
@@ -98,10 +98,10 @@ export class DefaultStructureService {
    * @param {string} [functionName] - function name
    * @memberof DefaultStructureService
    */
-  public createFunctionsFolder(functionName: string, takeRoot = false): void {
+  public createFunctionsFolder(functionName?: string, takeRoot = false): void {
     const path = takeRoot ? this.fileService.getRoot() : this.cwd;
-    this.functionName = functionName;
     if (functionName) {
+      this.functionName = functionName;
       this.fileService.copy(
         join(
           this.dirname,
@@ -112,7 +112,7 @@ export class DefaultStructureService {
           'functions',
           'exampleFunction',
         ),
-        join(path, 'functions', this.functionName),
+        join(path, 'functions', functionName),
       );
     } else {
       this.copySettings();
