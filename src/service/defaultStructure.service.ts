@@ -32,7 +32,7 @@ export class DefaultStructureService {
    * @param {string} [functionName=''] - creates the necessary files for the init command
    * @memberof DefaultStructureService
    */
-  public create(functionName?, update?: boolean): void {
+  public create(functionName?: string, update?: boolean): void {
     if (update) {
       this.createDefaultServices();
     } else {
