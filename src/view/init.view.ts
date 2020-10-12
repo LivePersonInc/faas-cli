@@ -71,7 +71,7 @@ export class InitView {
       });
     } else {
       this.tasklist.addTask({
-        title: 'Initializing structure',
+        title: `${update ? 'Update files' : 'Initializing structure'}`,
         task: async () => {
           this.defaultStructureService.create(undefined, update);
         },
