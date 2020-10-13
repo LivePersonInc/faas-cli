@@ -38,7 +38,7 @@ defineFeature(feature, (test) => {
 
     then('It should print a success message', () => {
       expect(tasklist.getTasks()).toEqual([
-        { task: expect.any(Function), title: 'Initialise example function' },
+        { task: expect.any(Function), title: 'Initializing structure' },
         { task: expect.any(Function), title: 'Install packages' },
       ]);
     });
