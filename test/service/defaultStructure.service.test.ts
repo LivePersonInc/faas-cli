@@ -41,15 +41,15 @@ describe('Default structure service', () => {
     ).toBeTruthy();
     expect(
       fs.existsSync(join(testDir, 'functions', 'exampleFunction')),
-    ).toBeTruthy();
+    ).toBeFalsy();
     expect(
       fs.existsSync(join(testDir, 'functions', 'exampleFunction', 'index.js')),
-    ).toBeTruthy();
+    ).toBeFalsy();
     expect(
       fs.existsSync(
         join(testDir, 'functions', 'exampleFunction', 'config.json'),
       ),
-    ).toBeTruthy();
+    ).toBeFalsy();
   });
 
   it('should create the default structure service with function name', () => {
