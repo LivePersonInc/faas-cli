@@ -31,6 +31,7 @@ For more information about LivePerson Functions see [developers.liveperson.com](
 - [Local development and debugging](#local-development-and-debugging)
   - [Introduction](#introduction)
   - [Preparation](#preparation)
+  - [Snippets](##snippets)
   - [Debugging with VSC](#debugging-with-vsc)
   - [Debugging with Intellij](#debugging-with-intellij)
   - [Debugging with other IDEs or Debugger](#debugging-with-other-ides-or-debugger)
@@ -84,7 +85,7 @@ Before you start using lpf, you have to make it available on your computer. Even
   <tr>
     <td>Undeploy</td>
     <td>Undeploys a function on the LivePerson functions platform.</td>
-  </tr>  
+  </tr>
   <tr>
     <td>Invoke</td>
     <td>Invokes a function (remote or local).</td>
@@ -114,15 +115,15 @@ Before you start using lpf, you have to make it available on your computer. Even
 
 ### Init
 
-Initialize the project with the necessary files. If the project is already initialised it will add a new function with the passed functionname. 
+Initialize the project with the necessary files. If the project is already initialised it will add a new function with the passed functionname.
 
 The folder name has to be same as the function name (saved in the `config.json`).
 
-In the `config.json` of a function you can change the description, event, related input and environment variables of the function. 
+In the `config.json` of a function you can change the description, event, related input and environment variables of the function.
 
 For the `event` field please use `lpf get events` to get the related event and paste the eventId as `event`.
 
-Follwoing files will be created: 
+Follwoing files will be created:
 
 * README: Contains information about the usage of the CLI
 * .gitignore: Specifies intentionally untracked files to ignore ([Link](https://git-scm.com/docs/gitignore))
@@ -192,7 +193,7 @@ functions/
 
 ### Login
 
-Performs the login with LiveEngage Credentials. 
+Performs the login with LiveEngage Credentials.
 
 After a successful login, it is valid for 8 hours. After this period of time a new login has to be performed. It is also possible to have multiple logins saved, but only one at a time is active.
 
@@ -228,7 +229,7 @@ If you want to add a new account just run the login command and select `other`.
 > lpf login
 
 > lpf login --accountId 123456789 --username user@liveperson.com --password p4ssw0rd
- 
+
 > lpf login -a 123456789 -u user@liveperson.com -p p4ssw0rd
 ```
 </details>
@@ -248,7 +249,7 @@ To get the token and the userId do following steps:
 5. Copy token and userId.
    - Token: 'glob'
    - UserId: 'config.userId'
-<img src="faas-cli-fetch-token.png" class="fancyimage" width="100%" alt="LivePerson Functions CLI token"> 
+<img src="faas-cli-fetch-token.png" class="fancyimage" width="100%" alt="LivePerson Functions CLI token">
 
 6. Run the login command as follows: `lpf login --token <bearer> --accountId <accountId> --userId <userId>`
 
@@ -289,7 +290,7 @@ Futhermore it's possible to provide a delete flag, then the account will be dele
 > lpf logout --accountId 123456789
 
 > lpf logout --accountId 123456789 --delete
- 
+
 > lpf logout -a 123456789 -d
 ```
 </details>
@@ -389,7 +390,7 @@ You can pass the --all flag, if you want to push all local functions to the plat
 
 ### Deploy
 
-Deploys a function on the LivePerson functions platform. 
+Deploys a function on the LivePerson functions platform.
 
 To deploy a function it has to exist on the LivePerson functions platform. You can use the `push command` in order to ensure this.
 
@@ -547,11 +548,11 @@ Starts a debug port in the range of 30500 - 31000 for a passed function.
 ```
 > lpf debug exampleFunction
 ```
-</details>                                                
+</details>
 
 ### Get
 
-Get information about the passed domain. Possible domains are deployments, functions, account and events. 
+Get information about the passed domain. Possible domains are deployments, functions, account and events.
 
 The following informations will be displayed:
 
@@ -586,7 +587,7 @@ The following informations will be displayed:
 ```
 > lpf get account
 
-> lpf get functions deployments 
+> lpf get functions deployments
 
 > lpf get functions deployments account
 
@@ -648,7 +649,7 @@ Displays autocomplete instructions (only supports zsh and bash)
 
 ### Version and Update
 
-The version command shows the current installed version of the CLI. 
+The version command shows the current installed version of the CLI.
 If a newer version is available the user will see an update information which shows his current version, the new version and a information about how to update to the new version.
 
 The update notification will appear one time and then it's muted for two days.
@@ -675,15 +676,31 @@ For the best developer experience it's recommended to use [Visual Studio Code](h
 
 During the debugging process all console outputs will be printed to your terminal. At the end a history with all printed console outputs will be displayed.
 
-### Preparation
+### Snippets/Live-Templates
 
-It's necessary to run the `lpf init` command to initialize the project structure and to install all required packages for the local faas-toolbelt. 
+We include a number of snippets (vscode) and Live-Templates (intellij idea) for you to ease development. Your vscode should automatically detect `faas-snippets.code-snippets` in the `.vscode` folder. Meanwhile you will have to [manually import](https://www.jetbrains.com/help/idea/sharing-live-templates.html#import) the `settings_live_templates.zip` from the `.idea` folder to use the same functionality inside intellij idea.
+
+Once setup you can use the following snippets/Live-Templates
+
+* HTTP Snippet
+* Read/Update Snippets
+* Cread/Read/Update/Delete Context Session Store Snippet
+* Conversation Util Snippet
+* GDPR Util Snippet
+* GDPR Util Snippet
+* SDE Util Snippet
+* Salesforce Snippet
+
+
+### Preparation for Debugging
+
+It's necessary to run the `lpf init` command to initialize the project structure and to install all required packages for the local faas-toolbelt.
 
 To get started with the local development and debugging some preparation is needed:
 * Local secrets and whitelisting can be stored in the settings.json
 * Local environment variables and input can be stored in the config.json in the functions folder
 * The Debugger will use a mocked `faas-toolbelt`
-* To have access to the LivePerson services it's necessary to be logged in or set an environment variable called `BRAND_ID` with your `accountId` 
+* To have access to the LivePerson services it's necessary to be logged in or set an environment variable called `BRAND_ID` with your `accountId`
   * Example with BRAND_ID and debug command: `BRAND_ID=123456789 lpf debug TestFunction`
 
 
@@ -702,7 +719,7 @@ To get started with the local development and debugging some preparation is need
 1. Set a breakpoint in your desired function.
 2. Run the debugger (two options available)
    1. Use the built-in bar at the right top corner or
-   2. Click on `Run` -> `Run...` 
+   2. Click on `Run` -> `Run...`
 3. Select `Start FaaS Debugger` and run the command.
 4. Select `Attach FaaS Debugger` and run the command.
 5. The debugger will start and pause at the auto-generated code.
