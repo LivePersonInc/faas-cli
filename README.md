@@ -680,13 +680,12 @@ During the debugging process all console outputs will be printed to your termina
 
 We include a number of snippets (vscode) and Live-Templates (intellij idea) for you to ease development. Your vscode should automatically detect `faas-snippets.code-snippets` in the `.vscode` folder. Meanwhile you will have to [manually import](https://www.jetbrains.com/help/idea/sharing-live-templates.html#import) the `settings_live_templates.zip` from the `.idea` folder to use the same functionality inside intellij idea.
 
-Once setup you can use the following snippets/Live-Templates
+Once setup you can use the following snippets/Live-Templates:
 
 * HTTP Snippet
-* Read/Update Snippets
+* Read/Update Secret Snippets
 * Cread/Read/Update/Delete Context Session Store Snippet
 * Conversation Util Snippet
-* GDPR Util Snippet
 * GDPR Util Snippet
 * SDE Util Snippet
 * Salesforce Snippet
