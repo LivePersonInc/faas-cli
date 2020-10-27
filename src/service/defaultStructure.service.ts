@@ -7,6 +7,12 @@ interface IDefaultStructureServiceConstructorConfig {
   dirname?: string;
 }
 
+export interface IFunctionConfig {
+  name: string;
+  event?: string;
+  description?: string;
+}
+
 export class DefaultStructureService {
   private fileService: FileService;
 
@@ -180,5 +186,39 @@ export class DefaultStructureService {
     file.name = this.functionName;
     file.description = `${this.functionName} description`;
     this.fileService.write(path, file);
+  }
+
+  public createFunction(functionConfig: IFunctionConfig): void {
+    const { name } = functionConfig;
+    if (
+      name &&
+      this.fileService.directoryOrFileExists(join(this.cwd, 'functions', name))
+    ) {
+      throw new Error(`Folder with same name already exists (${name})`);
+    }
+    this.createFunctionsFolder(name);
+    this.adjustDefaultConfig(functionConfig);
+  }
+
+  private adjustDefaultConfig({
+    name,
+    event,
+    description,
+  }: IFunctionConfig): void {
+    try {
+      if (!name) {
+        throw new Error('Name is required');
+      }
+      const path = join(this.cwd, 'functions', name, 'config.json');
+      const file = this.fileService.read(
+        join(this.cwd, 'functions', name, 'config.json'),
+      );
+      file.name = name;
+      file.description = description || `${this.functionName} description`;
+      file.event = event || 'No Event';
+      this.fileService.write(path, file);
+    } catch (error) {
+      throw error;
+    }
   }
 }

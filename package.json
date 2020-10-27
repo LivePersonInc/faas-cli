@@ -108,6 +108,11 @@
   "license": "MIT",
   "main": "lib/index.js",
   "oclif": {
+    "topics": {
+      "create": {
+        "description": "Allows you to create functions"
+      }
+    },
     "commands": "./lib/commands",
     "bin": "lpf",
     "plugins": [
