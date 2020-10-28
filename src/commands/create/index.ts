@@ -13,12 +13,9 @@ export class Create extends Command {
 
   public static strict = false;
 
-
   public static examples = [
     '> <%= config.bin %> create:function exampleFunction -e new_conversation',
   ];
-
-  private createController: CreateController = new CreateController();
 
   /**
    * Runs the create command and parses the passed functions
@@ -26,7 +23,8 @@ export class Create extends Command {
    * @memberof Function
    */
   public async run(): Promise<void> {
-    const functionName = this.parse(Create);
-    console.log("Use --help to get more information on how to use the create command")
-  }
+    console.log(
+      'Use --help to get more information on how to use the create command',
+    );
+  };
 }

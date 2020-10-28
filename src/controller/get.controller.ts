@@ -93,7 +93,7 @@ export class GetController {
         this.getView.printEvents(events);
       }
     } catch (error) {
-      this.getView.showErrorMessage(error.message || error.error.errorMsg);
+      this.getView.showErrorMessage(error.message || error.errorMsg);
     }
   }
 }

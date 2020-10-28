@@ -182,7 +182,7 @@ export class FaasService implements IFaaSService {
       return await this.doFetch({ urlPart, method: 'DELETE' });
     } catch (error) {
       return {
-        message: error.error.errorMsg,
+        message: error.errorMsg,
         uuid,
       };
     }
@@ -195,7 +195,7 @@ export class FaasService implements IFaaSService {
       return response;
     } catch (error) {
       return {
-        message: error.error.errorMsg,
+        message: error.errorMsg,
         uuid,
       };
     }
@@ -281,7 +281,7 @@ Please make sure the function with the name ${name} was pushed to the LivePerson
           `Push Error: The code of function '${body.name}' you are trying to push is not a valid lambda.`,
         );
       }
-      throw error;
+      throw new Error(error.errorMsg);
     }
   }
 
@@ -354,25 +354,22 @@ Please make sure the function with the name ${name} was pushed to the LivePerson
         ...(body && { json: { timestamp: 0, ...body } }),
       });
     } catch (error) {
+      // TODO schauen nach ob der returnte error code im faasErrorMessages gefunden wird => print out errorMessage
       if (error.message?.includes('401')) {
         // eslint-disable-next-line no-throw-literal
         throw {
-          error: {
-            errorCode: '401',
-            errorMsg:
-              'You are not authorized to perform this action, please check your permissions',
-          },
+          errorCode: '401',
+          errorMsg:
+            'You are not authorized to perform this action, please check your permissions',
         };
       }
       // eslint-disable-next-line no-throw-literal
       throw {
-        error: {
-          errorCode: error.response.body.errorCode,
-          errorMsg: error.response.body.errorMsg,
-          ...(error.response.body.errorLogs && {
-            errorLogs: error.response.body.errorLogs,
-          }),
-        },
+        errorCode: error.response.body.errorCode,
+        errorMsg: error.response.body.errorMsg,
+        ...(error.response.body.errorLogs && {
+          errorLogs: error.response.body.errorLogs,
+        }),
       };
     }
   }

@@ -14,6 +14,7 @@ interface ICreateControllerConfig {
 
 export class CreateController {
   private readonly createView: CreateViewDefault;
+
   private readonly defaultStructureService: DefaultStructureService;
 
   constructor(
@@ -38,14 +39,14 @@ export class CreateController {
         throw new Error('No function name set. Please use the --name flag.');
       }
 
-      const functionConfig : IFunctionConfig = {
-        ...functionParameters
-      }
+      const functionConfig: IFunctionConfig = {
+        ...functionParameters,
+      };
 
       this.defaultStructureService.createFunction(functionConfig);
       this.createView.showFunctionIsCreated(functionConfig);
     } catch (error) {
       this.createView.showErrorMessage(error.message);
     }
-  }
+  };
 }

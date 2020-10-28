@@ -84,7 +84,7 @@ export class FaasService {
       };
     } catch (error) {
       return {
-        message: error.error.errorMsg,
+        message: error.errorMsg,
         uuid,
       };
     }
@@ -99,7 +99,7 @@ export class FaasService {
       };
     } catch (error) {
       return {
-        message: error.error.errorMsg,
+        message: error.errorMsg,
         uuid,
       };
     }
@@ -167,7 +167,7 @@ export class FaasService {
           `Push Error: The code of function '${body.name}' you are trying to push is not a valid lambda.`,
         );
       }
-      throw new Error(error.error.errorMsg);
+      throw new Error(error.errorMsg);
     }
   }
 

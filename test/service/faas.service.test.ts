@@ -137,7 +137,7 @@ describe('faas service', () => {
     try {
       await faasService.getAllLambdas();
     } catch (error) {
-      expect(error.error.errorMsg).toBe('Error during getting all lambdas');
+      expect(error.errorMsg).toBe('Error during getting all lambdas');
     }
   });
 
@@ -170,7 +170,7 @@ describe('faas service', () => {
     try {
       await faasService.getLambdaByUUID('123-123-123');
     } catch (error) {
-      expect(error.error.errorMsg).toBe('Error during getting lambda by uuid');
+      expect(error.errorMsg).toBe('Error during getting lambda by uuid');
     }
   });
 
