@@ -1,7 +1,12 @@
 import { Command, flags } from '@oclif/command';
-import { CreateController } from '../../controller/create.controller';
+import { CreateView } from '../../view/create.view';
 
 export class Create extends Command {
+  private readonly msg =
+    'Use --help to get more information on how to use the create command';
+
+  private readonly view = new CreateView();
+
   public static flags = {
     help: flags.help({
       char: 'h',
@@ -23,8 +28,6 @@ export class Create extends Command {
    * @memberof Function
    */
   public async run(): Promise<void> {
-    console.log(
-      'Use --help to get more information on how to use the create command',
-    );
-  };
+    this.view.showMessage(this.msg);
+  }
 }

@@ -205,20 +205,16 @@ export class DefaultStructureService {
     event,
     description,
   }: IFunctionConfig): void {
-    try {
-      if (!name) {
-        throw new Error('Name is required');
-      }
-      const path = join(this.cwd, 'functions', name, 'config.json');
-      const file = this.fileService.read(
-        join(this.cwd, 'functions', name, 'config.json'),
-      );
-      file.name = name;
-      file.description = description || `${this.functionName} description`;
-      file.event = event || 'No Event';
-      this.fileService.write(path, file);
-    } catch (error) {
-      throw error;
+    if (!name) {
+      throw new Error('Name is required');
     }
+    const path = join(this.cwd, 'functions', name, 'config.json');
+    const file = this.fileService.read(
+      join(this.cwd, 'functions', name, 'config.json'),
+    );
+    file.name = name;
+    file.description = description || `${this.functionName} description`;
+    file.event = event || 'No Event';
+    this.fileService.write(path, file);
   }
 }

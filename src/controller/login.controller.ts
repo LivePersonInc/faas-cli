@@ -254,4 +254,22 @@ export class LoginController {
       await this.fileService.writeTempFile(this.tempFile);
     }
   }
+
+  public async isUserLoggedIn(): Promise<boolean> {
+    this.tempFile = await this.fileService.getTempFile();
+    const activeAccountId: string = Object.keys(this.tempFile).find(
+      (e) => this.tempFile[e].active,
+    ) as string;
+
+    if (this.checkIfSSOLogin(activeAccountId)) {
+      return true;
+    }
+
+    const { csrf, sessionId } = this.tempFile[activeAccountId];
+    return this.loginService.isTokenValid({
+      accountId: activeAccountId,
+      csrf,
+      sessionId,
+    });
+  }
 }

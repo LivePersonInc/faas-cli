@@ -276,7 +276,7 @@ Please make sure the function with the name ${name} was pushed to the LivePerson
       const urlPart = `/lambdas${uuid ? `/${uuid}` : ''}`;
       await this.doFetch({ urlPart, method, body });
     } catch (error) {
-      if (error.error?.errorCode?.includes('contract-error')) {
+      if (error.errorCode?.includes('contract-error')) {
         throw new Error(
           `Push Error: The code of function '${body.name}' you are trying to push is not a valid lambda.`,
         );
@@ -354,7 +354,6 @@ Please make sure the function with the name ${name} was pushed to the LivePerson
         ...(body && { json: { timestamp: 0, ...body } }),
       });
     } catch (error) {
-      // TODO schauen nach ob der returnte error code im faasErrorMessages gefunden wird => print out errorMessage
       if (error.message?.includes('401')) {
         // eslint-disable-next-line no-throw-literal
         throw {

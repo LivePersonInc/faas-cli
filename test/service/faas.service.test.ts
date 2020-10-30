@@ -218,9 +218,7 @@ describe('faas service', () => {
         uuid: 'uuid',
       });
     } catch (error) {
-      expect(error).toEqual({
-        error: { errorCode: 'generic', errorMsg: 'Generic Error' },
-      });
+      expect(error.message).toEqual('Generic Error');
     }
   });
 
@@ -266,10 +264,8 @@ describe('faas service', () => {
       await faasService.invoke('123-123-123', { headers: [], payload: {} });
     } catch (error) {
       expect(error).toEqual({
-        error: {
-          errorMsg: 'Error during invoking lambda',
-          errorCode: 'com.liveperson.error.lambdaInvoke',
-        },
+        errorMsg: 'Error during invoking lambda',
+        errorCode: 'com.liveperson.error.lambdaInvoke',
       });
     }
   });
@@ -481,13 +477,7 @@ describe('faas service', () => {
     try {
       await faasService.push({ method: 'POST', body });
     } catch (error) {
-      expect(error).toEqual({
-        error: {
-          errorMsg: 'Error during invoking lambda',
-          errorCode: 'com.liveperson.error.lambdaInvoke',
-          errorLogs: 'error logs during push',
-        },
-      });
+      expect(error.message).toEqual('Error during invoking lambda');
     }
   });
 
@@ -503,11 +493,9 @@ describe('faas service', () => {
       await faasService.getLambdasByNames(['lambda1', 'lambda2']);
     } catch (error) {
       expect(error).toEqual({
-        error: {
-          errorCode: '401',
-          errorMsg:
-            'You are not authorized to perform this action, please check your permissions',
-        },
+        errorCode: '401',
+        errorMsg:
+          'You are not authorized to perform this action, please check your permissions',
       });
     }
   });

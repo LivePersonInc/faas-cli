@@ -4,6 +4,8 @@ import {
   DefaultStructureService,
   IFunctionConfig,
 } from '../service/defaultStructure.service';
+import { LoginController } from './login.controller';
+import { factory } from '../service/faasFactory.service';
 
 export type PackageManager = 'npm' | 'yarn';
 
@@ -17,14 +19,18 @@ export class CreateController {
 
   private readonly defaultStructureService: DefaultStructureService;
 
+  private loginController: LoginController;
+
   constructor(
     /* istanbul ignore next */ {
       createView = new CreateViewDefault(),
       defaultStructureService = new DefaultStructureService(),
+      loginController = new LoginController(),
     }: ICreateControllerConfig = {},
   ) {
     this.createView = createView;
     this.defaultStructureService = defaultStructureService;
+    this.loginController = loginController;
   }
 
   /**
@@ -35,12 +41,13 @@ export class CreateController {
    */
   public async createFunction(functionParameters): Promise<void> {
     try {
-      if (!functionParameters.name) {
-        throw new Error('No function name set. Please use the --name flag.');
-      }
+      const missingParameters = await this.checkAndAskForMissingParameters(
+        functionParameters,
+      );
 
       const functionConfig: IFunctionConfig = {
         ...functionParameters,
+        ...missingParameters,
       };
 
       this.defaultStructureService.createFunction(functionConfig);
@@ -48,5 +55,52 @@ export class CreateController {
     } catch (error) {
       this.createView.showErrorMessage(error.message);
     }
-  };
+  }
+
+  private async checkAndAskForMissingParameters(
+    incompleteFunctionParameters: IFunctionConfig,
+  ): Promise<any> {
+    const { name, description, event } = incompleteFunctionParameters;
+
+    let selectedFunctionParameters = {};
+
+    if (!name) {
+      selectedFunctionParameters = {
+        ...selectedFunctionParameters,
+        ...(await this.createView.askForFunctionName()),
+      };
+    }
+
+    if (!description) {
+      selectedFunctionParameters = {
+        ...selectedFunctionParameters,
+        ...(await this.createView.askForFunctionDescription()),
+      };
+    }
+
+    if (!event) {
+      let selectedEventId;
+
+      if (await this.isUserLoggedIn()) {
+        const faasService = await factory.get();
+        const events = await faasService.getEvents();
+        selectedEventId = await this.createView.askForEventID([
+          'No Event',
+          ...events.map((e) => e.eventId),
+        ]);
+      } else {
+        selectedEventId = await this.createView.askForEventID();
+      }
+
+      selectedFunctionParameters = {
+        ...selectedFunctionParameters,
+        ...selectedEventId,
+      };
+    }
+    return selectedFunctionParameters;
+  }
+
+  private async isUserLoggedIn(): Promise<boolean> {
+    return this.loginController.isUserLoggedIn();
+  }
 }
