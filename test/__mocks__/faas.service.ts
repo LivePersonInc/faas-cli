@@ -149,6 +149,27 @@ export class FaasService {
     }
   }
 
+  public async createSchedule(schedule): Promise<any> {
+    return {
+      uuid: '1111-2222-3333-4444',
+      lambdaUUID: schedule.lambdaUUID,
+      cronExpression: schedule.cronExpression,
+      nextExecution: '2020-11-10T09:47:00.850Z',
+      lastExecution: '2020-11-10T09:46:00.850Z',
+      didLastExecutionFail: true,
+      isActive: schedule.isActive,
+      createdBy: 'user',
+    };
+  }
+
+  public async addDomain(domain: string): Promise<any> {
+    return {
+      id: '1111-2222-3333-4444',
+      domain,
+      additionalProp1: {},
+    };
+  }
+
   public async push({
     method,
     body,

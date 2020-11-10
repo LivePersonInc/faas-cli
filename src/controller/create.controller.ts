@@ -9,9 +9,17 @@ import { factory } from '../service/faasFactory.service';
 
 export type PackageManager = 'npm' | 'yarn';
 
+interface IScheduleConfig {
+  lambdaUUID?: string;
+  cronExpression?: string;
+  isActive?: boolean;
+}
+
 interface ICreateControllerConfig {
   createView?: CreateViewDefault;
   defaultStructureService?: DefaultStructureService;
+  loginController?: LoginController;
+  uuid?: string;
 }
 
 export class CreateController {
@@ -39,9 +47,9 @@ export class CreateController {
    * @returns {Promise<void>} - create view
    * @memberof CreateController
    */
-  public async createFunction(functionParameters): Promise<void> {
+  public async createFunction(functionParameters = {}): Promise<void> {
     try {
-      const missingParameters = await this.checkAndAskForMissingParameters(
+      const missingParameters = await this.checkAndAskForMissingFunctionParameters(
         functionParameters,
       );
 
@@ -57,8 +65,8 @@ export class CreateController {
     }
   }
 
-  private async checkAndAskForMissingParameters(
-    incompleteFunctionParameters: IFunctionConfig,
+  private async checkAndAskForMissingFunctionParameters(
+    incompleteFunctionParameters: IFunctionConfig = {},
   ): Promise<any> {
     const { name, description, event } = incompleteFunctionParameters;
 
@@ -98,6 +106,93 @@ export class CreateController {
       };
     }
     return selectedFunctionParameters;
+  }
+
+  /**
+   * Creates a schedule. Requires login
+   * @param {any} - Passed function name and flags
+   * @returns {Promise<void>} - create view
+   * @memberof CreateController
+   */
+  public async createSchedule(scheduleParameters = {}): Promise<void> {
+    try {
+      const missingParameters = await this.checkAndAskForMissingScheduleParameters(
+        scheduleParameters,
+      );
+
+      const scheduleConfig: IScheduleConfig = {
+        ...missingParameters,
+        isActive: true,
+      };
+
+      const faasService = await factory.get();
+      const res = await faasService.createSchedule(scheduleConfig);
+      this.createView.showScheduleIsCreated(res.nextExecution);
+    } catch (error) {
+      // TODO remove this once FC-540 is finished
+      if (error.errorCode === '400') {
+        this.createView.showMessage(
+          'Cron Expression is invalid or Lambda has already been scheduled',
+        );
+      } else {
+        this.createView.showErrorMessage(error.message || error.errorMsg);
+      }
+    }
+  }
+
+  private async checkAndAskForMissingScheduleParameters({
+    functionName = '',
+    cronExpression = '',
+  }): Promise<IScheduleConfig> {
+    let scheduleConfig;
+    // Make sure user is logged in
+    if (!(await this.isUserLoggedIn())) {
+      this.createView.showMessage(
+        'You need to log into an account to create schedules',
+      );
+
+      await this.loginController.getLoginInformation();
+    }
+
+    const faasService = await factory.get();
+    const deployedLambdas = (
+      await faasService.getAllLambdas()
+    ).filter(({ state }) => ['Productive', 'Modified'].includes(state));
+    let lambdaUUID = deployedLambdas.find(({ name }) => functionName === name)
+      ?.uuid;
+
+    if (!lambdaUUID) {
+      if (functionName) {
+        this.createView.showErrorMessage(
+          `${functionName} was not found as a deployed lambda on the account.`,
+        );
+      }
+
+      const selectedLambda = await this.createView.askForDeployedLambda(
+        deployedLambdas,
+      );
+
+      lambdaUUID = deployedLambdas.find(
+        ({ name }) => selectedLambda.name === name,
+      )?.uuid;
+
+      scheduleConfig = {
+        lambdaUUID,
+      };
+    }
+
+    if (cronExpression) {
+      scheduleConfig = {
+        cronExpression,
+      };
+    } else {
+      scheduleConfig = {
+        ...(await this.createView.askForCronExpression()),
+      };
+    }
+
+    // return object {functionname, cron expression};
+    return { ...scheduleConfig, isActive: true, uuid: '' };
   }
 
   private async isUserLoggedIn(): Promise<boolean> {

@@ -53,6 +53,19 @@ export class CreateView {
   }
 
   /**
+   * Show when a function has been created
+   * @memberof CreateView
+   * @param schedule
+   */
+  public showScheduleIsCreated(nextExecution: string): void {
+    this.log.print(
+      `The schedule has been created. Next execution: ${this.chalk.blue(
+        nextExecution,
+      )}`,
+    );
+  }
+
+  /**
    * Shows an error message
    * @param {string} message - message
    * @memberof CreateView
@@ -106,6 +119,30 @@ export class CreateView {
         message: 'Event ID',
       });
     }
+
+    return this.prompt.run();
+  }
+
+  public async askForDeployedLambda(
+    lambdaNames?: any[],
+  ): Promise<IPromptAnswer> {
+    this.prompt.addQuestion({
+      name: 'name',
+      type: 'list',
+      message: 'Choose a deployed lambda',
+      choices: lambdaNames,
+    });
+
+    return this.prompt.run();
+  }
+
+  public async askForCronExpression(): Promise<IPromptAnswer> {
+    this.prompt.addQuestion({
+      name: 'cronExpression',
+      type: 'Input',
+      default: '* * * * *',
+      message: 'Cron Expression',
+    });
 
     return this.prompt.run();
   }

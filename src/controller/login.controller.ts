@@ -255,11 +255,27 @@ export class LoginController {
     }
   }
 
+  /**
+   * Returns Promise which resolves to true/false if the user is currently logged in
+   * @returns {Promise<boolean>} - isUserLoggedIn
+   * @memberof LoginController
+   */
   public async isUserLoggedIn(): Promise<boolean> {
-    this.tempFile = await this.fileService.getTempFile();
-    const activeAccountId: string = Object.keys(this.tempFile).find(
-      (e) => this.tempFile[e].active,
-    ) as string;
+    let activeAccountId: string;
+    try {
+      this.tempFile = await this.fileService.getTempFile();
+      if (!this.tempFile) {
+        return false;
+      }
+
+      activeAccountId = Object.keys(this.tempFile).find(
+        (e) => this.tempFile[e].active,
+      ) as string;
+    } catch (error) {
+      // eslint-disable-next-line no-console
+      console.log(error);
+      return false;
+    }
 
     if (this.checkIfSSOLogin(activeAccountId)) {
       return true;

@@ -17,7 +17,7 @@ export class Function extends Command {
     }),
     event: flags.string({
       char: 'e',
-      description: `ID of event, use lpf get events for more information`,
+      description: 'ID of event, use <lpf get events> for more information',
     }),
   };
 
@@ -26,7 +26,9 @@ export class Function extends Command {
   public static strict = false;
 
   public static examples = [
-    '> <%= config.bin %> create:function exampleFunction -e new_conversation',
+    '> <%= config.bin %> create:function',
+    '> <%= config.bin %> create:function -n exampleFunction -d="This is an example description"',
+    '> <%= config.bin %> create:function -n exampleFunction -e bot_connectors_custom_integration',
   ];
 
   private createController: CreateController = new CreateController();

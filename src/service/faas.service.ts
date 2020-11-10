@@ -120,6 +120,23 @@ export interface IFaaSService {
    * @memberof IFaaSService
    */
   invoke(uuid: string, payload: IPayload): Promise<IInvokeResponse>;
+
+  /**
+   * Creates a schedule in an account based on a cron exrpression and the lambda uuid. Every function can only be scheduled once and must be deployed.
+   * @param uuid uuid of lambda for which a schedule will be created
+   * @param cronExpression string which is in the cron expression format
+   */
+  createSchedule(schedule: {
+    uuid: string;
+    cronExpression: string;
+  }): Promise<void>;
+
+  /**
+   * Creates a schedule in an account based on a cron exrpression and the lambda uuid. Every function can only be scheduled once and must be deployed.
+   * @param uuid uuid of lambda for which a schedule will be created
+   * @param cronExpression string which is in the cron expression format
+   */
+  addDomain(domain: string): Promise<void>;
 }
 
 interface IFaasServiceConfig {
@@ -232,6 +249,26 @@ Please make sure the function with the name ${name} was pushed to the LivePerson
   public async getAllLambdas(): Promise<ILambda[]> {
     const urlPart = '/lambdas';
     return this.doFetch({ urlPart, method: 'GET' });
+  }
+
+  public async createSchedule(schedule): Promise<any> {
+    const urlPart = '/schedules';
+    return this.doFetch({
+      urlPart,
+      method: 'POST',
+      body: schedule,
+    });
+  }
+
+  public async addDomain(domain: string): Promise<void> {
+    return this.doFetch({
+      urlPart: '/proxy-settings',
+      method: 'POST',
+      body: {
+        domain,
+        id: -1,
+      },
+    });
   }
 
   public async getAccountStatistic(): Promise<any> {
@@ -354,15 +391,20 @@ Please make sure the function with the name ${name} was pushed to the LivePerson
         ...(body && { json: { timestamp: 0, ...body } }),
       });
     } catch (error) {
+      /* eslint-disable no-throw-literal */
+      if (error.toString().includes('400')) {
+        throw {
+          errorCode: '400',
+          errorMsg: 'Bad Request',
+        };
+      }
       if (error.message?.includes('401')) {
-        // eslint-disable-next-line no-throw-literal
         throw {
           errorCode: '401',
           errorMsg:
             'You are not authorized to perform this action, please check your permissions',
         };
       }
-      // eslint-disable-next-line no-throw-literal
       throw {
         errorCode: error.response.body.errorCode,
         errorMsg: error.response.body.errorMsg,
@@ -370,6 +412,7 @@ Please make sure the function with the name ${name} was pushed to the LivePerson
           errorLogs: error.response.body.errorLogs,
         }),
       };
+      /* eslint-enable no-throw-literal */
     }
   }
 }

@@ -8,7 +8,7 @@ interface IDefaultStructureServiceConstructorConfig {
 }
 
 export interface IFunctionConfig {
-  name: string;
+  name?: string;
   event?: string;
   description?: string;
 }
@@ -38,6 +38,7 @@ export class DefaultStructureService {
    * @param {string} [functionName=''] - creates the necessary files for the init command
    * @memberof DefaultStructureService
    */
+  // eslint-disable-next-line complexity
   public create(functionName?: string, update?: boolean): void {
     if (update) {
       this.createDefaultServices();
