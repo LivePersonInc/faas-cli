@@ -111,7 +111,11 @@
     "topics": {
       "create": {
         "description": "Allows you to create functions"
+    },
+    "add": {
+        "description": "Allows you to add domains"
       }
+    },
     },
     "commands": "./lib/commands",
     "bin": "lpf",
