@@ -27,7 +27,7 @@ export class Function extends Command {
 
   public static examples = [
     '> <%= config.bin %> create:function',
-    '> <%= config.bin %> create:function -n exampleFunction -d="This is an example description"',
+    '> <%= config.bin %> create:function -n exampleFunction -d "This is an example description"',
     '> <%= config.bin %> create:function -n exampleFunction -e bot_connectors_custom_integration',
   ];
 
