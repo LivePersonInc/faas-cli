@@ -25,8 +25,8 @@ export class Schedule extends Command {
   public static examples = [
     '> <%= config.bin %> create:schedule',
     '> <%= config.bin %> create:schedule -f exampleFunction',
-    '> <%= config.bin %> create:schedule -f exampleFunction -c="* * * * *"',
-    '> <%= config.bin %> create:schedule -f exampleFunction -c="*/3 * * 0-12 *"',
+    '> <%= config.bin %> create:schedule -f exampleFunction -c "* * * * *"',
+    '> <%= config.bin %> create:schedule -f exampleFunction -c "*/3 * * 0-12 *"',
   ];
 
   private createController: CreateController = new CreateController();
