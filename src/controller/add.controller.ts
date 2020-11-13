@@ -3,14 +3,6 @@ import { AddView as AddViewDefault } from '../view/add.view';
 import { LoginController } from './login.controller';
 import { factory } from '../service/faasFactory.service';
 
-export type PackageManager = 'npm' | 'yarn';
-
-interface IScheduleConfig {
-  lambdaUUID?: string;
-  cronExpression?: string;
-  isActive?: boolean;
-}
-
 interface IAddControllerConfig {
   addView?: AddViewDefault;
   loginController?: LoginController;

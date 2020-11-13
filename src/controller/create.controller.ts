@@ -7,8 +7,6 @@ import {
 import { LoginController } from './login.controller';
 import { factory } from '../service/faasFactory.service';
 
-export type PackageManager = 'npm' | 'yarn';
-
 interface IScheduleConfig {
   lambdaUUID?: string;
   cronExpression?: string;

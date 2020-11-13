@@ -1,6 +1,6 @@
 import { LogMessage, ErrorMessage, chalk as chalkDefault } from './printer';
 
-interface ICreateViewConfig {
+interface IAddViewConfig {
   log?: LogMessage;
   error?: ErrorMessage;
   chalk?: any;
@@ -18,7 +18,7 @@ export class AddView {
     log = new LogMessage(),
     error = new ErrorMessage(),
     chalk = chalkDefault,
-  }: ICreateViewConfig = {}) {
+  }: IAddViewConfig = {}) {
     this.log = log;
     this.error = error;
     this.chalk = chalk;
