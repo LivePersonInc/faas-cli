@@ -170,6 +170,7 @@ defineFeature(feature, (test) => {
         functionName: 'deployedFunction',
         cronExpression: '* * * * *',
       });
+
       expect(consoleSpy).toBeCalledWith(
         expect.stringMatching(/has been created/),
       );
