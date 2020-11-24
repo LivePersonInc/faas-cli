@@ -264,6 +264,7 @@ export class LoginController {
     let activeAccountId: string;
     try {
       this.tempFile = await this.fileService.getTempFile();
+
       if (!this.tempFile) {
         return false;
       }

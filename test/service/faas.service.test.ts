@@ -314,6 +314,39 @@ describe('faas service', () => {
     });
   });
 
+  it('should create a schedule', async () => {
+    const csdsClient = new CsdsClient();
+    csdsClient.getUri = jest.fn().mockReturnValue('faasUI');
+    const result = {
+      createdBy: 'LPA-man',
+      cronExpression: '* * * *',
+      didLastExecutionFail: true,
+      isActive: true,
+      lambdaUUID: '1234-1234-1234',
+      lastExecution: '11-12-13',
+      nextExecution: '12-13-14',
+      uuid: '4321-4321-4321',
+    };
+    const gotDefault = jest.fn(() => result) as any;
+    const faasService = new FaasService({ gotDefault, csdsClient });
+    const response = await faasService.createSchedule({
+      cronExpression: '* * * *',
+      isActive: true,
+      lambdaUUID: '1234-1234-1234',
+    });
+    expect(response).toEqual(result);
+  });
+
+  it('should add a domain', async () => {
+    const csdsClient = new CsdsClient();
+    csdsClient.getUri = jest.fn().mockReturnValue('faasUI');
+    const result = 'test.com';
+    const gotDefault = jest.fn(() => result) as any;
+    const faasService = new FaasService({ gotDefault, csdsClient });
+    const response = await faasService.addDomain('test.com');
+    expect(response).toEqual(result);
+  });
+
   it('should get lambdas by names', async () => {
     const csdsClient = new CsdsClient();
     csdsClient.getUri = jest.fn().mockReturnValue('faasUI');

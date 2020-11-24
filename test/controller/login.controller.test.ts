@@ -69,6 +69,49 @@ describe('login controller', () => {
     });
   });
 
+  it('should return a false if an error occurs during the check if a user is logged in', async () => {
+    const loginView = new LoginView();
+    const newFileService = new FileService();
+
+    const loginService = new LoginService();
+    loginService.isTokenValid = jest.fn(async () => false);
+    newFileService.getTempFile = jest.fn(async () => {
+      throw new Error('Cannot read from disk');
+    });
+
+    const loginController = new LoginController({
+      loginService,
+      loginView,
+      fileService: newFileService,
+    });
+
+    const result = await loginController.isUserLoggedIn();
+
+    expect(result).toBeFalsy();
+  });
+
+  it('should check tempfile if no sso login is availble when doing an is logged in check', async () => {
+    await fileService.writeTempFile({
+      '123456789': {
+        token: 'aöskldfj02ajösldkfjalsdkf',
+        userId: 'TestUserId',
+        username: 'testUser',
+        active: true,
+        csrf: 'öalskdjföalksdfjalskdf',
+        sessionId: 'ölkjasdf',
+      },
+    });
+
+    const loginService = new LoginService();
+    loginService.isTokenValid = jest.fn(async () => true);
+
+    const loginController = new LoginController({ loginService });
+
+    const result = await loginController.isUserLoggedIn();
+
+    expect(result).toBeTruthy();
+  });
+
   afterAll(() => {
     fs.removeSync(join(__dirname, 'faas-tmp.json'));
   });

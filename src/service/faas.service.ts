@@ -4,7 +4,8 @@ import {
   ILoginInformation,
   LoginController,
 } from '../controller/login.controller';
-import { ILambda, IRuntime } from '../types';
+import { ILambda, IRuntime, ISchedule, IDomain } from '../types';
+import { IScheduleConfig } from '../controller/create.controller';
 import { CsdsClient } from './csds.service';
 
 export type HttpMethods = 'POST' | 'GET' | 'DELETE' | 'PUT';
@@ -129,14 +130,14 @@ export interface IFaaSService {
   createSchedule(schedule: {
     uuid: string;
     cronExpression: string;
-  }): Promise<void>;
+  }): Promise<ISchedule>;
 
   /**
    * Creates a schedule in an account based on a cron exrpression and the lambda uuid. Every function can only be scheduled once and must be deployed.
    * @param uuid uuid of lambda for which a schedule will be created
    * @param cronExpression string which is in the cron expression format
    */
-  addDomain(domain: string): Promise<void>;
+  addDomain(domain: string): Promise<IDomain>;
 }
 
 interface IFaasServiceConfig {
@@ -251,7 +252,7 @@ Please make sure the function with the name ${name} was pushed to the LivePerson
     return this.doFetch({ urlPart, method: 'GET' });
   }
 
-  public async createSchedule(schedule): Promise<any> {
+  public async createSchedule(schedule: IScheduleConfig): Promise<ISchedule> {
     const urlPart = '/schedules';
     return this.doFetch({
       urlPart,
@@ -260,7 +261,7 @@ Please make sure the function with the name ${name} was pushed to the LivePerson
     });
   }
 
-  public async addDomain(domain: string): Promise<void> {
+  public async addDomain(domain: string): Promise<IDomain> {
     return this.doFetch({
       urlPart: '/proxy-settings',
       method: 'POST',

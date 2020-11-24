@@ -7,7 +7,7 @@ import {
 import { LoginController } from './login.controller';
 import { factory } from '../service/faasFactory.service';
 
-interface IScheduleConfig {
+export interface IScheduleConfig {
   lambdaUUID?: string;
   cronExpression?: string;
   isActive?: boolean;
