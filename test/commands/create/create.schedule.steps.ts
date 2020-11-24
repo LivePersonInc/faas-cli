@@ -229,51 +229,6 @@ defineFeature(feature, (test) => {
     });
   });
 
-  test('Run the create:schedule command with malformed create:schedule -n deployedFunction -c "** * * *"', async ({
-    given,
-    then,
-  }) => {
-    const createView = new CreateView();
-    let createController: CreateController;
-    given('I am authenticated', async () => {
-      await fileService.writeTempFile({
-        '1234567890': {
-          token: '454545478787',
-          userId: 'userId_deployed',
-          username: 'testUser@liveperson.com',
-          active: true,
-        },
-      });
-    });
-
-    then(
-      'I try to create an schedule undeployed function with create:schedule -n deployedFunction -c "** * * *"',
-      async () => {
-        createView.askForDeployedLambda = jest.fn(() => {
-          // eslint-disable-next-line no-throw-literal
-          throw {
-            errorCode: '400',
-            errorMsg: '',
-          };
-        });
-        createController = new CreateController({ createView });
-        await createController.createSchedule({
-          functionName: 'undeployedFunction',
-          cronExpression: '* * * **',
-        });
-      },
-    );
-
-    then(
-      'It should display that it failed to create the schedule',
-      async () => {
-        expect(consoleSpy).toBeCalledWith(
-          expect.stringMatching(/Cron Expression is invalid/),
-        );
-      },
-    );
-  });
-
   test('Run the create:schedule command with create:schedule -n dep... and an unforseen error occurs', async ({
     given,
     then,

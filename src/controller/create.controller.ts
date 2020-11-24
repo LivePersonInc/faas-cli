@@ -127,14 +127,7 @@ export class CreateController {
       const res = await faasService.createSchedule(scheduleConfig);
       this.createView.showScheduleIsCreated(res.nextExecution);
     } catch (error) {
-      // TODO remove this once FC-540 is finished
-      if (error.errorCode === '400') {
-        this.createView.showMessage(
-          'Cron Expression is invalid or Lambda has already been scheduled',
-        );
-      } else {
-        this.createView.showErrorMessage(error.message || error.errorMsg);
-      }
+      this.createView.showErrorMessage(error.message || error.errorMsg);
     }
   }
 
@@ -142,7 +135,7 @@ export class CreateController {
     functionName = '',
     cronExpression = '',
   }): Promise<IScheduleConfig> {
-    let scheduleConfig;
+    const scheduleConfig: IScheduleConfig = {};
     // Make sure user is logged in
     if (!(await this.isUserLoggedIn())) {
       this.createView.showMessage(
@@ -156,10 +149,11 @@ export class CreateController {
     const deployedLambdas = (
       await faasService.getAllLambdas()
     ).filter(({ state }) => ['Productive', 'Modified'].includes(state));
-    let lambdaUUID = deployedLambdas.find(({ name }) => functionName === name)
-      ?.uuid;
+    scheduleConfig.lambdaUUID = deployedLambdas.find(
+      ({ name }) => functionName === name,
+    )?.uuid;
 
-    if (!lambdaUUID) {
+    if (!scheduleConfig.lambdaUUID) {
       if (functionName) {
         this.createView.showErrorMessage(
           `${functionName} was not found as a deployed lambda on the account.`,
@@ -170,27 +164,21 @@ export class CreateController {
         deployedLambdas,
       );
 
-      lambdaUUID = deployedLambdas.find(
+      const lambdaUUID = deployedLambdas.find(
         ({ name }) => selectedLambda.name === name,
       )?.uuid;
 
-      scheduleConfig = {
-        lambdaUUID,
-      };
+      scheduleConfig.lambdaUUID = lambdaUUID;
     }
 
     if (cronExpression) {
-      scheduleConfig = {
-        cronExpression,
-      };
+      scheduleConfig.cronExpression = cronExpression;
     } else {
-      scheduleConfig = {
-        ...(await this.createView.askForCronExpression()),
-      };
+      const answer = await this.createView.askForCronExpression();
+      scheduleConfig.cronExpression = answer.cronExpression || '';
     }
 
-    // return object {functionname, cron expression};
-    return { ...scheduleConfig, isActive: true, uuid: '' };
+    return { ...scheduleConfig, isActive: true };
   }
 
   private async isUserLoggedIn(): Promise<boolean> {

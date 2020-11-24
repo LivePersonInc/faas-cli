@@ -52,12 +52,7 @@ export class AddController {
         await faasService.addDomain(domain);
         this.addView.showDomainAdded(domain);
       } catch (error) {
-        // TODO change when we get a 403 on duplicate
-        if (error.errorCode === '400') {
-          this.addView.showErrorMessage(
-            `Domain ${domain} was rejected because of malformatting or it was already added to your account.`,
-          );
-        }
+        this.addView.showErrorMessage(error.message || error.errorMsg);
       }
     });
   }

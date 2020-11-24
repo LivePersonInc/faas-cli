@@ -161,7 +161,7 @@ defineFeature(feature, (test) => {
           // eslint-disable-next-line no-throw-literal
           throw {
             errorCode: '400',
-            errorMsg: '',
+            errorMsg: 'malformatting in url',
           };
         });
 

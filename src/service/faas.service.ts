@@ -257,7 +257,7 @@ Please make sure the function with the name ${name} was pushed to the LivePerson
     return this.doFetch({
       urlPart,
       method: 'POST',
-      body: schedule,
+      body: { ...schedule, uuid: '' },
     });
   }
 
@@ -393,12 +393,6 @@ Please make sure the function with the name ${name} was pushed to the LivePerson
       });
     } catch (error) {
       /* eslint-disable no-throw-literal */
-      if (error.toString().includes('400')) {
-        throw {
-          errorCode: '400',
-          errorMsg: 'Bad Request',
-        };
-      }
       if (error.message?.includes('401')) {
         throw {
           errorCode: '401',
