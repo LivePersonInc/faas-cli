@@ -153,6 +153,7 @@ defineFeature(feature, (test) => {
     then,
   }) => {
     let createController: CreateController;
+    const createView = new CreateView();
     given('I am authenticated', async () => {
       await fileService.writeTempFile({
         '1234567890': {
@@ -165,7 +166,10 @@ defineFeature(feature, (test) => {
     });
 
     then('It should display that the schedule was created', async () => {
-      createController = new CreateController({});
+      createView.askForDeployedLambda = jest.fn(async () => ({
+        name: 'deployedFunction',
+      })) as any;
+      createController = new CreateController({ createView });
       await createController.createSchedule({
         functionName: 'deployedFunction',
         cronExpression: '* * * * *',
