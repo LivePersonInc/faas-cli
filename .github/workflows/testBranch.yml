@@ -18,11 +18,11 @@ jobs:
 
     steps:
     - uses: actions/checkout@v2
-    - name: Install using Node.js ${{ matrix.node-version }}
+    - name: Install using yarn@Node.js ${{ matrix.node-version }}
       uses: CultureHQ/actions-yarn@master
       with:
         args: install
-    - name: Install using Node.js ${{ matrix.node-version }}
+    - name: Test using yarn@Node.js ${{ matrix.node-version }}
       uses: CultureHQ/actions-yarn@master
       with:
         args: test
