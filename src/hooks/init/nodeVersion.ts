@@ -1,8 +1,9 @@
+import chalk = require('chalk');
+/* eslint-disable import/first */
 import { Hook } from '@oclif/config';
 import * as semver from 'semver';
 import { factory } from '../../service/faasFactory.service';
-
-import chalk = require('chalk');
+/* eslint-enable import/first */
 
 /**
  * Hook which will run if the invoke command was triggered.
