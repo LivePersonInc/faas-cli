@@ -34,10 +34,6 @@ defineFeature(feature, (test) => {
 
   beforeEach(() => {
     resetDirectory();
-  });
-
-  afterEach(() => {
-    resetDirectory();
     consoleSpy.mockReset();
   });
 
