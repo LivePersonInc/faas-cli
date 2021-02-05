@@ -84,6 +84,7 @@ export class CreateView {
   }
 
   public async askForFunctionName(): Promise<IPromptAnswer[]> {
+    /* istanbul ignore next */
     this.prompt.addQuestion({
       name: 'name',
       type: 'Input',
@@ -94,6 +95,7 @@ export class CreateView {
   }
 
   public async askForFunctionDescription(): Promise<IPromptAnswer[]> {
+    /* istanbul ignore next */
     this.prompt.addQuestion({
       name: 'description',
       type: 'Input',
