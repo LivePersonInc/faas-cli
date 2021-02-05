@@ -164,6 +164,8 @@ export class CreateController {
         deployedLambdas,
       );
 
+      // reported falsely as missing to codecov
+      /* istanbul ignore next */
       const lambdaUUID = deployedLambdas.find(
         ({ name }) => selectedLambda.name === name,
       )?.uuid;
