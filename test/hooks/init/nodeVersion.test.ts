@@ -45,4 +45,14 @@ describe('node version', () => {
 
     expect(consoleSpy).toBeCalledTimes(0);
   });
+
+  it('should throw an error if was not able to catch node version from server', async () => {
+    const opts = {
+      id: 'login',
+    };
+
+    await nodeVersion(opts, '10.0.0');
+
+    expect(consoleSpy).toBeCalledTimes(0);
+  });
 });

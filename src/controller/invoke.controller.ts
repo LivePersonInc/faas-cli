@@ -74,7 +74,7 @@ export class InvokeController {
         await this.invokeRemote();
       }
     } catch (error) {
-      this.invokeView.printError(error.message || error.error.errorMsg);
+      this.invokeView.printError(error.message || error.errorMsg);
     }
   }
 

@@ -69,7 +69,7 @@ export class InitController {
     } catch (error) {
       /* istanbul ignore else */
       if (error.name !== 'ListrError') {
-        this.initView.errorMessage(error.message || error.error.errorMsg);
+        this.initView.errorMessage(error.message || error.errorMsg);
       }
     }
   }

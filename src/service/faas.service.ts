@@ -4,7 +4,8 @@ import {
   ILoginInformation,
   LoginController,
 } from '../controller/login.controller';
-import { ILambda, IRuntime } from '../types';
+import { ILambda, IRuntime, ISchedule, IDomain } from '../types';
+import { IScheduleConfig } from '../controller/create.controller';
 import { CsdsClient } from './csds.service';
 
 export type HttpMethods = 'POST' | 'GET' | 'DELETE' | 'PUT';
@@ -120,6 +121,23 @@ export interface IFaaSService {
    * @memberof IFaaSService
    */
   invoke(uuid: string, payload: IPayload): Promise<IInvokeResponse>;
+
+  /**
+   * Creates a schedule in an account based on a cron exrpression and the lambda uuid. Every function can only be scheduled once and must be deployed.
+   * @param uuid uuid of lambda for which a schedule will be created
+   * @param cronExpression string which is in the cron expression format
+   */
+  createSchedule(schedule: {
+    uuid: string;
+    cronExpression: string;
+  }): Promise<ISchedule>;
+
+  /**
+   * Creates a schedule in an account based on a cron exrpression and the lambda uuid. Every function can only be scheduled once and must be deployed.
+   * @param uuid uuid of lambda for which a schedule will be created
+   * @param cronExpression string which is in the cron expression format
+   */
+  addDomain(domain: string): Promise<IDomain>;
 }
 
 interface IFaasServiceConfig {
@@ -182,7 +200,7 @@ export class FaasService implements IFaaSService {
       return await this.doFetch({ urlPart, method: 'DELETE' });
     } catch (error) {
       return {
-        message: error.error.errorMsg,
+        message: error.errorMsg,
         uuid,
       };
     }
@@ -195,7 +213,7 @@ export class FaasService implements IFaaSService {
       return response;
     } catch (error) {
       return {
-        message: error.error.errorMsg,
+        message: error.errorMsg,
         uuid,
       };
     }
@@ -232,6 +250,26 @@ Please make sure the function with the name ${name} was pushed to the LivePerson
   public async getAllLambdas(): Promise<ILambda[]> {
     const urlPart = '/lambdas';
     return this.doFetch({ urlPart, method: 'GET' });
+  }
+
+  public async createSchedule(schedule: IScheduleConfig): Promise<ISchedule> {
+    const urlPart = '/schedules';
+    return this.doFetch({
+      urlPart,
+      method: 'POST',
+      body: { ...schedule, uuid: '' },
+    });
+  }
+
+  public async addDomain(domain: string): Promise<IDomain> {
+    return this.doFetch({
+      urlPart: '/proxy-settings',
+      method: 'POST',
+      body: {
+        domain,
+        id: -1,
+      },
+    });
   }
 
   public async getAccountStatistic(): Promise<any> {
@@ -276,12 +314,12 @@ Please make sure the function with the name ${name} was pushed to the LivePerson
       const urlPart = `/lambdas${uuid ? `/${uuid}` : ''}`;
       await this.doFetch({ urlPart, method, body });
     } catch (error) {
-      if (error.error?.errorCode?.includes('contract-error')) {
+      if (error.errorCode?.includes('contract-error')) {
         throw new Error(
           `Push Error: The code of function '${body.name}' you are trying to push is not a valid lambda.`,
         );
       }
-      throw error;
+      throw new Error(error.errorMsg);
     }
   }
 
@@ -354,26 +392,22 @@ Please make sure the function with the name ${name} was pushed to the LivePerson
         ...(body && { json: { timestamp: 0, ...body } }),
       });
     } catch (error) {
+      /* eslint-disable no-throw-literal */
       if (error.message?.includes('401')) {
-        // eslint-disable-next-line no-throw-literal
         throw {
-          error: {
-            errorCode: '401',
-            errorMsg:
-              'You are not authorized to perform this action, please check your permissions',
-          },
+          errorCode: '401',
+          errorMsg:
+            'You are not authorized to perform this action, please check your permissions',
         };
       }
-      // eslint-disable-next-line no-throw-literal
       throw {
-        error: {
-          errorCode: error.response.body.errorCode,
-          errorMsg: error.response.body.errorMsg,
-          ...(error.response.body.errorLogs && {
-            errorLogs: error.response.body.errorLogs,
-          }),
-        },
+        errorCode: error.response.body.errorCode,
+        errorMsg: error.response.body.errorMsg,
+        ...(error.response.body.errorLogs && {
+          errorLogs: error.response.body.errorLogs,
+        }),
       };
+      /* eslint-enable no-throw-literal */
     }
   }
 }

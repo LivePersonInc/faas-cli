@@ -38,10 +38,12 @@ export async function nodeVersion(
         );
       }
     } catch {
-      // eslint-disable-next-line no-console
+      /* eslint-disable no-console */
+      /* istanbul ignore next */
       console.log(
         'Could not fetch runtime version from LivePerson Functions platform',
       );
+      /* eslint-enable no-console */
     }
   }
 }
