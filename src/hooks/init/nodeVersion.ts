@@ -1,8 +1,9 @@
+import chalk = require('chalk');
+/* eslint-disable import/first */
 import { Hook } from '@oclif/config';
 import * as semver from 'semver';
 import { factory } from '../../service/faasFactory.service';
-
-import chalk = require('chalk');
+/* eslint-enable import/first */
 
 /**
  * Hook which will run if the invoke command was triggered.
@@ -37,10 +38,12 @@ export async function nodeVersion(
         );
       }
     } catch {
-      // eslint-disable-next-line no-console
+      /* eslint-disable no-console */
+      /* istanbul ignore next */
       console.log(
         'Could not fetch runtime version from LivePerson Functions platform',
       );
+      /* eslint-enable no-console */
     }
   }
 }

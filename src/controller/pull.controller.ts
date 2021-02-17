@@ -72,7 +72,7 @@ export class PullController {
         noWatch: inputFlags?.['no-watch'],
       });
     } catch (error) {
-      this.pullView.showErrorMessage(error.message || error.error.errorMsg);
+      this.pullView.showErrorMessage(error.message || error.errorMsg);
     }
   }
 }

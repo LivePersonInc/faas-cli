@@ -49,7 +49,9 @@ defineFeature(feature, (test) => {
         setTimeout(() => {
           expect(fs.existsSync(join(testDir, 'README.md'))).toBeTruthy();
           expect(fs.existsSync(join(testDir, '.vscode'))).toBeTruthy();
+          expect(fs.existsSync(join(testDir, '.vscode', 'faas-snippets.code-snippets'))).toBeTruthy();
           expect(fs.existsSync(join(testDir, '.idea'))).toBeTruthy();
+          expect(fs.existsSync(join(testDir, '.idea', 'settings_live_templates.zip'))).toBeTruthy();
           expect(fs.existsSync(join(testDir, '.gitignore'))).toBeTruthy();
           expect(
             fs.existsSync(join(testDir, 'bin', 'faas-debugger.js')),

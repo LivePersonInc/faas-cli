@@ -63,7 +63,7 @@ export class DeployController extends DeploymentController {
         noWatch: inputFlags?.['no-watch'],
       });
     } catch (error) {
-      this.deployView.showErrorMessage(error.message || error.error.errorMsg);
+      this.deployView.showErrorMessage(error.message || error.errorMsg);
     }
   }
 }
