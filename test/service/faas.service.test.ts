@@ -137,7 +137,7 @@ describe('faas service', () => {
     try {
       await faasService.getAllLambdas();
     } catch (error) {
-      expect(error.error.errorMsg).toBe('Error during getting all lambdas');
+      expect(error.errorMsg).toBe('Error during getting all lambdas');
     }
   });
 
@@ -170,7 +170,7 @@ describe('faas service', () => {
     try {
       await faasService.getLambdaByUUID('123-123-123');
     } catch (error) {
-      expect(error.error.errorMsg).toBe('Error during getting lambda by uuid');
+      expect(error.errorMsg).toBe('Error during getting lambda by uuid');
     }
   });
 
@@ -218,9 +218,7 @@ describe('faas service', () => {
         uuid: 'uuid',
       });
     } catch (error) {
-      expect(error).toEqual({
-        error: { errorCode: 'generic', errorMsg: 'Generic Error' },
-      });
+      expect(error.message).toEqual('Generic Error');
     }
   });
 
@@ -266,10 +264,8 @@ describe('faas service', () => {
       await faasService.invoke('123-123-123', { headers: [], payload: {} });
     } catch (error) {
       expect(error).toEqual({
-        error: {
-          errorMsg: 'Error during invoking lambda',
-          errorCode: 'com.liveperson.error.lambdaInvoke',
-        },
+        errorMsg: 'Error during invoking lambda',
+        errorCode: 'com.liveperson.error.lambdaInvoke',
       });
     }
   });
@@ -316,6 +312,39 @@ describe('faas service', () => {
         },
       ],
     });
+  });
+
+  it('should create a schedule', async () => {
+    const csdsClient = new CsdsClient();
+    csdsClient.getUri = jest.fn().mockReturnValue('faasUI');
+    const result = {
+      createdBy: 'LPA-man',
+      cronExpression: '* * * *',
+      didLastExecutionFail: true,
+      isActive: true,
+      lambdaUUID: '1234-1234-1234',
+      lastExecution: '11-12-13',
+      nextExecution: '12-13-14',
+      uuid: '4321-4321-4321',
+    };
+    const gotDefault = jest.fn(() => result) as any;
+    const faasService = new FaasService({ gotDefault, csdsClient });
+    const response = await faasService.createSchedule({
+      cronExpression: '* * * *',
+      isActive: true,
+      lambdaUUID: '1234-1234-1234',
+    });
+    expect(response).toEqual(result);
+  });
+
+  it('should add a domain', async () => {
+    const csdsClient = new CsdsClient();
+    csdsClient.getUri = jest.fn().mockReturnValue('faasUI');
+    const result = 'test.com';
+    const gotDefault = jest.fn(() => result) as any;
+    const faasService = new FaasService({ gotDefault, csdsClient });
+    const response = await faasService.addDomain('test.com');
+    expect(response).toEqual(result);
   });
 
   it('should get lambdas by names', async () => {
@@ -481,13 +510,7 @@ describe('faas service', () => {
     try {
       await faasService.push({ method: 'POST', body });
     } catch (error) {
-      expect(error).toEqual({
-        error: {
-          errorMsg: 'Error during invoking lambda',
-          errorCode: 'com.liveperson.error.lambdaInvoke',
-          errorLogs: 'error logs during push',
-        },
-      });
+      expect(error.message).toEqual('Error during invoking lambda');
     }
   });
 
@@ -503,11 +526,9 @@ describe('faas service', () => {
       await faasService.getLambdasByNames(['lambda1', 'lambda2']);
     } catch (error) {
       expect(error).toEqual({
-        error: {
-          errorCode: '401',
-          errorMsg:
-            'You are not authorized to perform this action, please check your permissions',
-        },
+        errorCode: '401',
+        errorMsg:
+          'You are not authorized to perform this action, please check your permissions',
       });
     }
   });

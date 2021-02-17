@@ -53,7 +53,7 @@ export class DebugController {
         lambdaFunctions[0],
       ]);
     } catch (error) {
-      this.debugView.showErrorMessage(error.message || error.error.errorMsg);
+      this.debugView.showErrorMessage(error.message || error.errorMsg);
     }
   }
 }
