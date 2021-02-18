@@ -42,7 +42,7 @@
     "request-promise-native": "^1.0.8",
     "semver": "^7.2.1",
     "set-interval-async": "^1.0.30",
-    "systeminformation": "^4.23.2"
+    "systeminformation": "^5.3.1"
   },
   "devDependencies": {
     "@babel/core": "^7.9.0",
