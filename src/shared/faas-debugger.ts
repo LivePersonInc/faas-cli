@@ -19,6 +19,8 @@ interface IInvokeErrorLogs {
 
 const EXECUTION_EXCEED_TIMEOUT = 60000;
 
+const EXTERNAL_PACKAGE_MAPPING = ['oauth-1.0a', 'luxon', 'jsforce'];
+
 function isLogLevel(input: any) {
   return Object.keys({
     Debug: 'Debug',
@@ -54,6 +56,29 @@ function didIncorrectErrorFormat(result: any[]) {
       e.message?.errorMsg.includes('incorrect format') &&
       e.level === 'Warn',
   );
+}
+
+function mapExternalPackagesToToolbelt(file: string): string {
+  const isReverse = EXTERNAL_PACKAGE_MAPPING.some((pkg) =>
+    file.includes(`require('../bin/lp-faas-toolbelt/${pkg}')`),
+  );
+  const needsMapping =
+    isReverse ||
+    EXTERNAL_PACKAGE_MAPPING.some((pkg) => file.includes(`require('${pkg}')`));
+  if (needsMapping) {
+    EXTERNAL_PACKAGE_MAPPING.forEach((pkg) => {
+      file = isReverse
+        ? file.replace(
+            `require('../bin/lp-faas-toolbelt/${pkg}')`,
+            `require('${pkg}')`,
+          )
+        : file.replace(
+            `require('${pkg}')`,
+            `require('../bin/lp-faas-toolbelt/${pkg}')`,
+          );
+    });
+  }
+  return file;
 }
 
 export class FaasDebugger {
@@ -295,6 +320,8 @@ ${file}
     process.send(console.getHistory());
   }
 })();`;
+
+    file = mapExternalPackagesToToolbelt(file);
     writeFileSync(this.indexPath, file);
   }
 
@@ -303,7 +330,7 @@ ${file}
       join(this.functionPath, 'index.js'),
       'utf8',
     );
-    const updatedCode = `require("module").prototype.require = require('../../bin/rewire').proxy; // Rewire require
+    let updatedCode = `require("module").prototype.require = require('../../bin/rewire').proxy; // Rewire require
 
 ${originalCode}
 
@@ -313,21 +340,25 @@ ${originalCode}
   try {
     console = require('../../bin/rewire').DebugLogger;
     const input = require('functions/${process.argv[2]}/config').input;
-    const response = await require('../../bin/rewire').convertToPromisifiedLambda((input, cb) => lambda(input, cb))(input);;
+    const response = await require('../../bin/rewire').convertToPromisifiedLambda((input, cb) => lambda(input, cb))(input);
     console.response(response);
     console.printHistory();
   } catch (error) {
     console.customError(error);
   }
 })();`;
+    updatedCode = mapExternalPackagesToToolbelt(updatedCode);
     writeFileSync(join(this.functionPath, 'index.js'), updatedCode);
   }
 
   private revertLambdaFunction(invoke = false) {
-    const updatedCode = readFileSync(
+    let updatedCode = readFileSync(
       invoke ? this.indexPath : join(this.functionPath, 'index.js'),
       'utf8',
     );
+
+    updatedCode = mapExternalPackagesToToolbelt(updatedCode);
+
     /* istanbul ignore else */
     if (updatedCode.includes('This is an auto generated code')) {
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
