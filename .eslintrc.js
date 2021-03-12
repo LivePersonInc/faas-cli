@@ -3,7 +3,13 @@ module.exports = {
     es6: true,
     node: true,
   },
-  extends: ['airbnb-base', 'oclif', 'oclif-typescript', 'plugin:prettier/recommended', 'prettier'],
+  extends: [
+    'airbnb-base',
+    'oclif',
+    'oclif-typescript',
+    'plugin:prettier/recommended',
+    'prettier',
+  ],
   globals: {
     Atomics: 'readonly',
     SharedArrayBuffer: 'readonly',
@@ -43,5 +49,7 @@ module.exports = {
     'import/prefer-default-export': 0,
     'unicorn/prevent-abbreviations': 'off',
     'unicorn/no-abusive-eslint-disable': 0,
+    'unicorn/import-index': 0,
+    'new-cap': 0,
   },
 };

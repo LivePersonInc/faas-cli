@@ -91,7 +91,7 @@ export class UndeployView {
       this.tasklist.addTask({
         title: `Undeploying ${entry.name}`,
         // eslint-disable-next-line consistent-return
-        task: async (ctx, task) => {
+        task: async (_, task) => {
           const faasService = await factory.get();
           const response = await faasService.undeploy(entry.uuid);
           if (response.uuid) {

@@ -1,5 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.FaasDebugger = void 0;
 /* eslint-disable no-console */
 const fs_1 = require("fs");
 const child_process_1 = require("child_process");
@@ -248,11 +249,11 @@ ${originalCode}
         /* istanbul ignore else */
         if (updatedCode.includes('This is an auto generated code')) {
             // eslint-disable-next-line @typescript-eslint/no-unused-vars
-            const [_1, originalCode1] = updatedCode.split(`// Rewire require
+            const [, originalCode1] = updatedCode.split(`// Rewire require
 
 `);
             // eslint-disable-next-line @typescript-eslint/no-unused-vars
-            const [originalCode2, _2] = originalCode1.split(`
+            const [originalCode2] = originalCode1.split(`
 
 // This is an auto`);
             fs_1.writeFileSync(invoke ? this.indexPath : path_1.join(this.functionPath, 'index.js'), originalCode2);

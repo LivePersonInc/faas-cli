@@ -14,5 +14,6 @@ module.exports = {
     '!<rootDir>/src/shared/lp-faas-toolbelt/**/*.[jt]s?(x)',
     '<rootDir>/src/shared/lp-faas-toolbelt/http-client/**/*.[jt]s?(x)',
     '<rootDir>/src/shared/lp-faas-toolbelt/secret-storage/**/*.[jt]s?(x)',
+    '<rootDir>/src/shared/lp-faas-toolbelt/context-service-client/**/*.[jt]s?(x)',
   ],
 };
