@@ -67,6 +67,7 @@ function mapExternalPackagesToToolbelt(file: string): string {
     EXTERNAL_PACKAGE_MAPPING.some((pkg) => file.includes(`require('${pkg}')`));
   if (needsMapping) {
     EXTERNAL_PACKAGE_MAPPING.forEach((pkg) => {
+      /* istanbul ignore next */
       file = isReverse
         ? file.replace(
             `require('../bin/lp-faas-toolbelt/${pkg}')`,
