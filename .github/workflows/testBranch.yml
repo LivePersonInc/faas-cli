@@ -26,3 +26,5 @@ jobs:
       uses: Borales/actions-yarn@v2.3.0
       with:
          cmd: test
+    - name: Upload coverage to Codecov
+      uses: codecov/codecov-action@v1.2.2
