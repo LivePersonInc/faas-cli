@@ -38,9 +38,13 @@ describe('faas service', () => {
   it('should undeploy a lambda', async () => {
     const csdsClient = new CsdsClient();
     csdsClient.getUri = jest.fn().mockReturnValue('faasUI');
-    const gotDefault = jest.fn(() => ({
-      message: 'started undeployment process',
-    })) as any;
+    const gotDefault = jest.fn(() => {
+      return {
+        body: {
+          message: 'started undeployment process',
+        },
+      };
+    }) as any;
 
     const faasService = new FaasService({ gotDefault, csdsClient });
     const response = await faasService.undeploy('123-123-123');
@@ -72,9 +76,13 @@ describe('faas service', () => {
   it('should deploy a lambda', async () => {
     const csdsClient = new CsdsClient();
     csdsClient.getUri = jest.fn().mockReturnValue('faasUI');
-    const gotDefault = jest.fn(() => ({
-      message: 'started deployment process',
-    })) as any;
+    const gotDefault = jest.fn(() => {
+      return {
+        body: {
+          message: 'started deployment process',
+        },
+      };
+    }) as any;
 
     const faasService = new FaasService({ gotDefault, csdsClient });
     const response = await faasService.deploy('123-123-123');
@@ -109,10 +117,11 @@ describe('faas service', () => {
   it('should get all lambdas', async () => {
     const csdsClient = new CsdsClient();
     csdsClient.getUri = jest.fn().mockReturnValue('faasUI');
-    const gotDefault = jest.fn(() => [
-      { name: 'lambda1' },
-      { name: 'lambda2' },
-    ]) as any;
+    const gotDefault = jest.fn(() => {
+      return {
+        body: [{ name: 'lambda1' }, { name: 'lambda2' }],
+      };
+    }) as any;
     gotDefault.json = jest.fn();
     const faasService = new FaasService({ gotDefault, csdsClient });
     const response = await faasService.getAllLambdas();
@@ -144,9 +153,11 @@ describe('faas service', () => {
   it('should get a lambda by uuid', async () => {
     const csdsClient = new CsdsClient();
     csdsClient.getUri = jest.fn().mockReturnValue('faasUI');
-    const gotDefault = jest.fn(() => [
-      { name: 'lambda1', uuid: '123-123-123' },
-    ]) as any;
+    const gotDefault = jest.fn(() => {
+      return {
+        body: [{ name: 'lambda1', uuid: '123-123-123' }],
+      };
+    }) as any;
     const faasService = new FaasService({ gotDefault, csdsClient });
     const response = await faasService.getLambdaByUUID('123-123-123');
     expect(response).toEqual({ name: 'lambda1', uuid: '123-123-123' });
@@ -196,7 +207,6 @@ describe('faas service', () => {
         },
         json: { timestamp: 0 },
         method: 'POST',
-        resolveBodyOnly: true,
         responseType: 'json',
       },
     );
@@ -273,23 +283,27 @@ describe('faas service', () => {
   it('should invoke a lambda', async () => {
     const csdsClient = new CsdsClient();
     csdsClient.getUri = jest.fn().mockReturnValue('faasUI');
-    const gotDefault = jest.fn(() => ({
-      result: 'StatusCode: 200',
-      logs: [
-        {
-          level: 'Info',
-          message: 'Secret Value: ',
-          extras: ['TestValue'],
-          timestamp: 1583241003935,
+    const gotDefault = jest.fn(() => {
+      return {
+        body: {
+          result: 'StatusCode: 200',
+          logs: [
+            {
+              level: 'Info',
+              message: 'Secret Value: ',
+              extras: ['TestValue'],
+              timestamp: 1583241003935,
+            },
+            {
+              level: 'Info',
+              message: 'PROCESS ENV',
+              extras: ['TestValue'],
+              timestamp: 1583241003935,
+            },
+          ],
         },
-        {
-          level: 'Info',
-          message: 'PROCESS ENV',
-          extras: ['TestValue'],
-          timestamp: 1583241003935,
-        },
-      ],
-    })) as any;
+      };
+    }) as any;
     const faasService = new FaasService({ gotDefault, csdsClient });
     const response = await faasService.invoke('123-123-123', {
       headers: [],
@@ -327,7 +341,11 @@ describe('faas service', () => {
       nextExecution: '12-13-14',
       uuid: '4321-4321-4321',
     };
-    const gotDefault = jest.fn(() => result) as any;
+    const gotDefault = jest.fn(() => {
+      return {
+        body: result,
+      };
+    }) as any;
     const faasService = new FaasService({ gotDefault, csdsClient });
     const response = await faasService.createSchedule({
       cronExpression: '* * * *',
@@ -341,7 +359,11 @@ describe('faas service', () => {
     const csdsClient = new CsdsClient();
     csdsClient.getUri = jest.fn().mockReturnValue('faasUI');
     const result = 'test.com';
-    const gotDefault = jest.fn(() => result) as any;
+    const gotDefault = jest.fn(() => {
+      return {
+        body: result,
+      };
+    }) as any;
     const faasService = new FaasService({ gotDefault, csdsClient });
     const response = await faasService.addDomain('test.com');
     expect(response).toEqual(result);
@@ -352,9 +374,13 @@ describe('faas service', () => {
     csdsClient.getUri = jest.fn().mockReturnValue('faasUI');
     const gotDefault = jest.fn((url) => {
       if (url.includes('lambda1')) {
-        return [{ name: 'lambda1', uuid: '123-123-123' }];
+        return {
+          body: [{ name: 'lambda1', uuid: '123-123-123' }],
+        };
       }
-      return [{ name: 'lambda2', uuid: '222-222-222' }];
+      return {
+        body: [{ name: 'lambda2', uuid: '222-222-222' }],
+      };
     }) as any;
     const faasService = new FaasService({ gotDefault, csdsClient });
     const response = await faasService.getLambdasByNames([
@@ -373,9 +399,11 @@ describe('faas service', () => {
     csdsClient.getUri = jest.fn().mockReturnValue('faasUI');
     const gotDefault = jest.fn((url) => {
       if (url.includes('lambda1')) {
-        return [{ name: 'lambda1', uuid: '123-123-123' }];
+        return { body: [{ name: 'lambda1', uuid: '123-123-123' }] };
       }
-      return [];
+      return {
+        body: [],
+      };
     }) as any;
     const faasService = new FaasService({ gotDefault, csdsClient });
 
@@ -395,9 +423,13 @@ describe('faas service', () => {
     csdsClient.getUri = jest.fn().mockReturnValue('faasUI');
     const gotDefault = jest.fn((url) => {
       if (url.includes('lambda1')) {
-        return [{ name: 'lambda1', uuid: '123-123-123' }];
+        return {
+          body: [{ name: 'lambda1', uuid: '123-123-123' }],
+        };
       }
-      return [];
+      return {
+        body: [],
+      };
     }) as any;
     const faasService = new FaasService({ gotDefault, csdsClient });
     const response = await faasService.getLambdasByNames(
@@ -414,13 +446,17 @@ describe('faas service', () => {
   it('should get the runtime', async () => {
     const csdsClient = new CsdsClient();
     csdsClient.getUri = jest.fn().mockReturnValue('faasUI');
-    const gotDefault = jest.fn(() => [
-      {
-        name: 'Node.js',
-        uuid: '943f44ad-2a06-4895-9a8a-3a44d29a0c79',
-        baseImageName: 'test-image',
-      },
-    ]) as any;
+    const gotDefault = jest.fn(() => {
+      return {
+        body: [
+          {
+            name: 'Node.js',
+            uuid: '943f44ad-2a06-4895-9a8a-3a44d29a0c79',
+            baseImageName: 'test-image',
+          },
+        ],
+      };
+    }) as any;
     const faasService = new FaasService({ gotDefault, csdsClient });
     const response = await faasService.getRuntime();
 
@@ -434,7 +470,11 @@ describe('faas service', () => {
   it('should get all events', async () => {
     const csdsClient = new CsdsClient();
     csdsClient.getUri = jest.fn().mockReturnValue('faasUI');
-    const gotDefault = jest.fn(() => ['Event', 'Event']) as any;
+    const gotDefault = jest.fn(() => {
+      return {
+        body: ['Event', 'Event'],
+      };
+    }) as any;
     const faasService = new FaasService({ gotDefault, csdsClient });
     const response = await faasService.getEvents();
 
@@ -447,13 +487,19 @@ describe('faas service', () => {
     // eslint-disable-next-line consistent-return
     const gotDefault = jest.fn(async (url) => {
       if (url.includes('/reports/limitCounts')) {
-        return { value1: 1 };
+        return {
+          body: { value1: 1 },
+        };
       }
       if (url.includes('/reports/lambdaCounts')) {
-        return { value2: 2 };
+        return {
+          body: { value2: 2 },
+        };
       }
       if (url.includes('/reports/invocationCounts')) {
-        return { value3: 3 };
+        return {
+          body: { value3: 3 },
+        };
       }
     }) as any;
     const loginController = new LoginController();

@@ -7,6 +7,7 @@ const child_process_1 = require("child_process");
 const path_1 = require("path");
 const perf_hooks_1 = require("perf_hooks");
 const EXECUTION_EXCEED_TIMEOUT = 60000;
+const EXTERNAL_PACKAGE_MAPPING = ['oauth-1.0a', 'luxon', 'jsforce'];
 function isLogLevel(input) {
     return Object.keys({
         Debug: 'Debug',
@@ -33,6 +34,20 @@ function didIncorrectErrorFormat(result) {
         return ((_a = e.extras[0]) === null || _a === void 0 ? void 0 : _a.originalFailure) && ((_b = e.message) === null || _b === void 0 ? void 0 : _b.errorMsg.includes('incorrect format')) &&
             e.level === 'Warn';
     });
+}
+function mapExternalPackagesToToolbelt(file) {
+    const isReverse = EXTERNAL_PACKAGE_MAPPING.some((pkg) => file.includes(`require('../bin/lp-faas-toolbelt/${pkg}')`));
+    const needsMapping = isReverse ||
+        EXTERNAL_PACKAGE_MAPPING.some((pkg) => file.includes(`require('${pkg}')`));
+    if (needsMapping) {
+        EXTERNAL_PACKAGE_MAPPING.forEach((pkg) => {
+            /* istanbul ignore next */
+            file = isReverse
+                ? file.replace(`require('../bin/lp-faas-toolbelt/${pkg}')`, `require('${pkg}')`)
+                : file.replace(`require('${pkg}')`, `require('../bin/lp-faas-toolbelt/${pkg}')`);
+        });
+    }
+    return file;
 }
 class FaasDebugger {
     constructor(
@@ -221,11 +236,12 @@ ${file}
     process.send(console.getHistory());
   }
 })();`;
+        file = mapExternalPackagesToToolbelt(file);
         fs_1.writeFileSync(this.indexPath, file);
     }
     updateLambdaFunctionForDebugging() {
         const originalCode = fs_1.readFileSync(path_1.join(this.functionPath, 'index.js'), 'utf8');
-        const updatedCode = `require("module").prototype.require = require('../../bin/rewire').proxy; // Rewire require
+        let updatedCode = `require("module").prototype.require = require('../../bin/rewire').proxy; // Rewire require
 
 ${originalCode}
 
@@ -235,21 +251,23 @@ ${originalCode}
   try {
     console = require('../../bin/rewire').DebugLogger;
     const input = require('functions/${process.argv[2]}/config').input;
-    const response = await require('../../bin/rewire').convertToPromisifiedLambda((input, cb) => lambda(input, cb))(input);;
+    const response = await require('../../bin/rewire').convertToPromisifiedLambda((input, cb) => lambda(input, cb))(input);
     console.response(response);
     console.printHistory();
   } catch (error) {
     console.customError(error);
   }
 })();`;
+        updatedCode = mapExternalPackagesToToolbelt(updatedCode);
         fs_1.writeFileSync(path_1.join(this.functionPath, 'index.js'), updatedCode);
     }
     revertLambdaFunction(invoke = false) {
-        const updatedCode = fs_1.readFileSync(invoke ? this.indexPath : path_1.join(this.functionPath, 'index.js'), 'utf8');
+        let updatedCode = fs_1.readFileSync(invoke ? this.indexPath : path_1.join(this.functionPath, 'index.js'), 'utf8');
+        updatedCode = mapExternalPackagesToToolbelt(updatedCode);
         /* istanbul ignore else */
         if (updatedCode.includes('This is an auto generated code')) {
             // eslint-disable-next-line @typescript-eslint/no-unused-vars
-            const [, originalCode1] = updatedCode.split(`// Rewire require
+            const [_, originalCode1] = updatedCode.split(`// Rewire require
 
 `);
             // eslint-disable-next-line @typescript-eslint/no-unused-vars

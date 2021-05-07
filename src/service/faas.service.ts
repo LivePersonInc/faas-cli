@@ -16,6 +16,7 @@ interface IFetchConfig {
   additionalParams?: string;
   body?: any;
   csds?: string;
+  resolveBody?: boolean;
 }
 
 export interface IDeploymentResponse {
@@ -309,17 +310,23 @@ Please make sure the function with the name ${name} was pushed to the LivePerson
     method: HttpMethods;
     body: ILambda;
     uuid?: string;
-  }): Promise<void> {
+  }): Promise<boolean> {
     try {
       const urlPart = `/lambdas${uuid ? `/${uuid}` : ''}`;
-      await this.doFetch({ urlPart, method, body });
+      const response = await this.doFetch({
+        urlPart,
+        method,
+        body,
+        resolveBody: false,
+      });
+      return response.statusCode !== 304;
     } catch (error) {
       if (error.errorCode?.includes('contract-error')) {
         throw new Error(
           `Push Error: The code of function '${body.name}' you are trying to push is not a valid lambda.`,
         );
       }
-      throw new Error(error.errorMsg);
+      throw new Error(error.errorMsg || error.message);
     }
   }
 
@@ -376,11 +383,12 @@ Please make sure the function with the name ${name} was pushed to the LivePerson
     additionalParams = '',
     body,
     csds = 'faasUI',
+    resolveBody = true,
   }: IFetchConfig): Promise<any> {
     try {
       const domain = await this.getCsdsEntry(csds);
       const url = `https://${domain}/api/account/${this.accountId}${urlPart}?userId=${this.userId}&v=1${additionalParams}`;
-      return await this.got(url, {
+      const response = await this.got(url, {
         method,
         headers: {
           Authorization: `Bearer ${this.token}`,
@@ -388,9 +396,9 @@ Please make sure the function with the name ${name} was pushed to the LivePerson
           'user-agent': 'faas-cli',
         },
         responseType: 'json',
-        resolveBodyOnly: true,
         ...(body && { json: { timestamp: 0, ...body } }),
       });
+      return resolveBody ? response.body : response;
     } catch (error) {
       /* eslint-disable no-throw-literal */
       if (error.message?.includes('401')) {
