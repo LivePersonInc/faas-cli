@@ -250,7 +250,7 @@ defineFeature(feature, (test) => {
     });
   });
 
-  test.only('Updating a single function unsuccessfully due to no changes', ({
+  test('Updating a single function unsuccessfully due to no changes', ({
     given,
     when,
     then,
@@ -293,7 +293,9 @@ defineFeature(feature, (test) => {
     and('I expect to see a progress indicator', () => {});
 
     and('I expect a skip message', () => {
-      expect(consoleSpy).toBeCalledWith(expect.stringMatching(/skip/));
+      expect(consoleSpy).toBeCalledWith(
+        expect.stringMatching(/Pushing following functions/),
+      );
       expect(JSON.stringify(stdoutSpy.mock.calls)).toContain('Push Skipped');
     });
   });
