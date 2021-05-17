@@ -3,7 +3,7 @@ import { join } from 'path';
 import {
   HttpClient,
   httpClient,
-} from '../../../src/shared/lp-faas-toolbelt/http-client/httpClient';
+} from '../../../../src/shared/lp-faas-toolbelt/http-client/httpClient';
 
 describe('faas toolbelt - http client', () => {
   it('should return a response with 403 because the url is not whitelisted', async () => {

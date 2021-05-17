@@ -3,7 +3,6 @@ import { factory } from '../service/faasFactory.service';
 import { ILambda } from '../types';
 import {
   chalk as chalkDefault,
-  emoji as emojiDefault,
   ErrorMessage,
   LogMessage,
   Prompt,
@@ -32,8 +31,6 @@ export class PushView {
 
   private readonly chalk: any;
 
-  private readonly emoji: any;
-
   private readonly fileService: FileService;
 
   constructor(
@@ -43,11 +40,9 @@ export class PushView {
       error = new ErrorMessage(),
       tasklist = new TaskList({ exitOnError: false, concurrent: true }),
       prompt = new Prompt(),
-      emoji = emojiDefault,
       fileService = new FileService(),
     }: IPushViewConfig = {},
   ) {
-    this.emoji = emoji;
     this.log = log;
     this.chalk = chalk;
     this.prompt = prompt;

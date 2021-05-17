@@ -13,6 +13,8 @@ import { ISecretClient } from './secret-storage/IsecretClient';
 import { VaultSecretClient } from './secret-storage/secretClient';
 import { ISMTPClient } from './smtp-client/ISmtpClient';
 import { SMTPClient } from './smtp-client/smtpClient';
+import { IFaaSContextServiceClientConfig, IFaaSContextServiceClient } from './context-service-client/IFaaSContextServiceClient';
+import { FaasContextServiceClient } from './context-service-client/contextServiceClient';
 
 export { ErrorCodes } from './errors/errorCodes';
 export { SecretError } from './errors/secretError';
@@ -84,4 +86,25 @@ export class Toolbelt {
     public static LpClient(): ILpClient {
         return lpClientFactory(this.lazyInitCsdsClient(), this.SecretClient(), this.HTTPClient());
     }
+
+    /**
+     * Returns a Context Service Client which can be used to interact with the
+     * Context Session Store.
+     * @param {IFaaSContextServiceClientConfig} config Config Object in which the account ID for which the Client
+     * will be used and a key for the Context Session Store API need to be provided
+     */
+    public static ContextServiceClient(config: IFaaSContextServiceClientConfig): IFaaSContextServiceClient {
+      if (!config) {
+          throw new Error('No valid configuration was provided');
+      }
+      const { apiKey, accountId } = config;
+      if (!apiKey) {
+          throw new Error('No valid API-key was provided');
+      }
+      if (!accountId) {
+          throw new Error('No valid accountId was provided');
+      }
+
+      return new FaasContextServiceClient(config);
+  }
 }
