@@ -1,6 +1,6 @@
 {
   "name": "lp-faas-toolbelt",
-  "version": "0.0.9",
+  "version": "1.24.0",
   "description": "",
   "main": "lp-faas-toolbelt/index.js",
   "scripts": {
