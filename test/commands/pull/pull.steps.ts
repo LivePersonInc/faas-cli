@@ -143,6 +143,7 @@ defineFeature(feature, (test) => {
 
     then('I expect nothing to happen', () => {});
   });
+
   test('Pull an existing function', ({ given, when, then }) => {
     const functionName = 'TestFunction1';
 
@@ -194,6 +195,7 @@ defineFeature(feature, (test) => {
       ).toBeTruthy();
     });
   });
+
   test('Pull all functions', ({ given, when, then }) => {
     given('I am authorized', async () => {
       await fileService.writeTempFile({

@@ -248,7 +248,7 @@ defineFeature(feature, (test) => {
     });
 
     then(
-      'I try to create an schedule with create:schedule -n deployedFunction -c "* * * * *"',
+      'I try to create an schedule with create:schedule -n deployedFunction -c "* * * * *" and receive unexpected error',
       async () => {
         createView.askForDeployedLambda = jest.fn(() => {
           // eslint-disable-next-line no-throw-literal
@@ -258,19 +258,16 @@ defineFeature(feature, (test) => {
           };
         });
         createController = new CreateController({ createView });
-        await createController.createSchedule({
-          functionName: 'undeployedFunction',
-          cronExpression: '* * * **',
-        });
-      },
-    );
-
-    then(
-      'It should display that it failed to create the schedule with an unexpected error',
-      async () => {
-        expect(consoleSpy).toBeCalledWith(
-          expect.stringMatching(/Unexpected Error/),
-        );
+        try {
+          await createController.createSchedule({
+            functionName: 'undeployedFunction',
+            cronExpression: '* * * **',
+          });
+        } catch (error) {
+          expect(error.message).toEqual(
+            expect.stringMatching(/Unexpected Error/),
+          );
+        }
       },
     );
   });

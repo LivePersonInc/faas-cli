@@ -35,7 +35,11 @@ export class Login extends Command {
    * @memberof Login
    */
   public async run(): Promise<void> {
-    const { flags: inputFlags } = this.parse(Login);
-    this.loginController.loginByCommand({ inputFlags });
+    try {
+      const { flags: inputFlags } = this.parse(Login);
+      await this.loginController.loginByCommand({ inputFlags });
+    } catch (error) {
+      this.error(error, { exit: 1 });
+    }
   }
 }

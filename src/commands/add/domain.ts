@@ -17,9 +17,9 @@ export class Domain extends Command {
   public static args = [{ name: '"...domainURLs"' }];
 
   public static examples = [
-    '> <%= config.bin %> create:domain',
-    '> <%= config.bin %> create:domain "*.liveperson.com"',
-    '> <%= config.bin %> create:domain "*.liveperson.com" a-domain.co.uk',
+    '> <%= config.bin %> add:domain',
+    '> <%= config.bin %> add:domain "*.liveperson.com"',
+    '> <%= config.bin %> add:domain "*.liveperson.com" a-domain.co.uk',
   ];
 
   private addController: AddController = new AddController();
@@ -30,7 +30,11 @@ export class Domain extends Command {
    * @memberof Domain
    */
   public async run(): Promise<void> {
-    const domains = parseInput(Domain.flags, this.argv);
-    this.addController.addDomains(domains);
+    try {
+      const domains = parseInput(Domain.flags, this.argv);
+      await this.addController.addDomains(domains);
+    } catch (error) {
+      this.error(error.message, { ...error, exit: 1 });
+    }
   }
 }

@@ -26,6 +26,5 @@ Feature: Create Schedule Command
 
   Scenario: Run the create:schedule command with create:schedule -n dep... and an unforseen error occurs
     Given I am authenticated
-    Then I try to create an schedule with create:schedule -n deployedFunction -c "* * * * *"
-    Then It should display that it failed to create the schedule with an unexpected error
+    Then I try to create an schedule with create:schedule -n deployedFunction -c "* * * * *" and receive unexpected error
 

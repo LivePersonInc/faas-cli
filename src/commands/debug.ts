@@ -24,7 +24,11 @@ export default class Debug extends Command {
    * @memberof Debug
    */
   public async run(): Promise<void> {
-    const lambdaFunctions = parseInput(Debug.flags, this.argv);
-    await this.debugController.debug({ lambdaFunctions });
+    try {
+      const lambdaFunctions = parseInput(Debug.flags, this.argv);
+      await this.debugController.debug({ lambdaFunctions });
+    } catch (error) {
+      this.error(error, { exit: 1 });
+    }
   }
 }

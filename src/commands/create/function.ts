@@ -39,13 +39,17 @@ export class Function extends Command {
    * @memberof Function
    */
   public async run(): Promise<void> {
-    const {
-      flags: { name, event, description },
-    } = this.parse(Function);
-    this.createController.createFunction({
-      name,
-      event,
-      description,
-    });
+    try {
+      const {
+        flags: { name, event, description },
+      } = this.parse(Function);
+      await this.createController.createFunction({
+        name,
+        event,
+        description,
+      });
+    } catch (error) {
+      this.error(error.message, { ...error, exit: 1 });
+    }
   }
 }

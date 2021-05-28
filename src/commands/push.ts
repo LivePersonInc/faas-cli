@@ -33,8 +33,12 @@ export default class Push extends Command {
   private pushController: PushController = new PushController();
 
   public async run(): Promise<void> {
-    const { flags: inputFlags } = this.parse(Push);
-    const lambdaFunctions = parseInput(Push.flags, this.argv);
-    this.pushController.push({ lambdaFunctions, inputFlags });
+    try {
+      const { flags: inputFlags } = this.parse(Push);
+      const lambdaFunctions = parseInput(Push.flags, this.argv);
+      await this.pushController.push({ lambdaFunctions, inputFlags });
+    } catch (error) {
+      this.error(error, { exit: 1 });
+    }
   }
 }
