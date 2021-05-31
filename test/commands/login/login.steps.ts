@@ -474,7 +474,7 @@ defineFeature(feature, (test) => {
         await getController.get({ domains: ['functions'] });
 
         expect(JSON.stringify(stdoutSpy.mock.calls)).toContain(
-          'FunctionSSO                   Productive',
+          'Name                          State          Last changed at                         Last changed by                         Event                                   ',
         );
       },
     );

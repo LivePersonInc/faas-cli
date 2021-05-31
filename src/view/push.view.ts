@@ -109,7 +109,7 @@ export class PushView {
     pushRequestBodies.forEach((entry: any) => {
       this.tasklist.addTask({
         title: `Pushing ${entry.name}`,
-        task: async () => {
+        task: async (_, task) => {
           if (!entry.description) {
             throw new Error(
               'Push Error: Lambda description can not be null. Please add a description in the config.json',
@@ -118,11 +118,17 @@ export class PushView {
           // tslint:disable-next-line:no-shadowed-variable
           const faasService = await factory.get();
           const isNewLambda = entry.version === -1;
-          await faasService.push({
+          const wasModified = await faasService.push({
             method: isNewLambda ? 'POST' : 'PUT',
             body: entry,
             ...(!isNewLambda && { uuid: entry.uuid }),
           });
+          if (!wasModified) {
+            return task.skip(
+              `Push Skipped: The update contained no changes compared to the server version.`,
+            );
+          }
+          return wasModified;
         },
       });
     });
