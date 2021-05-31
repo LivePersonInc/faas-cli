@@ -10,6 +10,7 @@ import {
   getLambdaCounts,
   getInvocationCounts,
   getEvents,
+  push,
 } from './faasEndpoint';
 import { FileService } from '../../src/service/file.service';
 import { ILambda, IRuntime } from '../../src/types';
@@ -178,10 +179,11 @@ export class FaasService {
     method: HttpMethods;
     body: ILambda;
     uuid?: string;
-  }): Promise<void> {
+  }): Promise<boolean> {
     try {
       const urlPart = `/lambdas${uuid ? `/${uuid}` : ''}`;
-      await this.doFetch({ urlPart, method, body });
+      const response = await this.doFetch({ urlPart, method, body });
+      return response.statusCode !== 304;
     } catch (error) {
       if (body.implementation.code.includes('lammbda')) {
         throw new Error(
@@ -240,6 +242,7 @@ export class FaasService {
     urlPart,
     method,
     additionalParams = '',
+    body,
   }: {
     urlPart: string;
     method: 'POST' | 'GET' | 'DELETE' | 'PUT';
@@ -252,6 +255,8 @@ export class FaasService {
       let response: any;
       if (method === 'POST' && urlPart.includes('invoke')) {
         response = invoke(url);
+      } else if (method === 'PUT' && urlPart.includes('lambdas')) {
+        response = push(body);
       } else if (method === 'GET' && urlPart.includes('reports/limitCounts')) {
         response = getLimitCounts();
       } else if (method === 'GET' && urlPart.includes('reports/lambdaCounts')) {

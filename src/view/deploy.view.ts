@@ -106,7 +106,7 @@ export class DeployView {
             return task.skip(`${response.message} (${entry.uuid})`);
           }
           if (!noWatch) {
-            return new Promise(async (resolve) => {
+            return new Promise<void>(async (resolve) => {
               // eslint-disable-next-line unicorn/consistent-function-scoping
               function checkIfLambdaIsDeployed(): Promise<boolean> {
                 return new Promise(async (resolve) => {
@@ -126,7 +126,7 @@ export class DeployView {
 
               function watchDeployment(): Promise<any> {
                 let deployed = false;
-                return new Promise((resolve) => {
+                return new Promise<void>((resolve) => {
                   const timer = setIntervalAsync(async () => {
                     deployed = await checkIfLambdaIsDeployed();
                     /* istanbul ignore else */

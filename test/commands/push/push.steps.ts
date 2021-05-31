@@ -250,6 +250,56 @@ defineFeature(feature, (test) => {
     });
   });
 
+  test('Updating a single function unsuccessfully due to no changes', ({
+    given,
+    when,
+    then,
+    and,
+  }) => {
+    given('I am located in the respective function folder', () => {});
+
+    given('I am authorized', async () => {
+      await fileService.writeTempFile({
+        '123456789': {
+          token: '454545478787',
+          userId: 'userId_123456789',
+          username: 'testUser@liveperson.com',
+          active: true,
+        },
+      });
+    });
+
+    given(
+      'the same version of my function already is available on the faas platform',
+      () => {},
+    );
+
+    when('I run the push command', async () => {
+      promptMock.run = jest.fn(() => ({ TestFunction1: true })) as any;
+      const pushView = new PushView({
+        prompt: promptMock,
+        fileService: mockFileService,
+      });
+
+      const pushController = new PushController({
+        pushView,
+        fileService: mockFileService,
+      });
+      await pushController.push({ lambdaFunctions: ['TestFunction1'] });
+    });
+
+    then('I see the confirmation prompt and confirm', () => {});
+
+    and('I expect to see a progress indicator', () => {});
+
+    and('I expect a skip message', () => {
+      expect(consoleSpy).toBeCalledWith(
+        expect.stringMatching(/Pushing following functions/),
+      );
+      expect(JSON.stringify(stdoutSpy.mock.calls)).toContain('Push Skipped');
+    });
+  });
+
   test('Pushing multiple lambdas successfully', ({
     given,
     when,

@@ -45,6 +45,18 @@ Feature: Push Command
     And I expect to see a progress indicator
     And I expect a success message
 
+# 1.2 Updating a single function unsuccessfully due to no changes
+
+  # !noWatch && !yes
+  Scenario: Updating a single function unsuccessfully due to no changes
+    Given I am located in the respective function folder
+    Given I am authorized
+    Given the same version of my function already is available on the faas platform
+    When I run the push command
+    Then I see the confirmation prompt and confirm
+    And I expect to see a progress indicator
+    And I expect a skip message
+
 # 2.1 Pushing multiple lambdas successfully
 #   Different test cases according to flags set
 

@@ -183,4 +183,17 @@ export function getEvents() {
   };
 }
 
+export function push(body: any): any {
+  if (body.name === 'TestFunction1') {
+    return {
+      body: JSON.stringify({
+        statusCode: 304,
+      }),
+    };
+  }
+  return {
+    body: {},
+  };
+}
+
 resetAttempts();
