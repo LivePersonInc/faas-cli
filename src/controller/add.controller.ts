@@ -39,7 +39,8 @@ export class AddController {
         ref: 'https://github.com/LivePersonInc/faas-cli#add',
         code: CLIErrorCodes.NoLambdasFound,
       };
-      throw error;
+      this.addView.showErrorMessage(error);
+      throw new Error('exit');
     }
 
     const isUserLoggedIn = await this.isUserLoggedIn();

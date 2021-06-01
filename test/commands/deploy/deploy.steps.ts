@@ -204,24 +204,24 @@ defineFeature(feature, async (test) => {
 
     given(
       'This function is not available on the logged in account on the platform',
-      () => {},
+      async () => {
+        const deployController = new DeployController();
+        await expect(
+          deployController.deploy({ lambdaFunctions: ['TestFunction3'] }),
+        ).rejects.toThrow('exit');
+      },
     );
 
     when('I run the deploy command and pass this function', () => {});
 
     then(
       'It should throw an error and tell me that this function is not available on the platform',
-      async () => {
-        try {
-          const deployController = new DeployController();
-          await deployController.deploy({ lambdaFunctions: ['TestFunction3'] });
-        } catch (error) {
-          expect(error.message).toEqual(
-            expect.stringMatching(
-              /Function TestFunction3 were not found on the platform/,
-            ),
-          );
-        }
+      () => {
+        expect(consoleSpy).toHaveBeenCalledWith(
+          expect.stringMatching(
+            /Function TestFunction3 were not found on the platform/,
+          ),
+        );
       },
     );
   });

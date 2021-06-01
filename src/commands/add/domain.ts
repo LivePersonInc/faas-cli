@@ -34,7 +34,7 @@ export class Domain extends Command {
       const domains = parseInput(Domain.flags, this.argv);
       await this.addController.addDomains(domains);
     } catch (error) {
-      this.error(error.message, { ...error, exit: 1 });
+      this.exit(1);
     }
   }
 }

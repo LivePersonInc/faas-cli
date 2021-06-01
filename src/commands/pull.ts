@@ -46,7 +46,7 @@ export default class Pull extends Command {
       const lambdaFunctions = parseInput(Pull.flags, this.argv);
       await this.pullController.pull({ lambdaFunctions, inputFlags });
     } catch (error) {
-      this.error(error.message, { ...error, exit: 1 });
+      this.exit(1);
     }
   }
 }

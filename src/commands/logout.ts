@@ -35,7 +35,7 @@ export default class Logout extends Command {
       const { flags: inputFlags } = this.parse(Logout);
       this.logoutController.logout(inputFlags);
     } catch (error) {
-      this.error(error, { exit: 1 });
+      this.exit(1);
     }
   }
 }

@@ -119,21 +119,19 @@ defineFeature(feature, (test) => {
     when(
       'I run the add:domain command with lpf add:domain',
       // eslint-disable-next-line @typescript-eslint/no-empty-function
-      async () => {},
-    );
-
-    then('It should tell me to add domains', async () => {
-      try {
+      async () => {
         addController = new AddController({
           addView,
           loginController,
         });
-        await addController.addDomains();
-      } catch (error) {
-        expect(error.message).toEqual(
-          expect.stringMatching(/Please add domains to the/),
-        );
-      }
+        await expect(addController.addDomains()).rejects.toThrow('exit');
+      },
+    );
+
+    then('It should tell me to add domains', async () => {
+      expect(consoleSpy).toBeCalledWith(
+        expect.stringMatching(/Please add domains to the/),
+      );
     });
   });
 

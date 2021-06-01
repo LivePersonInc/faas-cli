@@ -38,7 +38,7 @@ export default class Push extends Command {
       const lambdaFunctions = parseInput(Push.flags, this.argv);
       await this.pushController.push({ lambdaFunctions, inputFlags });
     } catch (error) {
-      this.error(error, { exit: 1 });
+      this.exit(1);
     }
   }
 }

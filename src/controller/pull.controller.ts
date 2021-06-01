@@ -1,5 +1,5 @@
-// import { PrettyPrintableError } from '@oclif/errors';
-// import { CLIErrorCodes } from '../shared/errorCodes';
+import { PrettyPrintableError } from '@oclif/errors';
+import { CLIErrorCodes } from '../shared/errorCodes';
 import { PullView } from '../view/pull.view';
 import { factory } from '../service/faasFactory.service';
 import { ILambda } from '../types';
@@ -74,13 +74,12 @@ export class PullController {
         noWatch: inputFlags?.['no-watch'],
       });
     } catch (error) {
-      this.pullView.showErrorMessage(error.message || error.errorMsg);
-      // const prettyError: PrettyPrintableError = {
-      //   message: error.message || error.errorMsg,
-      //   ref: 'https://github.com/LivePersonInc/faas-cli#pull',
-      //   code: CLIErrorCodes.FailedToPull,
-      // };
-      // throw prettyError;
+      const prettyError: PrettyPrintableError = {
+        message: error.message || error.errorMsg,
+        ref: 'https://github.com/LivePersonInc/faas-cli#pull',
+        code: CLIErrorCodes.FailedToPull,
+      };
+      this.pullView.showErrorMessage(prettyError);
     }
   }
 }

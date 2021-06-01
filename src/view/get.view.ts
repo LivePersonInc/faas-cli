@@ -1,4 +1,5 @@
 import * as moment from 'moment-timezone';
+import { PrettyPrintableError } from '@oclif/errors/lib/errors/pretty-print';
 import { LogMessage, ErrorMessage, cliUX, chalk } from './printer';
 import { ILambda } from '../types';
 
@@ -36,13 +37,12 @@ export class GetView {
   }
 
   /**
-   * Show an error message
-   * @param {string} error - message
-   * @returns {void}
+   * Shows an error message
+   * @param {string|PrettyPrintableError} message - message
    * @memberof GetView
    */
-  public showErrorMessage(error: string): void {
-    return this.error.print(error);
+  public showErrorMessage(message: string | PrettyPrintableError): void {
+    this.error.print(message);
   }
 
   /**

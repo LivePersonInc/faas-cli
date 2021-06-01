@@ -49,7 +49,7 @@ export class Function extends Command {
         description,
       });
     } catch (error) {
-      this.error(error.message, { ...error, exit: 1 });
+      this.exit(1);
     }
   }
 }

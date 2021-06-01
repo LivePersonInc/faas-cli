@@ -28,7 +28,7 @@ export default class Debug extends Command {
       const lambdaFunctions = parseInput(Debug.flags, this.argv);
       await this.debugController.debug({ lambdaFunctions });
     } catch (error) {
-      this.error(error, { exit: 1 });
+      this.exit(1);
     }
   }
 }

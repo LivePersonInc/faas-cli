@@ -33,7 +33,7 @@ export class Init extends Command {
       const functionNames = parseInput(Init.flags, this.argv);
       await this.initController.init({ functionNames });
     } catch (error) {
-      this.error(error.message, { ...error, exit: 1 });
+      this.exit(1);
     }
   }
 }

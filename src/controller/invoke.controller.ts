@@ -76,7 +76,7 @@ export class InvokeController {
         await this.invokeRemote();
       }
     } catch (error) {
-      this.invokeView.printError(error.message || error.errorMsg);
+      this.invokeView.showErrorMessage(error.message || error.errorMsg);
     }
   }
 
@@ -88,17 +88,16 @@ export class InvokeController {
 
     /* istanbul ignore next */
     if (!currentLambda) {
-      const error: PrettyPrintableError = {
-        message: `Function ${this.lambdaToInvoke.name} were not found on the platform.
-        Please make sure the function with the name ${this.lambdaToInvoke.name} was pushed to the LivePerson Functions platform`,
+      const prettyError: PrettyPrintableError = {
+        message: `Function ${this.lambdaToInvoke.name} were not found on the platform. Please make sure the function with the name ${this.lambdaToInvoke.name} was pushed to the LivePerson Functions platform`,
         suggestions: [
-          'Use "lpf push exampleFunction" to push a function',
-          'Use "lpf deploy exampleFunction" to deploy a function',
+          'Use "lpf push exampleFunction" to push and "lpf deploy exampleFunction" to deploy a function',
         ],
         ref: 'https://github.com/LivePersonInc/faas-cli#invoke',
         code: CLIErrorCodes.NoLambdasFound,
       };
-      throw error;
+      this.invokeView.showErrorMessage(prettyError);
+      throw new Error('exit');
     }
 
     const response = await faasService.invoke(

@@ -66,10 +66,11 @@ export class DeployController extends DeploymentController {
     } catch (error) {
       const prettyError: PrettyPrintableError = {
         message: error.message || error.errorMsg,
-        suggestions: ['Use "lpf undeploy --help" for more information'],
+        suggestions: ['Use "lpf deploy --help" for more information'],
         ref: 'https://github.com/LivePersonInc/faas-cli#deploy',
       };
-      throw prettyError;
+      this.deployView.showErrorMessage(prettyError);
+      throw new Error('exit');
     }
   }
 }

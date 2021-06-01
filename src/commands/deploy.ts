@@ -42,7 +42,7 @@ export class Deploy extends Command {
       const lambdaFunctions = parseInput(Deploy.flags, this.argv);
       await this.deployController.deploy({ lambdaFunctions, inputFlags });
     } catch (error) {
-      this.error(error.message, { ...error, exit: 1 });
+      this.exit(1);
     }
   }
 }

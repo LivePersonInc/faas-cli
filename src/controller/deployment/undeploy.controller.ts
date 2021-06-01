@@ -69,7 +69,8 @@ export class UndeployController extends DeploymentController {
         suggestions: ['Use "lpf undeploy --help" for more information'],
         ref: 'https://github.com/LivePersonInc/faas-cli#undeploy',
       };
-      throw prettyError;
+      this.undeployView.showErrorMessage(prettyError);
+      throw new Error('exit');
     }
   }
 }

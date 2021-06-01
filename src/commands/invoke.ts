@@ -37,7 +37,7 @@ export default class Invoke extends Command {
       const lambdaFunctions = parseInput(Invoke.flags, this.argv);
       await this.invokeController.invoke({ lambdaFunctions, inputFlags });
     } catch (error) {
-      this.error(error.message, { ...error, exit: 1 });
+      this.exit(1);
     }
   }
 }

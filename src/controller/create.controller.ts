@@ -65,7 +65,8 @@ export class CreateController {
         suggestions: ['Use "lpf create:function --help" for more information.'],
         ref: 'https://github.com/LivePersonInc/faas-cli#create',
       };
-      throw prettyError;
+      this.createView.showErrorMessage(prettyError);
+      throw new Error('exit');
     }
   }
 
@@ -138,7 +139,8 @@ export class CreateController {
         suggestions: ['Use "lpf create:schedule --help" for more information.'],
         ref: 'https://github.com/LivePersonInc/faas-cli#create',
       };
-      throw prettyError;
+      this.createView.showErrorMessage(prettyError);
+      throw new Error('exit');
     }
   }
 

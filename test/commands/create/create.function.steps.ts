@@ -221,26 +221,26 @@ defineFeature(feature, (test) => {
     when(
       'I run the create:function command with lpf create:function -name ...',
       // eslint-disable-next-line @typescript-eslint/no-empty-function
-      () => {},
+      async () => {
+        createController = new CreateController({
+          createView,
+          loginController,
+          defaultStructureService,
+        });
+        await expect(
+          createController.createFunction({
+            name: 'exampleFunction',
+            description: 'this is a description',
+            event: 'No Event',
+          }),
+        ).rejects.toThrow('exit');
+      },
     );
 
     then('An error message is displayed', async () => {
-      createController = new CreateController({
-        createView,
-        loginController,
-        defaultStructureService,
-      });
-      try {
-        await createController.createFunction({
-          name: 'exampleFunction',
-          description: 'this is a description',
-          event: 'No Event',
-        });
-      } catch (error) {
-        expect(error.message).toEqual(
-          expect.stringMatching(/Function already exists/),
-        );
-      }
+      expect(consoleSpy).toBeCalledWith(
+        expect.stringMatching(/Function already exists/),
+      );
     });
 
     then('No additional files were created', () => {

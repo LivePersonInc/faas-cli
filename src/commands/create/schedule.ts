@@ -46,7 +46,7 @@ export class Schedule extends Command {
         cronExpression,
       });
     } catch (error) {
-      this.error(error.message, { ...error, exit: 1 });
+      this.exit(1);
     }
   }
 }

@@ -36,26 +36,28 @@ export class GetController {
   ): Promise<void> {
     try {
       if (domains.length === 0) {
-        const error: PrettyPrintableError = {
+        const prettyError: PrettyPrintableError = {
           message:
             'Please provide a domain (functions, deployments and/or account)',
           suggestions: ['Functions, deployments, account or events.'],
           ref: 'https://github.com/LivePersonInc/faas-cli#get',
           code: CLIErrorCodes.DomainMissing,
         };
-        throw error;
+        this.getView.showErrorMessage(prettyError);
+        throw new Error('exit');
       }
 
       /* istanbul ignore else */
       if (!domains.some((e) => this.domains.includes(e))) {
-        const error: PrettyPrintableError = {
+        const prettyError: PrettyPrintableError = {
           message:
             'Unsupported domain found. Only functions, deployments and account are supported!',
           suggestions: ['Functions, deployments, account or events.'],
           ref: 'https://github.com/LivePersonInc/faas-cli#get',
           code: CLIErrorCodes.UnsupportedDomain,
         };
-        throw error;
+        this.getView.showErrorMessage(prettyError);
+        throw new Error('exit');
       }
 
       const faasService = await factory.get();
@@ -64,7 +66,7 @@ export class GetController {
 
       /* istanbul ignore else */
       if (allLambdas.length === 0) {
-        const error: PrettyPrintableError = {
+        const prettyError: PrettyPrintableError = {
           message: 'There are no functions created on your account!',
           suggestions: [
             'Use "lpf create:function exampleFunction" to create a function first.',
@@ -72,7 +74,8 @@ export class GetController {
           ref: 'https://github.com/LivePersonInc/faas-cli#get',
           code: CLIErrorCodes.NoLambdasFound,
         };
-        throw error;
+        this.getView.showErrorMessage(prettyError);
+        throw new Error('exit');
       }
 
       const updatedLambdas = allLambdas.map((func) => {

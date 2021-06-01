@@ -129,8 +129,9 @@ export class FaasService {
             additionalParams: `&name=${name}`,
           });
           if (!foundLambdas && !collectNonExistingLambas) {
-            throw new Error(`Function ${name} were not found on the platform.
-            Please make sure the function with the name ${name} was pushed to the LivePerson Functions platform`);
+            throw new Error(
+              `Function ${name} were not found on the platform. Please make sure the function with the name ${name} was pushed to the LivePerson Functions platform`,
+            );
           }
           return foundLambdas || { name };
         }),

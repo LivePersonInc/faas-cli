@@ -1,3 +1,4 @@
+import { PrettyPrintableError } from '@oclif/errors/lib/errors/pretty-print';
 import { LogMessage, ErrorMessage, chalk as chalkDefault } from './printer';
 
 export class InvokeView {
@@ -28,12 +29,11 @@ export class InvokeView {
   }
 
   /**
-   * Print error message from the invoked function
-   * @param {*} message - message
-   * @returns {void}
+   * Shows an error message
+   * @param {string|PrettyPrintableError} message - message
    * @memberof InvokeView
    */
-  public printError(message: any): void {
-    this.error.print(this.chalk.red(message));
+  public showErrorMessage(message: string | PrettyPrintableError): void {
+    this.error.print(message);
   }
 }

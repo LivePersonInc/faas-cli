@@ -71,7 +71,7 @@ export class InitController {
     } catch (error) {
       /* istanbul ignore else */
       if (error.name !== 'ListrError') {
-        this.initView.errorMessage(error.message || error.errorMsg);
+        this.initView.showErrorMessage(error.message || error.errorMsg);
       }
     }
   }
@@ -87,12 +87,13 @@ export class InitController {
       }
       throw new Error('Please make sure you have npm or yarn installed');
     } catch {
-      const error: PrettyPrintableError = {
+      const prettyError: PrettyPrintableError = {
         message: 'Please make sure you have npm or yarn installed',
         ref: 'https://yarnpkg.com/getting-started/install',
         code: CLIErrorCodes.PackageManagerNotFound,
       };
-      throw error;
+      this.initView.showErrorMessage(prettyError);
+      throw new Error('exit');
     }
   }
 

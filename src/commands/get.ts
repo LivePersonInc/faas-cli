@@ -33,7 +33,7 @@ export default class Get extends Command {
       const domains = parseInput(Get.flags, this.argv);
       await this.getController.get({ domains });
     } catch (error) {
-      this.error(error.message, { ...error, exit: 1 });
+      this.exit(1);
     }
   }
 }
