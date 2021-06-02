@@ -1,3 +1,4 @@
+import { PrettyPrintableError } from '@oclif/errors';
 import { exec as execDefault } from 'child_process';
 import { PackageManager } from '../controller/init.controller';
 import { DefaultStructureService } from '../service/defaultStructure.service';
@@ -39,13 +40,12 @@ export class InitView {
   }
 
   /**
-   * Prints an error message
-   * @param {string} message - message
-   * @returns {void}
+   * Shows an error message
+   * @param {string|PrettyPrintableError} message - message
    * @memberof InitView
    */
-  public errorMessage(message: string): void {
-    return this.error.print(message);
+  public showErrorMessage(message: string | PrettyPrintableError): void {
+    this.error.print(message);
   }
 
   /**

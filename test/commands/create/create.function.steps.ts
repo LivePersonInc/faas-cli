@@ -227,11 +227,13 @@ defineFeature(feature, (test) => {
           loginController,
           defaultStructureService,
         });
-        await createController.createFunction({
-          name: 'exampleFunction',
-          description: 'this is a description',
-          event: 'No Event',
-        });
+        await expect(
+          createController.createFunction({
+            name: 'exampleFunction',
+            description: 'this is a description',
+            event: 'No Event',
+          }),
+        ).rejects.toThrow('exit');
       },
     );
 

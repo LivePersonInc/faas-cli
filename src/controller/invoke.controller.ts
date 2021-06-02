@@ -1,4 +1,6 @@
 import { join } from 'path';
+import { PrettyPrintableError } from '@oclif/errors';
+import { CLIErrorCodes } from '../shared/errorCodes';
 import { FileService } from '../service/file.service';
 import { factory } from '../service/faasFactory.service';
 import { InvokeView } from '../view/invoke.view';
@@ -74,7 +76,7 @@ export class InvokeController {
         await this.invokeRemote();
       }
     } catch (error) {
-      this.invokeView.printError(error.message || error.errorMsg);
+      this.invokeView.showErrorMessage(error.message || error.errorMsg);
     }
   }
 
@@ -86,10 +88,16 @@ export class InvokeController {
 
     /* istanbul ignore next */
     if (!currentLambda) {
-      throw new Error(
-        `Function ${this.lambdaToInvoke.name} were not found on the platform.
-Please make sure the function with the name ${this.lambdaToInvoke.name} was pushed to the LivePerson Functions platform`,
-      );
+      const prettyError: PrettyPrintableError = {
+        message: `Function ${this.lambdaToInvoke.name} were not found on the platform. Please make sure the function with the name ${this.lambdaToInvoke.name} was pushed to the LivePerson Functions platform`,
+        suggestions: [
+          'Use "lpf push exampleFunction" to push and "lpf deploy exampleFunction" to deploy a function',
+        ],
+        ref: 'https://github.com/LivePersonInc/faas-cli#invoke',
+        code: CLIErrorCodes.NoLambdasFound,
+      };
+      this.invokeView.showErrorMessage(prettyError);
+      throw new Error('exit');
     }
 
     const response = await faasService.invoke(

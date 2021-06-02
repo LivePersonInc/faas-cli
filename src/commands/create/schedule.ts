@@ -37,12 +37,16 @@ export class Schedule extends Command {
    * @memberof Schedule
    */
   public async run(): Promise<void> {
-    const {
-      flags: { functionName, cronExpression },
-    } = this.parse(Schedule);
-    this.createController.createSchedule({
-      functionName,
-      cronExpression,
-    });
+    try {
+      const {
+        flags: { functionName, cronExpression },
+      } = this.parse(Schedule);
+      await this.createController.createSchedule({
+        functionName,
+        cronExpression,
+      });
+    } catch (error) {
+      this.exit(1);
+    }
   }
 }

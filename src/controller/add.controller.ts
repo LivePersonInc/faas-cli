@@ -1,7 +1,9 @@
+import { PrettyPrintableError } from '@oclif/errors';
 // tslint:disable:no-shadowed-variable
 import { AddView as AddViewDefault } from '../view/add.view';
 import { LoginController } from './login.controller';
 import { factory } from '../service/faasFactory.service';
+import { CLIErrorCodes } from '../shared/errorCodes';
 
 interface IAddControllerConfig {
   addView?: AddViewDefault;
@@ -31,10 +33,14 @@ export class AddController {
    */
   public async addDomains(domains: string[] = []): Promise<void> {
     if (domains.length === 0) {
-      this.addView.showErrorMessage(
-        "Please add domains to the command's arguments",
-      );
-      return;
+      const error: PrettyPrintableError = {
+        message: "Please add domains to the command's arguments",
+        suggestions: ['Use "lpf add:domain --help" for more information'],
+        ref: 'https://github.com/LivePersonInc/faas-cli#add',
+        code: CLIErrorCodes.NoLambdasFound,
+      };
+      this.addView.showErrorMessage(error);
+      throw new Error('exit');
     }
 
     const isUserLoggedIn = await this.isUserLoggedIn();

@@ -124,7 +124,7 @@ defineFeature(feature, (test) => {
           addView,
           loginController,
         });
-        await addController.addDomains();
+        await expect(addController.addDomains()).rejects.toThrow('exit');
       },
     );
 

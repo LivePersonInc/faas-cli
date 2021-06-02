@@ -1,3 +1,4 @@
+import { PrettyPrintableError } from '@oclif/errors/lib/errors/pretty-print';
 import {
   LogMessage,
   ErrorMessage,
@@ -67,10 +68,10 @@ export class CreateView {
 
   /**
    * Shows an error message
-   * @param {string} message - message
+   * @param {string|PrettyPrintableError} message - message
    * @memberof CreateView
    */
-  public showErrorMessage(message: string): void {
+  public showErrorMessage(message: string | PrettyPrintableError): void {
     this.error.print(message);
   }
 

@@ -1,4 +1,5 @@
 import { Answers } from 'inquirer';
+import { PrettyPrintableError } from '@oclif/errors/lib/errors/pretty-print';
 import { factory } from '../service/faasFactory.service';
 import { ILambda } from '../types';
 import {
@@ -52,13 +53,12 @@ export class PushView {
   }
 
   /**
-   * Prints an Error Message
-   * @param {string} error The Error message to print
-   * @returns {void}
+   * Shows an error message
+   * @param {string|PrettyPrintableError} message - message
    * @memberof PushView
    */
-  public showErrorMessage(error: string): void {
-    return this.error.print(error);
+  public showErrorMessage(message: string | PrettyPrintableError): void {
+    this.error.print(message);
   }
 
   /**
