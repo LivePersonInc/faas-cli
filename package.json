@@ -1,7 +1,7 @@
 {
   "name": "liveperson-functions-cli",
   "description": "LivePerson Functions CLI",
-  "version": "1.24.2",
+  "version": "1.25.0",
   "author": {
     "name": "LivePersonInc",
     "email": "faas-lp@liveperson.com"
