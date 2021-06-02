@@ -37,8 +37,12 @@ export default class Undeploy extends Command {
    * @memberof Undeploy
    */
   public async run(): Promise<void> {
-    const { flags: inputFlags } = this.parse(Undeploy);
-    const lambdaFunctions = parseInput(Undeploy.flags, this.argv);
-    this.undeployController.undeploy({ lambdaFunctions, inputFlags });
+    try {
+      const { flags: inputFlags } = this.parse(Undeploy);
+      const lambdaFunctions = parseInput(Undeploy.flags, this.argv);
+      await this.undeployController.undeploy({ lambdaFunctions, inputFlags });
+    } catch (error) {
+      this.exit(1);
+    }
   }
 }

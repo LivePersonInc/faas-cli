@@ -1,3 +1,4 @@
+import { PrettyPrintableError } from '@oclif/errors';
 import { LogMessage, ErrorMessage, chalk as chalkDefault } from './printer';
 
 interface IAddViewConfig {
@@ -26,17 +27,17 @@ export class AddView {
 
   /**
    * Shows an error message
-   * @param {string} message - message
-   * @memberof CreateView
+   * @param {string|PrettyPrintableError} message - message
+   * @memberof AddView
    */
-  public showErrorMessage(message: string): void {
+  public showErrorMessage(message: string | PrettyPrintableError): void {
     this.error.print(message);
   }
 
   /**
    * Shows a message
    * @param {string} message - message
-   * @memberof CreateView
+   * @memberof AddView
    */
   public showMessage(message: string): void {
     this.log.print(message);
@@ -45,7 +46,7 @@ export class AddView {
   /**
    * Shows a message
    * @param {string} message - message
-   * @memberof CreateView
+   * @memberof AddView
    */
   public showDomainAdded(domain: string): void {
     this.log.print(

@@ -31,7 +31,11 @@ export default class Logout extends Command {
    * @memberof Logout
    */
   async run(): Promise<void> {
-    const { flags: inputFlags } = this.parse(Logout);
-    this.logoutController.logout(inputFlags);
+    try {
+      const { flags: inputFlags } = this.parse(Logout);
+      this.logoutController.logout(inputFlags);
+    } catch (error) {
+      this.exit(1);
+    }
   }
 }

@@ -1,6 +1,8 @@
 // tslint:disable:no-shadowed-variable
 import { execSync as ExecDefault } from 'child_process';
 import { join } from 'path';
+import { PrettyPrintableError } from '@oclif/errors';
+import { CLIErrorCodes } from '../shared/errorCodes';
 import { FileService } from '../service/file.service';
 import { InitView as InitViewDefault } from '../view/init.view';
 
@@ -69,7 +71,7 @@ export class InitController {
     } catch (error) {
       /* istanbul ignore else */
       if (error.name !== 'ListrError') {
-        this.initView.errorMessage(error.message || error.errorMsg);
+        this.initView.showErrorMessage(error.message || error.errorMsg);
       }
     }
   }
@@ -85,7 +87,13 @@ export class InitController {
       }
       throw new Error('Please make sure you have npm or yarn installed');
     } catch {
-      throw new Error('Please make sure you have npm or yarn installed');
+      const prettyError: PrettyPrintableError = {
+        message: 'Please make sure you have npm or yarn installed',
+        ref: 'https://yarnpkg.com/getting-started/install',
+        code: CLIErrorCodes.PackageManagerNotFound,
+      };
+      this.initView.showErrorMessage(prettyError);
+      throw new Error('exit');
     }
   }
 

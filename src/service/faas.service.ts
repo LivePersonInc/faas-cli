@@ -234,8 +234,9 @@ export class FaasService implements IFaaSService {
         });
         const [foundLambda] = lambdas.filter((e: ILambda) => e.name === name);
         if (!foundLambda && !collectNonExistingLambas) {
-          throw new Error(`Function ${name} were not found on the platform.
-Please make sure the function with the name ${name} was pushed to the LivePerson Functions platform`);
+          throw new Error(
+            `Function ${name} were not found on the platform. Please make sure the function with the name ${name} was pushed to the LivePerson Functions platform`,
+          );
         }
         return foundLambda || { name };
       }),

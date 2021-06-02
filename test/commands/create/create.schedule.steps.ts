@@ -258,10 +258,12 @@ defineFeature(feature, (test) => {
           };
         });
         createController = new CreateController({ createView });
-        await createController.createSchedule({
-          functionName: 'undeployedFunction',
-          cronExpression: '* * * **',
-        });
+        await expect(
+          createController.createSchedule({
+            functionName: 'undeployedFunction',
+            cronExpression: '* * * **',
+          }),
+        ).rejects.toThrow('exit');
       },
     );
 

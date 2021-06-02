@@ -1,4 +1,5 @@
 import { Answers } from 'inquirer';
+import { PrettyPrintableError } from '@oclif/errors';
 import { ILambda } from '../../types';
 import { UndeployView } from '../../view/undeploy.view';
 import { DeploymentController } from './deployment.controller';
@@ -63,7 +64,13 @@ export class UndeployController extends DeploymentController {
         noWatch: inputFlags?.['no-watch'],
       });
     } catch (error) {
-      this.undeployView.showErrorMessage(error.message || error.errorMsg);
+      const prettyError: PrettyPrintableError = {
+        message: error.message || error.errorMsg,
+        suggestions: ['Use "lpf undeploy --help" for more information'],
+        ref: 'https://github.com/LivePersonInc/faas-cli#undeploy',
+      };
+      this.undeployView.showErrorMessage(prettyError);
+      throw new Error('exit');
     }
   }
 }

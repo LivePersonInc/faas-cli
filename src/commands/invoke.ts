@@ -32,8 +32,12 @@ export default class Invoke extends Command {
    * @memberof Invoke
    */
   public async run(): Promise<void> {
-    const { flags: inputFlags } = this.parse(Invoke);
-    const lambdaFunctions = parseInput(Invoke.flags, this.argv);
-    this.invokeController.invoke({ lambdaFunctions, inputFlags });
+    try {
+      const { flags: inputFlags } = this.parse(Invoke);
+      const lambdaFunctions = parseInput(Invoke.flags, this.argv);
+      await this.invokeController.invoke({ lambdaFunctions, inputFlags });
+    } catch (error) {
+      this.exit(1);
+    }
   }
 }

@@ -208,9 +208,11 @@ defineFeature(feature, async (test) => {
       'This function is not available on the logged in account on the platform',
       async () => {
         const undeployController = new UndeployController();
-        await undeployController.undeploy({
-          lambdaFunctions: ['TestFunction3'],
-        });
+        await expect(
+          undeployController.undeploy({
+            lambdaFunctions: ['TestFunction3'],
+          }),
+        ).rejects.toThrow('exit');
       },
     );
 

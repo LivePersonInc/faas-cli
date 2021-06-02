@@ -1,3 +1,4 @@
+import { PrettyPrintableError } from '@oclif/errors';
 // tslint:disable:no-shadowed-variable
 import { CreateView as CreateViewDefault } from '../view/create.view';
 import {
@@ -59,7 +60,13 @@ export class CreateController {
       this.defaultStructureService.createFunction(functionConfig);
       this.createView.showFunctionIsCreated(functionConfig);
     } catch (error) {
-      this.createView.showErrorMessage(error.message);
+      const prettyError: PrettyPrintableError = {
+        message: error.message || error.errorMsg,
+        suggestions: ['Use "lpf create:function --help" for more information.'],
+        ref: 'https://github.com/LivePersonInc/faas-cli#create',
+      };
+      this.createView.showErrorMessage(prettyError);
+      throw new Error('exit');
     }
   }
 
@@ -127,7 +134,13 @@ export class CreateController {
       const res = await faasService.createSchedule(scheduleConfig);
       this.createView.showScheduleIsCreated(res.nextExecution);
     } catch (error) {
-      this.createView.showErrorMessage(error.message || error.errorMsg);
+      const prettyError: PrettyPrintableError = {
+        message: error.message || error.errorMsg,
+        suggestions: ['Use "lpf create:schedule --help" for more information.'],
+        ref: 'https://github.com/LivePersonInc/faas-cli#create',
+      };
+      this.createView.showErrorMessage(prettyError);
+      throw new Error('exit');
     }
   }
 

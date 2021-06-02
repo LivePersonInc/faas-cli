@@ -29,7 +29,11 @@ export default class Get extends Command {
    * @memberof Get
    */
   public async run(): Promise<void> {
-    const domains = parseInput(Get.flags, this.argv);
-    this.getController.get({ domains });
+    try {
+      const domains = parseInput(Get.flags, this.argv);
+      await this.getController.get({ domains });
+    } catch (error) {
+      this.exit(1);
+    }
   }
 }

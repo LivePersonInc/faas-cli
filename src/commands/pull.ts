@@ -41,8 +41,12 @@ export default class Pull extends Command {
    * @memberof Pull
    */
   public async run(): Promise<void> {
-    const { flags: inputFlags } = this.parse(Pull);
-    const lambdaFunctions = parseInput(Pull.flags, this.argv);
-    this.pullController.pull({ lambdaFunctions, inputFlags });
+    try {
+      const { flags: inputFlags } = this.parse(Pull);
+      const lambdaFunctions = parseInput(Pull.flags, this.argv);
+      await this.pullController.pull({ lambdaFunctions, inputFlags });
+    } catch (error) {
+      this.exit(1);
+    }
   }
 }

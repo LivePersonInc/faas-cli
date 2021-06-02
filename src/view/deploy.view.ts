@@ -1,5 +1,6 @@
 /* eslint-disable no-async-promise-executor */
 /* eslint-disable no-shadow */
+import { PrettyPrintableError } from '@oclif/errors/lib/errors/pretty-print';
 import { Answers } from 'inquirer';
 import * as moment from 'moment-timezone';
 import {
@@ -150,12 +151,11 @@ export class DeployView {
 
   /**
    * Shows an error message
-   * @param {string} error - message
-   * @returns {void}
+   * @param {string|PrettyPrintableError} message - message
    * @memberof DeployView
    */
-  public showErrorMessage(error: string): void {
-    return this.error.print(error);
+  public showErrorMessage(message: string | PrettyPrintableError): void {
+    this.error.print(message);
   }
 
   private preparePromptMessage(lambda: any) {
