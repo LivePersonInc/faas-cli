@@ -1,4 +1,3 @@
-import { SmtpOptions } from 'nodemailer-smtp-transport';
 import { ConversationUtil } from './conversation-util/conversationUtil';
 import { IConversationUtil } from './conversation-util/IConversationUtil';
 import { ConnectToSalesforce } from './crm-clients/salesforce';
@@ -11,8 +10,6 @@ import { ISDEUtil } from './SDE-util/ISDEUtil';
 import { SDEUtil } from './SDE-util/SDEUtil';
 import { ISecretClient } from './secret-storage/IsecretClient';
 import { VaultSecretClient } from './secret-storage/secretClient';
-import { ISMTPClient } from './smtp-client/ISmtpClient';
-import { SMTPClient } from './smtp-client/smtpClient';
 import { IFaaSContextServiceClientConfig, IFaaSContextServiceClient } from './context-service-client/IFaaSContextServiceClient';
 import { FaasContextServiceClient } from './context-service-client/contextServiceClient';
 
@@ -45,15 +42,6 @@ export class Toolbelt {
      */
     public static SecretClient(): ISecretClient {
         return new VaultSecretClient();
-    }
-
-    /**
-     * Returns an SMTP Client, which is configured based on the provided options.
-     * It is based on nodemailer and shares the same interface.
-     * @param connectionOptions
-     */
-    public static SMTPClient(connectionOptions: SmtpOptions): ISMTPClient {
-        return new SMTPClient(connectionOptions);
     }
 
     /**
