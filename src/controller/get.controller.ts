@@ -34,34 +34,34 @@ export class GetController {
   public async get(
     /* istanbul ignore next */ { domains = [] }: IGetConfig = {},
   ): Promise<void> {
+    if (domains.length === 0) {
+      const prettyError: PrettyPrintableError = {
+        message:
+          'Please provide a domain (functions, deployments and/or account)',
+        suggestions: ['Functions, deployments, account or events.'],
+        ref: 'https://github.com/LivePersonInc/faas-cli#get',
+        code: CLIErrorCodes.DomainMissing,
+      };
+      this.getView.showErrorMessage(prettyError);
+      throw new Error('exit');
+    }
+
+    /* istanbul ignore else */
+    if (!domains.some((e) => this.domains.includes(e))) {
+      const prettyError: PrettyPrintableError = {
+        message:
+          'Unsupported domain found. Only functions, deployments and account are supported!',
+        suggestions: ['Functions, deployments, account or events.'],
+        ref: 'https://github.com/LivePersonInc/faas-cli#get',
+        code: CLIErrorCodes.UnsupportedDomain,
+      };
+      this.getView.showErrorMessage(prettyError);
+      throw new Error('exit');
+    }
+
+    const faasService = await factory.get();
+
     try {
-      if (domains.length === 0) {
-        const prettyError: PrettyPrintableError = {
-          message:
-            'Please provide a domain (functions, deployments and/or account)',
-          suggestions: ['Functions, deployments, account or events.'],
-          ref: 'https://github.com/LivePersonInc/faas-cli#get',
-          code: CLIErrorCodes.DomainMissing,
-        };
-        this.getView.showErrorMessage(prettyError);
-        throw new Error('exit');
-      }
-
-      /* istanbul ignore else */
-      if (!domains.some((e) => this.domains.includes(e))) {
-        const prettyError: PrettyPrintableError = {
-          message:
-            'Unsupported domain found. Only functions, deployments and account are supported!',
-          suggestions: ['Functions, deployments, account or events.'],
-          ref: 'https://github.com/LivePersonInc/faas-cli#get',
-          code: CLIErrorCodes.UnsupportedDomain,
-        };
-        this.getView.showErrorMessage(prettyError);
-        throw new Error('exit');
-      }
-
-      const faasService = await factory.get();
-
       const allLambdas = await faasService.getAllLambdas();
 
       /* istanbul ignore else */
@@ -74,8 +74,7 @@ export class GetController {
           ref: 'https://github.com/LivePersonInc/faas-cli#get',
           code: CLIErrorCodes.NoLambdasFound,
         };
-        this.getView.showErrorMessage(prettyError);
-        throw new Error('exit');
+        throw prettyError;
       }
 
       const updatedLambdas = allLambdas.map((func) => {
@@ -103,7 +102,11 @@ export class GetController {
           }));
         this.getView.printDeployments(productiveLambdas);
       }
-
+    } catch (error) {
+      this.getView.showErrorMessage(error);
+      throw new Error('exit');
+    }
+    try {
       /* istanbul ignore else */
       if (domains.includes('account')) {
         const accountInfo = await faasService.getAccountStatistic();
@@ -116,7 +119,8 @@ export class GetController {
         this.getView.printEvents(events);
       }
     } catch (error) {
-      this.getView.showErrorMessage(error.message || error.errorMsg);
+      this.getView.showErrorMessage(error);
+      throw new Error('exit');
     }
   }
 }

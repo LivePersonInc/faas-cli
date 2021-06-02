@@ -108,7 +108,9 @@ defineFeature(feature, (test) => {
 
     when('I run the get command with an incorrect parameter', async () => {
       const getController = new GetController();
-      await getController.get({ domains: ['incorrectParam'] });
+      await expect(
+        getController.get({ domains: ['incorrectParam'] }),
+      ).rejects.toThrow('exit');
     });
 
     then('It should display an error', () => {
@@ -138,7 +140,7 @@ defineFeature(feature, (test) => {
 
     when('I run the get command with no domain provided', async () => {
       const getController = new GetController();
-      await getController.get({ domains: [] });
+      await expect(getController.get({ domains: [] })).rejects.toThrow('exit');
     });
 
     then('It should display an error', () => {
@@ -171,7 +173,9 @@ defineFeature(feature, (test) => {
       'I run the get command with functions/deployments/account/events parameter',
       async () => {
         const getController = new GetController();
-        await getController.get({ domains: ['account'] });
+        await expect(
+          getController.get({ domains: ['account'] }),
+        ).rejects.toThrow('exit');
       },
     );
 
