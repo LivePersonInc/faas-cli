@@ -240,7 +240,7 @@ export class FileService {
   }
 
   /**
-   * Returns config files for mulitple passed functions.
+   * Returns config files for multiple passed functions.
    * @param {string[]} [lambdaFunctions] - lambda functions
    * @returns {ILambdaConfig[]} - Lambda configs
    * @memberof FileService
@@ -332,11 +332,11 @@ export class FileService {
   }
 
   /**
-   * Return the config for crpyto.
+   * Return the config for crypto.
    * Takes the uuid of the system as password for pseudo encryption.
    * @returns {Promise<{ algorithm: string; key: Buffer; iv: string }>}
    */
-  public async getCrpytoConfig(): Promise<{
+  public async getCryptoConfig(): Promise<{
     algorithm: string;
     key: Buffer;
     iv: string;
@@ -357,7 +357,7 @@ export class FileService {
   }
 
   private async encrypt(data: any) {
-    const { algorithm, key, iv } = await this.getCrpytoConfig();
+    const { algorithm, key, iv } = await this.getCryptoConfig();
     const cipher = crypto.createCipheriv(algorithm, key, iv);
     let encrypted = cipher.update(JSON.stringify(data), 'utf8', 'hex');
     encrypted += cipher.final('hex');
@@ -365,7 +365,7 @@ export class FileService {
   }
 
   private async decrypt(data: any) {
-    const { algorithm, key, iv } = await this.getCrpytoConfig();
+    const { algorithm, key, iv } = await this.getCryptoConfig();
     const decipher = crypto.createDecipheriv(algorithm, key, iv);
     let decrypted = decipher.update(data, 'hex', 'utf8');
     decrypted += decipher.final('utf8');

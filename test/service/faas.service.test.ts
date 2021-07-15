@@ -1,5 +1,6 @@
 /* eslint-disable no-throw-literal */
 import * as os from 'os';
+import { Readable } from 'stream';
 import { FaasService } from '../../src/service/faas.service';
 import { LoginController } from '../../src/controller/login.controller';
 import { CsdsClient } from '../../src/service/csds.service';
@@ -326,6 +327,193 @@ describe('faas service', () => {
         },
       ],
     });
+  });
+
+  it('should get logs with header of a lambda', async () => {
+    const csdsClient = new CsdsClient();
+    csdsClient.getUri = jest.fn().mockReturnValue('faasUI');
+    const LOGS_HEADER = `lambdaUUID;requestID;timestamp;level;message;extras`;
+    const LOGS = `9db52a6a-fd2d-47cf-926d-f7c958391ba1;9636597d-238c-fb4e-1f70-eeff5248b20c;1626330360217;Info;info log 1626330360217;[]
+9db52a6a-fd2d-47cf-926d-f7c958391ba1;9636597d-238c-fb4e-1f70-eeff5248b20c;1626330360217;Warn;warn log 1626330360217;[]
+9db52a6a-fd2d-47cf-926d-f7c958391ba1;9636597d-238c-fb4e-1f70-eeff5248b20c;1626330360217;Error;error log 1626330360217;[]`;
+    const LOGS_WITH_HEADER = `${LOGS_HEADER}\n${LOGS}`;
+    const gotDefault = {
+      stream: jest.fn(() => {
+        return Readable.from([LOGS_WITH_HEADER]);
+      }),
+    } as any;
+    const faasService = new FaasService({ gotDefault, csdsClient });
+    let logged = '';
+    jest.spyOn(process.stdout, 'write').mockImplementation((output) => {
+      logged += output;
+      return true;
+    });
+    await faasService.getLogs({
+      uuid: '123-123-123',
+      start: 1626254040000,
+    });
+    expect(logged).toEqual(LOGS_WITH_HEADER);
+  });
+
+  it('should get logs without header of a lambda', async () => {
+    const csdsClient = new CsdsClient();
+    csdsClient.getUri = jest.fn().mockReturnValue('faasUI');
+    const LOGS_HEADER = `lambdaUUID;requestID;timestamp;level;message;extras`;
+    const LOGS = `9db52a6a-fd2d-47cf-926d-f7c958391ba1;9636597d-238c-fb4e-1f70-eeff5248b20c;1626330360217;Info;info log 1626330360217;[]
+9db52a6a-fd2d-47cf-926d-f7c958391ba1;9636597d-238c-fb4e-1f70-eeff5248b20c;1626330360217;Warn;warn log 1626330360217;[]
+9db52a6a-fd2d-47cf-926d-f7c958391ba1;9636597d-238c-fb4e-1f70-eeff5248b20c;1626330360217;Error;error log 1626330360217;[]`;
+    const LOGS_WITH_HEADER = `${LOGS_HEADER}\n${LOGS}`;
+    const gotDefault = {
+      stream: jest.fn(() => {
+        return Readable.from([LOGS_WITH_HEADER]);
+      }),
+    } as any;
+    const faasService = new FaasService({ gotDefault, csdsClient });
+    let logged = '';
+    jest.spyOn(process.stdout, 'write').mockImplementation((output) => {
+      logged += output;
+      return true;
+    });
+    await faasService.getLogs({
+      uuid: '123-123-123',
+      start: 1626254040000,
+      removeHeader: true,
+      levels: ['Info', 'Warn', 'Error'],
+    });
+    expect(logged).toEqual(LOGS);
+  });
+
+  it('should throw an error during get logs', async () => {
+    const csdsClient = new CsdsClient();
+    csdsClient.getUri = jest.fn().mockReturnValue('faasUI');
+    const gotDefault = {
+      stream: jest.fn(() => {
+        throw {
+          response: {
+            body: {
+              errorMsg: 'Error during get logs',
+              errorCode: 'com.liveperson.error.lambdaLogs',
+            },
+          },
+        };
+      }),
+    } as any;
+    const faasService = new FaasService({ gotDefault, csdsClient });
+    try {
+      await faasService.getLogs({
+        uuid: '123-123-123',
+        start: 1626254040000,
+      });
+      fail('should fail');
+    } catch (error) {
+      expect(error).toEqual({
+        errorMsg: 'Error during get logs',
+        errorCode: 'com.liveperson.error.lambdaLogs',
+      });
+    }
+  });
+
+  it('should throw an error during get logs', async () => {
+    const csdsClient = new CsdsClient();
+    csdsClient.getUri = jest.fn().mockReturnValue('faasUI');
+    const gotDefault = {
+      stream: jest.fn(() => {
+        throw {
+          response: {
+            body: {
+              errorMsg: 'Error during get logs',
+              errorCode: 'com.liveperson.error.lambdaLogs',
+            },
+          },
+        };
+      }),
+    } as any;
+    const faasService = new FaasService({ gotDefault, csdsClient });
+    try {
+      await faasService.getLogs({
+        uuid: '123-123-123',
+        start: 1626254040000,
+      });
+      fail('should fail');
+    } catch (error) {
+      expect(error).toEqual({
+        errorMsg: 'Error during get logs',
+        errorCode: 'com.liveperson.error.lambdaLogs',
+      });
+    }
+  });
+
+  it('should throw an 401 error if received a 401 error on getStream', async () => {
+    const csdsClient = new CsdsClient();
+    csdsClient.getUri = jest.fn().mockReturnValue('faasUI');
+    const gotDefault = {
+      stream: jest.fn(() => {
+        throw new Error('401');
+      }),
+    } as any;
+    const faasService = new FaasService({ gotDefault, csdsClient }) as any;
+    try {
+      await faasService.getStream({
+        urlPart: '/test',
+      });
+      fail('should fail');
+    } catch (error) {
+      expect(error).toEqual({
+        errorCode: '401',
+        errorMsg:
+          'You are not authorized to perform this action, please check your permissions',
+      });
+    }
+  });
+
+  it('should throw an error if received a different error than 401 or error with body on getStream', async () => {
+    const csdsClient = new CsdsClient();
+    csdsClient.getUri = jest.fn().mockReturnValue('faasUI');
+
+    const gotDefault = {
+      stream: () => {
+        const readableStream = Readable.from('test');
+        readableStream.on('data', (_chunk) => {
+          readableStream.emit('error', 'Stream Error');
+        });
+        return readableStream;
+      },
+    } as any;
+    const faasService = new FaasService({ gotDefault, csdsClient }) as any;
+    try {
+      await faasService.getStream(
+        {
+          urlPart: '/test',
+        },
+        process.stdout,
+      );
+      fail('should fail');
+    } catch (error) {
+      expect(error).toEqual('Stream Error');
+    }
+  });
+
+  it('should throw an error during get logs if not logged in', async () => {
+    const csdsClient = new CsdsClient();
+    csdsClient.getUri = jest.fn().mockReturnValue('faasUI');
+    const gotDefault = {
+      stream: jest.fn(() => {
+        throw new Error('401');
+      }),
+    } as any;
+    const faasService = new FaasService({ gotDefault, csdsClient });
+    try {
+      await faasService.getLogs({
+        uuid: '123-123-123',
+        start: 1626254040000,
+      });
+    } catch (error) {
+      expect(error).toEqual({
+        errorCode: '401',
+        errorMsg:
+          'You are not authorized to perform this action, please check your permissions',
+      });
+    }
   });
 
   it('should create a schedule', async () => {

@@ -622,8 +622,8 @@ defineFeature(feature, (test) => {
           fileService: mockFileService,
         });
         mockFileService.getFunctionConfig = jest.fn((lambdaName: string) => {
-          // eslint-disable-next-line max-nested-callbacks
           const [lambdaConfig] = localLambdaConfigs.filter(
+            // eslint-disable-next-line max-nested-callbacks
             (lambdaConfigParam: ILambdaConfig) =>
               lambdaConfigParam.name === lambdaName,
           );
