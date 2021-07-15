@@ -52,10 +52,6 @@ export class LogsController {
     inputFlags,
   }: ILogsConfig): Promise<void> {
     try {
-      if (this.fileService.needUpdateBinFolder()) {
-        await this.initController.init({ update: true });
-      }
-
       const localLambdaInformation = this.fileService.collectLocalLambdaInformation(
         [lambdaFunction],
       );

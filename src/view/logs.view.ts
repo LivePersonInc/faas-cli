@@ -19,16 +19,6 @@ export class LogsView {
   }
 
   /**
-   * Prints the console logs from the returned logs
-   * @param {*} message - message
-   * @returns {void}
-   * @memberof InvokeView
-   */
-  public printConsoleLogs(message: any): void {
-    this.log.print(message);
-  }
-
-  /**
    * Shows an error message
    * @param {string|PrettyPrintableError} message - message
    * @memberof InvokeView

@@ -17,7 +17,9 @@ jest.mock('../../../src/service/faasFactory.service', () =>
 
 import { LogsController } from '../../../src/controller/logs.controller';
 import { FileService } from '../../../src/service/file.service';
-// import { InitController } from '../../../src/controller/init.controller';
+import { InitView } from '../../../src/view/init.view';
+import { InitController } from '../../../src/controller/init.controller';
+import { DefaultStructureService } from '../../../src/service/defaultStructure.service';
 
 const feature = loadFeature('test/commands/logs/logs.feature');
 defineFeature(feature, (test) => {
@@ -96,7 +98,24 @@ defineFeature(feature, (test) => {
       'I run the logs command and pass the function name and a start timestamp',
       async () => {
         process.env.DEBUG_PATH = 'true';
-        const logsController = new LogsController();
+        const mockFileService = new FileService({
+          dirname: join(testDir, 'test', 'test'),
+        });
+        const defaultStructureService = new DefaultStructureService();
+        defaultStructureService.create = jest.fn(() => {
+          fs.copySync(
+            join(testDir, 'package.json'),
+            join(testDir, 'bin', 'lp-faas-toolbelt', 'package.json'),
+          );
+        });
+        const initView = new InitView({ defaultStructureService });
+        const initController = new InitController({
+          initView,
+        });
+        const logsController = new LogsController({
+          initController,
+          fileService: mockFileService,
+        });
         await logsController.getLogs({
           lambdaFunction: 'exampleFunction',
           inputFlags: { start: 1626254040000 },
