@@ -17,8 +17,6 @@ jest.mock('../../../src/service/faasFactory.service', () =>
 
 import { LogsController } from '../../../src/controller/logs.controller';
 import { FileService } from '../../../src/service/file.service';
-import { InitView } from '../../../src/view/init.view';
-import { InitController } from '../../../src/controller/init.controller';
 import { DefaultStructureService } from '../../../src/service/defaultStructure.service';
 
 const feature = loadFeature('test/commands/logs/logs.feature');
@@ -65,40 +63,10 @@ defineFeature(feature, (test) => {
       });
     });
 
-    given(
-      'The function is created on the platform and I have the same local with a config.json',
-      () => {
-        fs.writeFileSync(
-          join(testDir, 'functions', 'exampleFunction', 'config.json'),
-          JSON.stringify({
-            name: 'exampleFunction',
-            event: null,
-            input: {
-              headers: [],
-              payload: {},
-            },
-            environmentVariables: [
-              {
-                key: '',
-                value: '',
-              },
-            ],
-          }),
-        );
-        fs.writeFileSync(
-          join(testDir, 'functions', 'exampleFunction', 'index.js'),
-          JSON.stringify({}),
-        );
-      },
-    );
-
     when(
       'I run the logs command and pass the function name and a start timestamp',
       async () => {
         process.env.DEBUG_PATH = 'true';
-        const mockFileService = new FileService({
-          dirname: join(testDir, 'test', 'test'),
-        });
         const defaultStructureService = new DefaultStructureService();
         defaultStructureService.create = jest.fn(() => {
           fs.copySync(
@@ -106,15 +74,7 @@ defineFeature(feature, (test) => {
             join(testDir, 'bin', 'lp-faas-toolbelt', 'package.json'),
           );
         });
-        const initView = new InitView({ defaultStructureService });
-        const initController = new InitController({
-          initView,
-        });
-        const logsController = new LogsController({
-          initController,
-          fileService: mockFileService,
-        });
-        await logsController.getLogs({
+        await LogsController.getLogs({
           lambdaFunction: 'exampleFunction',
           inputFlags: { start: '1626254040000' },
         });
@@ -152,39 +112,11 @@ defineFeature(feature, (test) => {
       });
     });
 
-    given(
-      'The function is created on the platform and I have the same local with a config.json',
-      () => {
-        fs.writeFileSync(
-          join(testDir, 'functions', 'exampleFunction', 'config.json'),
-          JSON.stringify({
-            name: 'exampleFunction',
-            event: null,
-            input: {
-              headers: [],
-              payload: {},
-            },
-            environmentVariables: [
-              {
-                key: '',
-                value: '',
-              },
-            ],
-          }),
-        );
-        fs.writeFileSync(
-          join(testDir, 'functions', 'exampleFunction', 'index.js'),
-          JSON.stringify({}),
-        );
-      },
-    );
-
     when(
       'I run the logs command and pass the function name and all flags',
       async () => {
         process.env.DEBUG_PATH = 'true';
-        const logsController = new LogsController();
-        await logsController.getLogs({
+        await LogsController.getLogs({
           lambdaFunction: 'exampleFunction',
           inputFlags: {
             start: '1626254040000',
@@ -228,38 +160,10 @@ defineFeature(feature, (test) => {
       });
     });
 
-    given(
-      'The function is created on the platform and I have the same local with a config.json',
-      () => {
-        fs.writeFileSync(
-          join(testDir, 'functions', 'exampleFunction', 'config.json'),
-          JSON.stringify({
-            name: 'exampleFunction',
-            event: null,
-            input: {
-              headers: [],
-              payload: {},
-            },
-            environmentVariables: [
-              {
-                key: '',
-                value: '',
-              },
-            ],
-          }),
-        );
-        fs.writeFileSync(
-          join(testDir, 'functions', 'exampleFunction', 'index.js'),
-          JSON.stringify({}),
-        );
-      },
-    );
-
     when('I run the logs command', async () => {
       process.env.DEBUG_PATH = 'true';
-      const logsController = new LogsController();
       try {
-        await logsController.getLogs({
+        await LogsController.getLogs({
           lambdaFunction: 'exampleFunction',
           inputFlags: {
             start: '1626254040000',

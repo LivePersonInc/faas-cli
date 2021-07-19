@@ -49,8 +49,6 @@ export default class Logs extends Command {
 
   private errorMessage = new ErrorMessage();
 
-  private logsController = new LogsController();
-
   /**
    * Runs the invoke command and parses the passed function and flag
    * @returns {Promise<void>} - invoke command
@@ -60,7 +58,7 @@ export default class Logs extends Command {
     try {
       const { flags: inputFlags } = this.parse(Logs);
       const [lambdaFunction] = parseInput(Logs.flags, this.argv);
-      await this.logsController.getLogs({ lambdaFunction, inputFlags });
+      await LogsController.getLogs({ lambdaFunction, inputFlags });
     } catch (error) {
       this.errorMessage.print(error.message || error.errorMsg);
       this.exit(1);
