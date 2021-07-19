@@ -11,13 +11,13 @@ describe('faas service', () => {
   it('should setup the faas service', async () => {
     const loginController = new LoginController();
     loginController.getLoginInformation = jest.fn(() => ({
-      token: 'öasldkjföasldjföasdf',
+      token: 'aReallyToken',
       userId: 'userId',
       username: 'username',
       accountId: '123456789',
     })) as any;
     const faasService = await new FaasService({ loginController }).setup();
-    expect(faasService.token).toBe('öasldkjföasldjföasdf');
+    expect(faasService.token).toBe('aReallyToken');
     expect(faasService.userId).toBe('userId');
     expect(faasService.username).toBe('username');
     expect(faasService.accountId).toBe('123456789');
@@ -350,7 +350,7 @@ describe('faas service', () => {
     });
     await faasService.getLogs({
       uuid: '123-123-123',
-      start: 1626254040000,
+      start: '1626254040000',
     });
     expect(logged).toEqual(LOGS_WITH_HEADER);
   });
@@ -376,7 +376,7 @@ describe('faas service', () => {
     });
     await faasService.getLogs({
       uuid: '123-123-123',
-      start: 1626254040000,
+      start: '1626254040000',
       removeHeader: true,
       levels: ['Info', 'Warn', 'Error'],
     });
@@ -402,7 +402,7 @@ describe('faas service', () => {
     try {
       await faasService.getLogs({
         uuid: '123-123-123',
-        start: 1626254040000,
+        start: '1626254040000',
       });
       fail('should fail');
     } catch (error) {
@@ -432,7 +432,7 @@ describe('faas service', () => {
     try {
       await faasService.getLogs({
         uuid: '123-123-123',
-        start: 1626254040000,
+        start: '1626254040000',
       });
       fail('should fail');
     } catch (error) {
@@ -505,7 +505,7 @@ describe('faas service', () => {
     try {
       await faasService.getLogs({
         uuid: '123-123-123',
-        start: 1626254040000,
+        start: '1626254040000',
       });
     } catch (error) {
       expect(error).toEqual({
@@ -606,7 +606,7 @@ describe('faas service', () => {
     }
   });
 
-  it("should get lambdas by name and the ones which doens't exists on the platform", async () => {
+  it("should get lambdas by name and the ones which doesn't exists on the platform", async () => {
     const csdsClient = new CsdsClient();
     csdsClient.getUri = jest.fn().mockReturnValue('faasUI');
     const gotDefault = jest.fn((url) => {

@@ -26,11 +26,9 @@ defineFeature(feature, (test) => {
   jest.setTimeout(100000);
   const testDir = join(__dirname, 'test');
   const fileService = new FileService();
-  let consoleSpy;
   const stdoutSpy = jest.spyOn(process.stdout, 'write');
 
   beforeEach(() => {
-    consoleSpy = jest.spyOn(global.console, 'log').mockImplementation();
     jest.spyOn(process, 'cwd').mockReturnValue(testDir);
     jest.spyOn(os, 'tmpdir').mockReturnValue(testDir);
     fs.ensureDirSync(testDir);
@@ -118,7 +116,7 @@ defineFeature(feature, (test) => {
         });
         await logsController.getLogs({
           lambdaFunction: 'exampleFunction',
-          inputFlags: { start: 1626254040000 },
+          inputFlags: { start: '1626254040000' },
         });
       },
     );
@@ -128,7 +126,7 @@ defineFeature(feature, (test) => {
       () => {
         expect(stdoutSpy).toBeCalledWith(
           expect.stringContaining(
-            '{"uuid":"f791e5ca-3e78-4990-a066-59b82cdfd6a0","start":1626254040000}',
+            '{"uuid":"f791e5ca-3e78-4990-a066-59b82cdfd6a0","start":"1626254040000"}',
           ),
         );
       },
@@ -189,8 +187,8 @@ defineFeature(feature, (test) => {
         await logsController.getLogs({
           lambdaFunction: 'exampleFunction',
           inputFlags: {
-            start: 1626254040000,
-            end: 1626254050000,
+            start: '1626254040000',
+            end: '1626254050000',
             removeHeader: true,
             levels: ['Info', 'Warn'],
           },
@@ -203,7 +201,7 @@ defineFeature(feature, (test) => {
       () => {
         expect(stdoutSpy).toBeCalledWith(
           expect.stringContaining(
-            '{"uuid":"f791e5ca-3e78-4990-a066-59b82cdfd6a0","start":1626254040000,"end":1626254050000,"removeHeader":true,"levels":["Info","Warn"]}',
+            '{"uuid":"f791e5ca-3e78-4990-a066-59b82cdfd6a0","start":"1626254040000","end":"1626254050000","removeHeader":true,"levels":["Info","Warn"]}',
           ),
         );
       },
@@ -214,6 +212,7 @@ defineFeature(feature, (test) => {
     when,
     then,
   }) => {
+    let thrownError;
     given('I have done the local init', () => {
       fs.ensureDirSync(join(testDir, 'functions', 'exampleFunction'));
     });
@@ -259,16 +258,20 @@ defineFeature(feature, (test) => {
     when('I run the logs command', async () => {
       process.env.DEBUG_PATH = 'true';
       const logsController = new LogsController();
-      await logsController.getLogs({
-        lambdaFunction: 'exampleFunction',
-        inputFlags: {
-          start: 1626254040000,
-        },
-      });
+      try {
+        await logsController.getLogs({
+          lambdaFunction: 'exampleFunction',
+          inputFlags: {
+            start: '1626254040000',
+          },
+        });
+      } catch (error) {
+        thrownError = error;
+      }
     });
 
     then('It should display an error', () => {
-      expect(consoleSpy).toBeCalledWith(expect.stringMatching(/expected/));
+      expect(thrownError.message).toEqual('expected');
     });
   });
 });

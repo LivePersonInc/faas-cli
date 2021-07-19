@@ -160,8 +160,8 @@ export interface IFaaSService {
    */
   getLogs(options: {
     uuid: string;
-    start?: number;
-    end?: number;
+    start?: string;
+    end?: string;
     levels?: string[];
     removeHeader?: boolean;
   }): Promise<void>;
@@ -388,8 +388,8 @@ export class FaasService implements IFaaSService {
     removeHeader,
   }: {
     uuid: string;
-    start?: number;
-    end?: number;
+    start?: string;
+    end?: string;
     levels?: string[];
     removeHeader?: boolean;
   }): Promise<void> {

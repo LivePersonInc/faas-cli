@@ -240,8 +240,8 @@ export class FaasService {
 
   public async getLogs(options: {
     uuid: string;
-    start?: number;
-    end?: number;
+    start?: string;
+    end?: string;
     levels?: string[];
     removeHeader?: boolean;
   }): Promise<void> {
