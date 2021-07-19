@@ -350,7 +350,7 @@ defineFeature(feature, (test) => {
           'utf8',
         ),
       );
-      expect(toolbeltPackage.version).toBe('1.24.0');
+      expect(toolbeltPackage.version).toBe('1.25.1');
     });
 
     then(

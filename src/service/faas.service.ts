@@ -1,5 +1,6 @@
 import got, { Got } from 'got';
 import * as moment from 'moment';
+import { Transform } from 'stream';
 import {
   ILoginInformation,
   LoginController,
@@ -7,6 +8,7 @@ import {
 import { ILambda, IRuntime, ISchedule, IDomain } from '../types';
 import { IScheduleConfig } from '../controller/create.controller';
 import { CsdsClient } from './csds.service';
+import { LogsTransform } from '../transform/LogsTransform';
 
 export type HttpMethods = 'POST' | 'GET' | 'DELETE' | 'PUT';
 
@@ -17,6 +19,12 @@ interface IFetchConfig {
   body?: any;
   csds?: string;
   resolveBody?: boolean;
+}
+
+interface IGetStreamConfig {
+  urlPart: string;
+  additionalParams?: string;
+  csds?: string;
 }
 
 export interface IDeploymentResponse {
@@ -124,7 +132,7 @@ export interface IFaaSService {
   invoke(uuid: string, payload: IPayload): Promise<IInvokeResponse>;
 
   /**
-   * Creates a schedule in an account based on a cron exrpression and the lambda uuid. Every function can only be scheduled once and must be deployed.
+   * Creates a schedule in an account based on a cron expression and the lambda uuid. Every function can only be scheduled once and must be deployed.
    * @param uuid uuid of lambda for which a schedule will be created
    * @param cronExpression string which is in the cron expression format
    */
@@ -134,11 +142,29 @@ export interface IFaaSService {
   }): Promise<ISchedule>;
 
   /**
-   * Creates a schedule in an account based on a cron exrpression and the lambda uuid. Every function can only be scheduled once and must be deployed.
+   * Creates a schedule in an account based on a cron expression and the lambda uuid. Every function can only be scheduled once and must be deployed.
    * @param uuid uuid of lambda for which a schedule will be created
    * @param cronExpression string which is in the cron expression format
    */
   addDomain(domain: string): Promise<IDomain>;
+
+  /**
+   * Get logs from the LivePerson functions platform by lambda names. Setup before is necessary.
+   * The correct LivePerson url will be fetched by the accountId.
+   * @param {string} uuid uuid of lambda for which logs should be fetched
+   * @param {number} start  start timestamp for logs
+   * @param {number} end  end timestamp for logs
+   * @param {string[]} levels  which is in the cron expression format
+   * @returns {Promise<void>}
+   * @memberof IFaaSService
+   */
+  getLogs(options: {
+    uuid: string;
+    start?: string;
+    end?: string;
+    levels?: string[];
+    removeHeader?: boolean;
+  }): Promise<void>;
 }
 
 interface IFaasServiceConfig {
@@ -354,6 +380,39 @@ export class FaasService implements IFaaSService {
     return this.doFetch({ urlPart: '/events', method: 'GET' });
   }
 
+  public async getLogs({
+    uuid,
+    start,
+    end,
+    levels,
+    removeHeader,
+  }: {
+    uuid: string;
+    start?: string;
+    end?: string;
+    levels?: string[];
+    removeHeader?: boolean;
+  }): Promise<void> {
+    const urlPart = '/logs/export';
+    let additionalParams = `&lambdaUUID=${uuid}&startTimestamp=${start}&endTimestamp=${
+      end || Date.now()
+    }`;
+
+    if (levels && levels.length > 0) {
+      for (const level of levels) {
+        additionalParams += `&filterLevels=${level}`;
+      }
+    }
+
+    return this.getStream(
+      {
+        urlPart,
+        additionalParams,
+      },
+      new LogsTransform(removeHeader),
+    );
+  }
+
   public async setup(): Promise<FaasService> {
     try {
       const {
@@ -376,6 +435,54 @@ export class FaasService implements IFaaSService {
 
   private async getCsdsEntry(csdsType: string): Promise<string> {
     return this.csdsClient.getUri(this.accountId as string, csdsType);
+  }
+
+  private async getStream(
+    { urlPart, additionalParams = '', csds = 'faasUI' }: IGetStreamConfig,
+    transformer: Transform,
+  ): Promise<void> {
+    try {
+      const domain = await this.getCsdsEntry(csds);
+      const url = `https://${domain}/api/account/${this.accountId}${urlPart}?userId=${this.userId}&v=1${additionalParams}`;
+      await new Promise<void>((resolve, reject) => {
+        this.got
+          .stream(url, {
+            headers: {
+              Authorization: `Bearer ${this.token}`,
+              'Content-Type': 'application/json',
+              'user-agent': 'faas-cli',
+            },
+            responseType: 'json',
+          })
+          .on('error', (e) => {
+            reject(e);
+          })
+          .pipe(transformer)
+          .on('finish', function () {
+            resolve();
+          });
+      });
+    } catch (error) {
+      /* eslint-disable no-throw-literal */
+      if (error.message?.includes('401')) {
+        throw {
+          errorCode: '401',
+          errorMsg:
+            'You are not authorized to perform this action, please check your permissions',
+        };
+      }
+      if (error.response?.body) {
+        throw {
+          errorCode: error.response.body.errorCode,
+          errorMsg: error.response.body.errorMsg,
+          ...(error.response.body.errorLogs && {
+            errorLogs: error.response.body.errorLogs,
+          }),
+        };
+      }
+      throw error;
+      /* eslint-enable no-throw-literal */
+    }
   }
 
   private async doFetch({

@@ -12,7 +12,7 @@ export abstract class DeploymentController {
   /**
    * Gather information for passed lambda functions and enhance it with the current accountId
    * @param {string[]} lambdaFunctions - Passed lambda function
-   * @returns {Promise<ILambda[]>} - Lambdas from the platform enhanced with the current accoundId
+   * @returns {Promise<ILambda[]>} - Lambdas from the platform enhanced with the current accountId
    * @memberof DeploymentController
    */
   public async collectLambdaInformationForAllLambdas(

@@ -238,6 +238,17 @@ export class FaasService {
     return `${csdsType}.liveperson.com`;
   }
 
+  public async getLogs(options: {
+    uuid: string;
+    start?: string;
+    end?: string;
+    levels?: string[];
+    removeHeader?: boolean;
+  }): Promise<void> {
+    if (options.uuid === 'error') throw new Error('expected');
+    else process.stdout.write(JSON.stringify(options));
+  }
+
   // eslint-disable-next-line complexity
   private async doFetch({
     urlPart,
