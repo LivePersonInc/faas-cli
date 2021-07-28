@@ -2,16 +2,11 @@
   "version": "0.2.0",
   "configurations": [
     {
-      "type": "pwa-node",
-      "request": "launch",
-      "name": "Debug push steps tests",
+      "type": "node",
+      "request": "attach",
+      "name": "Attach FaaS Debugger",
+      "port": 30500,
       "skipFiles": ["<node_internals>/**"],
-      "program": "${workspaceFolder}/node_modules/jest/bin/jest.js",
-      "args": [
-          "--debug", 
-          "push.steps.ts"],
-      "outFiles": ["${workspaceFolder}/lib/**/*.js"],
-      "console": "integratedTerminal"
     }
   ]
 }
