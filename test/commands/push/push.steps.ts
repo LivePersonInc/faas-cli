@@ -68,6 +68,7 @@ const promptMock = new Prompt();
 defineFeature(feature, (test) => {
   let consoleSpy;
   let stdoutSpy;
+  let forwardedError; 
 
   afterEach(() => {
     fs.removeSync(testDir);
@@ -78,6 +79,7 @@ defineFeature(feature, (test) => {
     consoleSpy = jest.spyOn(global.console, 'log');
     stdoutSpy = jest.spyOn(process.stdout, 'write').mockImplementation();
     jest.spyOn(os, 'tmpdir').mockReturnValue(testDir);
+    forwardedError = null;
   });
 
   afterAll(() => {
@@ -387,9 +389,14 @@ defineFeature(feature, (test) => {
         pushView,
         fileService: mockFileService,
       });
-      await pushController.push({
-        lambdaFunctions: ['TestFunction6', 'TestFunction7', 'TestFunction8'],
-      });
+      try {
+        await pushController.push({
+          lambdaFunctions: ['TestFunction6', 'TestFunction7', 'TestFunction8'],
+        });
+      }catch (error){
+        // error must be forwarded in order to exit with code 1
+        forwardedError = error;
+      }
     });
 
     when('I see the confirmation prompts and confirm', () => {});
@@ -400,6 +407,7 @@ defineFeature(feature, (test) => {
       expect(JSON.stringify(stdoutSpy.mock.calls)).toContain(
         `Push Error: The code of function 'TestFunction7'`,
       );
+      expect(forwardedError).not.toBe(null); 
     });
 
     and('I expect the other lambdas to succeed', () => {
@@ -525,10 +533,15 @@ defineFeature(feature, (test) => {
         pushView,
         fileService: mockFileService,
       });
-      await pushController.push({
-        lambdaFunctions: [],
-        inputFlags: { all: true },
-      });
+      try {
+        await pushController.push({
+          lambdaFunctions: [],
+          inputFlags: { all: true },
+        });
+     } catch (error){
+      // error must be forwarded in order to exit with code 1
+      forwardedError = error;
+    }
     });
 
     when('I see the confirmation prompt and confirm', () => {});
@@ -539,6 +552,7 @@ defineFeature(feature, (test) => {
       expect(JSON.stringify(stdoutSpy.mock.calls)).toContain(
         `Push Error: The code of function 'TestFunction7'`,
       );
+      expect(forwardedError).not.toBe(null); 
     });
 
     and('I expect the other lambdas to succeed', () => {
@@ -592,16 +606,22 @@ defineFeature(feature, (test) => {
         pushView,
         fileService: mockFileService,
       });
-      await pushController.push({
-        lambdaFunctions: [],
-        inputFlags: { all: true },
-      });
+      try{
+        await pushController.push({
+          lambdaFunctions: [],
+          inputFlags: { all: true },
+        });
+      }catch (error){
+        // error must be forwarded in order to exit with code 1
+        forwardedError = error;
+      }
     });
 
     then('I expect an error message', () => {
       expect(JSON.stringify(stdoutSpy.mock.calls)).toContain(
         `Will I be printed?`,
       );
+      expect(forwardedError).not.toBe(null); 
     });
   });
 
@@ -609,6 +629,7 @@ defineFeature(feature, (test) => {
     given,
     when,
     then,
+    and,
   }) => {
     given('I am authorized', async () => {
       await fileService.writeTempFile({
@@ -642,7 +663,13 @@ defineFeature(feature, (test) => {
           pushView,
           fileService: mockFileService,
         });
-        await pushController.push({ lambdaFunctions: ['TestFunction6'] });
+        
+        try {
+         await pushController.push({ lambdaFunctions: ['TestFunction6'] });
+        } catch(error) {
+          // error must be forwarded in order to exit with code 1
+          forwardedError = error; 
+        }
       },
     );
 
@@ -650,6 +677,7 @@ defineFeature(feature, (test) => {
       expect(JSON.stringify(stdoutSpy.mock.calls)).toContain(
         `Push Error: Lambda description can not be null`,
       );
+      expect(forwardedError).not.toBe(null); 
     });
   });
 });

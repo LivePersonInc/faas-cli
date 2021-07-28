@@ -93,6 +93,7 @@ export class PushController {
       if (error.name !== 'ListrError') {
         this.pushView.showErrorMessage(error.message || error.error?.errorMsg);
       }
+      throw new Error(error);
     }
   }
 
