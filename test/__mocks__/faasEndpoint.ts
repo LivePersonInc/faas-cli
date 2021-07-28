@@ -192,9 +192,8 @@ export function push(body: any, method: string): any {
     };
   }
   if (body.name === 'TestFunction7') {
-    throw new Error("wrong code");
+    throw new Error('wrong code');
   }
-
   if (method === 'PUT') {
     return {
       body: JSON.stringify({
@@ -202,7 +201,6 @@ export function push(body: any, method: string): any {
       }),
     };
   }
-
   if (method === 'POST') {
     return {
       body: JSON.stringify({
@@ -210,7 +208,6 @@ export function push(body: any, method: string): any {
       }),
     };
   }
-
   return {
     body: {},
   };

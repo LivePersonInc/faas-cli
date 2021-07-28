@@ -320,7 +320,7 @@ defineFeature(feature, (test) => {
     when('I run the push command naming multiple folders/lambdas', async () => {
       promptMock.run = jest.fn(() => ({
         TestFunction6: true,
-        TestFunction7: true,
+        TestFunction8: true,
       })) as any;
       const pushView = new PushView({
         prompt: promptMock,
@@ -332,7 +332,7 @@ defineFeature(feature, (test) => {
         fileService: mockFileService,
       });
       await pushController.push({
-        lambdaFunctions: ['TestFunction6', 'TestFunction7'],
+        lambdaFunctions: ['TestFunction6', 'TestFunction8'],
       });
     });
 
@@ -348,7 +348,7 @@ defineFeature(feature, (test) => {
         'Pushing TestFunction6',
       );
       expect(JSON.stringify(stdoutSpy.mock.calls)).toContain(
-        'Pushing TestFunction7',
+        'Pushing TestFunction8',
       );
     });
   });
@@ -372,17 +372,14 @@ defineFeature(feature, (test) => {
     when('I run the push command naming multiple folders/lambdas', async () => {
       promptMock.run = jest.fn(() => ({
         TestFunction6: true,
-        TestFunction7: true,
+        TestFunction7: true, // TestFunction7 will fail in mock server
         TestFunction8: true,
       })) as any;
       const pushView = new PushView({
         prompt: promptMock,
         fileService: mockFileService,
       });
-      mockFileService.read = jest.fn((lambdaName) => {
-        if (lambdaName === 'TestFunction6' || lambdaName === 'TestFunction8') {
-          return 'function lambda(input, callback) {\n    callback(null, `Hello World`);\n}';
-        }
+      mockFileService.read = jest.fn(() => {
         return 'function lammbda(input, callback) {\n    callback(null, `Hello World`);\n}';
       });
 
@@ -430,6 +427,7 @@ defineFeature(feature, (test) => {
     });
 
     when("I run the push command with 'all' flag set", async () => {
+      // TestFunction7 will fail in mock server so is not inclueded
       promptMock.run = jest.fn(() => ({
         TestFunction1: true,
         TestFunction2: true,
@@ -437,7 +435,6 @@ defineFeature(feature, (test) => {
         TestFunction4: true,
         TestFunction5: true,
         TestFunction6: true,
-        TestFunction7: true,
         TestFunction8: true,
       })) as any;
       const pushView = new PushView({
@@ -450,7 +447,15 @@ defineFeature(feature, (test) => {
         fileService: mockFileService,
       });
       await pushController.push({
-        lambdaFunctions: [],
+        lambdaFunctions: [
+          'TestFunction1',
+          'TestFunction2',
+          'TestFunction3',
+          'TestFunction4',
+          'TestFunction5',
+          'TestFunction6',
+          'TestFunction8',
+        ],
         inputFlags: { all: true },
       });
     });
@@ -482,7 +487,7 @@ defineFeature(feature, (test) => {
         'Pushing TestFunction6',
       );
       expect(JSON.stringify(stdoutSpy.mock.calls)).toContain(
-        'Pushing TestFunction7',
+        'Pushing TestFunction8',
       );
     });
   });
@@ -500,17 +505,20 @@ defineFeature(feature, (test) => {
     });
 
     when("I run the push command with 'all' flag set", async () => {
-      promptMock.run = jest.fn(() => ({})) as any;
+      promptMock.run = jest.fn(() => ({
+        TestFunction1: true,
+        TestFunction2: true,
+        TestFunction3: true,
+        TestFunction4: true,
+        TestFunction5: true,
+        TestFunction6: true,
+        TestFunction7: true,
+        TestFunction8: true,
+      })) as any;
+
       const pushView = new PushView({
         prompt: promptMock,
         fileService: mockFileService,
-      });
-
-      mockFileService.read = jest.fn((lambdaName) => {
-        if (lambdaName === 'TestFunction7') {
-          return 'function lammbda(input, callback) {\n    callback(null, `Hello World`);\n}';
-        }
-        return 'function lambda(input, callback) {\n    callback(null, `Hello World`);\n}';
       });
 
       const pushController = new PushController({
