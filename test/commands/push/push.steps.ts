@@ -68,7 +68,7 @@ const promptMock = new Prompt();
 defineFeature(feature, (test) => {
   let consoleSpy;
   let stdoutSpy;
-  let forwardedError; 
+  let forwardedError;
 
   afterEach(() => {
     fs.removeSync(testDir);
@@ -393,7 +393,7 @@ defineFeature(feature, (test) => {
         await pushController.push({
           lambdaFunctions: ['TestFunction6', 'TestFunction7', 'TestFunction8'],
         });
-      }catch (error){
+      } catch (error) {
         // error must be forwarded in order to exit with code 1
         forwardedError = error;
       }
@@ -407,7 +407,7 @@ defineFeature(feature, (test) => {
       expect(JSON.stringify(stdoutSpy.mock.calls)).toContain(
         `Push Error: The code of function 'TestFunction7'`,
       );
-      expect(forwardedError).not.toBe(null); 
+      expect(forwardedError).not.toBe(null);
     });
 
     and('I expect the other lambdas to succeed', () => {
@@ -538,10 +538,10 @@ defineFeature(feature, (test) => {
           lambdaFunctions: [],
           inputFlags: { all: true },
         });
-     } catch (error){
-      // error must be forwarded in order to exit with code 1
-      forwardedError = error;
-    }
+      } catch (error) {
+        // error must be forwarded in order to exit with code 1
+        forwardedError = error;
+      }
     });
 
     when('I see the confirmation prompt and confirm', () => {});
@@ -552,7 +552,7 @@ defineFeature(feature, (test) => {
       expect(JSON.stringify(stdoutSpy.mock.calls)).toContain(
         `Push Error: The code of function 'TestFunction7'`,
       );
-      expect(forwardedError).not.toBe(null); 
+      expect(forwardedError).not.toBe(null);
     });
 
     and('I expect the other lambdas to succeed', () => {
@@ -606,12 +606,12 @@ defineFeature(feature, (test) => {
         pushView,
         fileService: mockFileService,
       });
-      try{
+      try {
         await pushController.push({
           lambdaFunctions: [],
           inputFlags: { all: true },
         });
-      }catch (error){
+      } catch (error) {
         // error must be forwarded in order to exit with code 1
         forwardedError = error;
       }
@@ -621,7 +621,7 @@ defineFeature(feature, (test) => {
       expect(JSON.stringify(stdoutSpy.mock.calls)).toContain(
         `Will I be printed?`,
       );
-      expect(forwardedError).not.toBe(null); 
+      expect(forwardedError).not.toBe(null);
     });
   });
 
@@ -629,7 +629,6 @@ defineFeature(feature, (test) => {
     given,
     when,
     then,
-    and,
   }) => {
     given('I am authorized', async () => {
       await fileService.writeTempFile({
@@ -663,12 +662,12 @@ defineFeature(feature, (test) => {
           pushView,
           fileService: mockFileService,
         });
-        
+
         try {
-         await pushController.push({ lambdaFunctions: ['TestFunction6'] });
-        } catch(error) {
+          await pushController.push({ lambdaFunctions: ['TestFunction6'] });
+        } catch (error) {
           // error must be forwarded in order to exit with code 1
-          forwardedError = error; 
+          forwardedError = error;
         }
       },
     );
@@ -677,7 +676,7 @@ defineFeature(feature, (test) => {
       expect(JSON.stringify(stdoutSpy.mock.calls)).toContain(
         `Push Error: Lambda description can not be null`,
       );
-      expect(forwardedError).not.toBe(null); 
+      expect(forwardedError).not.toBe(null);
     });
   });
 });

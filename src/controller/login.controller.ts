@@ -87,7 +87,7 @@ export class LoginController {
 
     try {
       let tokenValid;
-      if(this.tempFile){
+      if (this.tempFile) {
         tokenValid = await this.loginService.isTokenValid({
           accountId: this.accountId,
           csrf: this.tempFile[this.accountId]?.csrf,

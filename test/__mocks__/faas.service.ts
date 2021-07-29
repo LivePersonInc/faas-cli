@@ -267,7 +267,10 @@ export class FaasService {
       let response: any;
       if (method === 'POST' && urlPart.includes('invoke')) {
         response = invoke(url);
-      } else if ((method === 'PUT' || method === 'POST') && urlPart.includes('lambdas')) {
+      } else if (
+        (method === 'PUT' || method === 'POST') &&
+        urlPart.includes('lambdas')
+      ) {
         response = push(body, method);
       } else if (method === 'GET' && urlPart.includes('reports/limitCounts')) {
         response = getLimitCounts();
