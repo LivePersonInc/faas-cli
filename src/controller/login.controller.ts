@@ -86,11 +86,14 @@ export class LoginController {
     }
 
     try {
-      const tokenValid = await this.loginService.isTokenValid({
-        accountId: this.accountId,
-        csrf: this.tempFile[this.accountId]?.csrf,
-        sessionId: this.tempFile[this.accountId]?.sessionId,
-      });
+      let tokenValid;
+      if(this.tempFile){
+        tokenValid = await this.loginService.isTokenValid({
+          accountId: this.accountId,
+          csrf: this.tempFile[this.accountId]?.csrf,
+          sessionId: this.tempFile[this.accountId]?.sessionId,
+        });
+      }
       if (tokenValid) {
         this.updateTempFile();
         this.loginView.showWelcomeBanner(true);
