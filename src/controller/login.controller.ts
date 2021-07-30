@@ -98,14 +98,15 @@ export class LoginController {
         this.updateTempFile();
         this.loginView.showWelcomeBanner(true);
       } else {
-        throw new Error('Token not valid');
+        await this.askForUsernameAndPassword({
+          showBanner: true,
+          username: inputFlags?.username,
+          password: inputFlags?.password,
+        });
       }
-    } catch {
-      await this.askForUsernameAndPassword({
-        showBanner: true,
-        username: inputFlags?.username,
-        password: inputFlags?.password,
-      });
+    } catch (error) {
+      this.loginView.errorDuringLogin();
+      throw new Error(error);
     }
   }
 
@@ -166,7 +167,7 @@ export class LoginController {
       await this.updateTempFile();
       this.loginView.showWelcomeBanner(showBanner);
     } catch (error) {
-      this.loginView.errorDuringLogin();
+      throw new Error(error);
     }
   }
 
