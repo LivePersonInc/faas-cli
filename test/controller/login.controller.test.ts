@@ -58,7 +58,7 @@ describe('login controller', () => {
         loginName: 'testUser',
       },
     });
-    
+
     const loginView = new LoginView();
     loginView.askForUsernameAndPassword = jest.fn(async () => ({
       username: 'testUser',

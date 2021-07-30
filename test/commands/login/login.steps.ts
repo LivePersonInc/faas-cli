@@ -348,7 +348,7 @@ defineFeature(feature, (test) => {
     when,
     then,
   }) => {
-    const errorMessage = "Error during login";
+    const errorMessage = 'Error during login';
     let loginService: LoginService;
     let forwardedError;
 

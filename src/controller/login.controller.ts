@@ -218,7 +218,11 @@ export class LoginController {
       }
       throw new Error('Token not valid');
     } catch {
-      await this.loginByFaasFactory();
+      try {
+        await this.loginByFaasFactory();
+      } catch {
+        this.loginView.errorDuringLogin();
+      }
       return this.getLoginInformation({ validToken: true });
     }
   }
