@@ -12,7 +12,20 @@ const { join } = require('path');
 const proxy = new Proxy(require('module').prototype.require, {
   apply(target, thisArg, argumentsList) {
     const name = argumentsList.length > 0 ? argumentsList[0] : '';
-    if (name.includes('lp-faas-toolbelt')) {
+    if (
+      ['oauth-1.0a', 'luxon', 'jsforce', 'lodash'].some(
+        (pkg) => name.includes(pkg) && name.includes('lp-faas-toolbelt'),
+      )
+    ) {
+      argumentsList[0] = join(
+        '..',
+        '..',
+        'bin',
+        'lp-faas-toolbelt',
+        'node_modules',
+        name.split('/').pop(),
+      );
+    } else if (name.includes('lp-faas-toolbelt')) {
       argumentsList[0] = join('..', '..', 'bin', 'lp-faas-toolbelt');
     }
     if (name.match(/functions\/.*\/config/)) {
