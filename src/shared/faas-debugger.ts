@@ -19,7 +19,7 @@ interface IInvokeErrorLogs {
 
 const EXECUTION_EXCEED_TIMEOUT = 60000;
 
-const EXTERNAL_PACKAGE_MAPPING = ['oauth-1.0a', 'luxon', 'jsforce'];
+const EXTERNAL_PACKAGE_MAPPING = ['oauth-1.0a', 'luxon', 'jsforce', 'lodash'];
 
 function isLogLevel(input: any) {
   return Object.keys({
