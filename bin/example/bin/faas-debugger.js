@@ -7,7 +7,7 @@ const child_process_1 = require("child_process");
 const path_1 = require("path");
 const perf_hooks_1 = require("perf_hooks");
 const EXECUTION_EXCEED_TIMEOUT = 60000;
-const EXTERNAL_PACKAGE_MAPPING = ['oauth-1.0a', 'luxon', 'jsforce'];
+const EXTERNAL_PACKAGE_MAPPING = ['oauth-1.0a', 'luxon', 'jsforce', 'lodash'];
 function isLogLevel(input) {
     return Object.keys({
         Debug: 'Debug',
