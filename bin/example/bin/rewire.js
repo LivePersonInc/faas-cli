@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 /* eslint-disable global-require */
 const { join } = require('path');
-
+const externalLibs = ['oauth-1.0a', 'luxon', 'jsforce', 'lodash']
 /**
  * Is used for rewiring the require, so the lambda code will stay the same
  * Uses the proxy to overwrite the module.require.
@@ -13,7 +13,7 @@ const proxy = new Proxy(require('module').prototype.require, {
   apply(target, thisArg, argumentsList) {
     const name = argumentsList.length > 0 ? argumentsList[0] : '';
     if (
-      ['oauth-1.0a', 'luxon', 'jsforce', 'lodash'].some(
+      externalLibs.some(
         (pkg) => name.includes(pkg) && name.includes('lp-faas-toolbelt'),
       )
     ) {
