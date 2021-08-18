@@ -86,23 +86,27 @@ export class LoginController {
     }
 
     try {
-      const tokenValid = await this.loginService.isTokenValid({
-        accountId: this.accountId,
-        csrf: this.tempFile[this.accountId]?.csrf,
-        sessionId: this.tempFile[this.accountId]?.sessionId,
-      });
+      let tokenValid;
+      if (this.tempFile) {
+        tokenValid = await this.loginService.isTokenValid({
+          accountId: this.accountId,
+          csrf: this.tempFile[this.accountId]?.csrf,
+          sessionId: this.tempFile[this.accountId]?.sessionId,
+        });
+      }
       if (tokenValid) {
         this.updateTempFile();
         this.loginView.showWelcomeBanner(true);
       } else {
-        throw new Error('Token not valid');
+        await this.askForUsernameAndPassword({
+          showBanner: true,
+          username: inputFlags?.username,
+          password: inputFlags?.password,
+        });
       }
-    } catch {
-      await this.askForUsernameAndPassword({
-        showBanner: true,
-        username: inputFlags?.username,
-        password: inputFlags?.password,
-      });
+    } catch (error) {
+      this.loginView.errorDuringLogin();
+      throw new Error(error);
     }
   }
 
@@ -163,7 +167,7 @@ export class LoginController {
       await this.updateTempFile();
       this.loginView.showWelcomeBanner(showBanner);
     } catch (error) {
-      this.loginView.errorDuringLogin();
+      throw new Error(error);
     }
   }
 
@@ -214,7 +218,11 @@ export class LoginController {
       }
       throw new Error('Token not valid');
     } catch {
-      await this.loginByFaasFactory();
+      try {
+        await this.loginByFaasFactory();
+      } catch {
+        this.loginView.errorDuringLogin();
+      }
       return this.getLoginInformation({ validToken: true });
     }
   }

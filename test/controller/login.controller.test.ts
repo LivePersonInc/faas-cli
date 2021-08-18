@@ -49,13 +49,27 @@ describe('login controller', () => {
   it('should get the token and userId if token is not valid anymore', async () => {
     const loginService = new LoginService();
     loginService.isTokenValid = jest.fn(async () => false);
+    loginService.login = jest.fn().mockReturnValue({
+      bearer: 'aöskldfj02ajösldkfjalsdkf',
+      csrf: 'öalskdjföalksdfjalskdf',
+      sessionId: 'ölkjasdf',
+      config: {
+        userId: 'TestUserId',
+        loginName: 'testUser',
+      },
+    });
 
     const loginView = new LoginView();
     loginView.askForUsernameAndPassword = jest.fn(async () => ({
       username: 'testUser',
       password: 'testPW',
     })) as any;
-    loginView.chooseOrEnterAccountId = jest.fn(() => '123456789') as any;
+
+    loginView.chooseOrEnterAccountId = jest.fn(() => {
+      return {
+        accountId: '123456789',
+      };
+    }) as any;
 
     const loginController = new LoginController({ loginService, loginView });
 

@@ -267,8 +267,11 @@ export class FaasService {
       let response: any;
       if (method === 'POST' && urlPart.includes('invoke')) {
         response = invoke(url);
-      } else if (method === 'PUT' && urlPart.includes('lambdas')) {
-        response = push(body);
+      } else if (
+        (method === 'PUT' || method === 'POST') &&
+        urlPart.includes('lambdas')
+      ) {
+        response = push(body, method);
       } else if (method === 'GET' && urlPart.includes('reports/limitCounts')) {
         response = getLimitCounts();
       } else if (method === 'GET' && urlPart.includes('reports/lambdaCounts')) {
@@ -289,7 +292,7 @@ export class FaasService {
       } else if (method === 'GET' && urlPart.includes('events')) {
         response = getEvents();
       }
-      return JSON.parse(response.body);
+      return JSON.parse(response?.body);
     } catch (error) {
       if (error.message?.includes('401')) {
         throw new Error('401 (Unauthorized)');
