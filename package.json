@@ -1,7 +1,7 @@
 {
   "name": "liveperson-functions-cli",
   "description": "LivePerson Functions CLI",
-  "version": "1.26.1",
+  "version": "1.26.2",
   "author": {
     "name": "LivePersonInc",
     "email": "faas-lp@liveperson.com"
@@ -42,7 +42,8 @@
     "semver": "^7.2.1",
     "set-interval-async": "^1.0.30",
     "systeminformation": "^5.3.1",
-    "uuid": "8.3.0"
+    "uuid": "8.3.0",
+    "hpagent": "0.1.2"
   },
   "devDependencies": {
     "@babel/core": "^7.9.0",
