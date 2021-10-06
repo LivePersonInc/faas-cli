@@ -53,9 +53,8 @@ export class InvokeController {
         await this.initController.init({ update: true });
       }
 
-      const localLambdaInformation = this.fileService.collectLocalLambdaInformation(
-        lambdaFunctions,
-      );
+      const localLambdaInformation =
+        this.fileService.collectLocalLambdaInformation(lambdaFunctions);
       [this.lambdaToInvoke] = localLambdaInformation;
       if (inputFlags?.local) {
         const indexPath = join(

@@ -47,9 +47,8 @@ export class PushController {
         lambdaFunctions = this.fileService.getFunctionsDirectories();
       }
 
-      const localLambdaInformation = this.fileService.collectLocalLambdaInformation(
-        lambdaFunctions,
-      );
+      const localLambdaInformation =
+        this.fileService.collectLocalLambdaInformation(lambdaFunctions);
       const localLambdaNames = localLambdaInformation.map((e) => e.name);
       const faasService = await factory.get();
 
