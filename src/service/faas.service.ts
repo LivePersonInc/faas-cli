@@ -1,6 +1,7 @@
 import got, { Got } from 'got';
 import * as moment from 'moment';
 import { Transform } from 'stream';
+import { HttpsProxyAgent } from 'hpagent';
 import {
   ILoginInformation,
   LoginController,
@@ -415,12 +416,8 @@ export class FaasService implements IFaaSService {
 
   public async setup(): Promise<FaasService> {
     try {
-      const {
-        token,
-        userId,
-        username,
-        accountId,
-      }: ILoginInformation = await this.loginController.getLoginInformation();
+      const { token, userId, username, accountId }: ILoginInformation =
+        await this.loginController.getLoginInformation();
       this.token = token;
       this.userId = userId;
       this.username = username;
@@ -442,6 +439,9 @@ export class FaasService implements IFaaSService {
     transformer: Transform,
   ): Promise<void> {
     try {
+      const { HTTPS_PROXY, https_proxy } = process.env;
+      const proxyURL = HTTPS_PROXY || https_proxy || '';
+
       const domain = await this.getCsdsEntry(csds);
       const url = `https://${domain}/api/account/${this.accountId}${urlPart}?userId=${this.userId}&v=1${additionalParams}`;
       await new Promise<void>((resolve, reject) => {
@@ -452,6 +452,18 @@ export class FaasService implements IFaaSService {
               'Content-Type': 'application/json',
               'user-agent': 'faas-cli',
             },
+            ...(proxyURL && {
+              agent: {
+                https: new HttpsProxyAgent({
+                  keepAlive: true,
+                  keepAliveMsecs: 1000,
+                  maxSockets: 256,
+                  maxFreeSockets: 256,
+                  scheduling: 'lifo',
+                  proxy: proxyURL,
+                }),
+              },
+            }),
             responseType: 'json',
           })
           .on('error', (e) => {
@@ -494,6 +506,9 @@ export class FaasService implements IFaaSService {
     resolveBody = true,
   }: IFetchConfig): Promise<any> {
     try {
+      const { HTTPS_PROXY, https_proxy } = process.env;
+      const proxyURL = HTTPS_PROXY || https_proxy || '';
+
       const domain = await this.getCsdsEntry(csds);
       const url = `https://${domain}/api/account/${this.accountId}${urlPart}?userId=${this.userId}&v=1${additionalParams}`;
       const response = await this.got(url, {
@@ -503,6 +518,18 @@ export class FaasService implements IFaaSService {
           'Content-Type': 'application/json',
           'user-agent': 'faas-cli',
         },
+        ...(proxyURL && {
+          agent: {
+            https: new HttpsProxyAgent({
+              keepAlive: true,
+              keepAliveMsecs: 1000,
+              maxSockets: 256,
+              maxFreeSockets: 256,
+              scheduling: 'lifo',
+              proxy: proxyURL,
+            }),
+          },
+        }),
         responseType: 'json',
         ...(body && { json: { timestamp: 0, ...body } }),
       });
