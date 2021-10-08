@@ -36,6 +36,8 @@ For more information about LivePerson Functions see [developers.liveperson.com](
   - [Debugging with VSC](#debugging-with-vsc)
   - [Debugging with IntelliJ](#debugging-with-intellij)
   - [Debugging with other IDEs or Debugger](#debugging-with-other-ides-or-debugger)
+- [Troubleshooting](#troubleshooting)
+  - [Using a proxy](#using-a-proxy)
 
 ## Installation
 
@@ -778,3 +780,9 @@ To get started with the local development and debugging some preparation is need
 3. A debug port will start on the port 1337
 4. Attach your favorite IDE or debugger to this port
 5. Use the debugger to navigate through your code.
+
+## Troubleshooting
+
+### Using a proxy
+
+If the envar `HTTPS_PROXY` or `https_proxy` is set the `lpf` command will use the respective URLs to forward all calls.
