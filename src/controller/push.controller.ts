@@ -57,7 +57,6 @@ export class PushController {
         localLambdaNames,
         true,
       );
-
       const allLambdaBodies: ILambda[] = await Promise.all(
         allLambdas.map(async (lambda) => {
           const lambdaConfig = this.fileService.getFunctionConfig(lambda.name);
@@ -125,7 +124,7 @@ export class PushController {
   private createUpdateLambdaBody(lambda: ILambda, lambdaConfig: any): any {
     return {
       uuid: lambda.uuid,
-      version: lambda.version + 1,
+      version: lambda.version,
       state: lambda.state === 'Draft' ? 'Draft' : 'Modified',
       name: lambda.name,
       eventId: lambda.eventId,
