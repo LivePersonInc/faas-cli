@@ -348,7 +348,9 @@ defineFeature(feature, (test) => {
     when,
     then,
   }) => {
+    const errorMessage = 'Error during login';
     let loginService: LoginService;
+    let forwardedError;
 
     given('I have an accountId set up', async () => {
       const tempFile = await fileService.getTempFile();
@@ -366,7 +368,7 @@ defineFeature(feature, (test) => {
       loginService = new LoginService();
       loginService.isTokenValid = jest.fn().mockReturnValue(false);
       loginService.login = jest.fn(async () => {
-        throw new Error('Error during login');
+        throw new Error(errorMessage);
       });
     });
 
@@ -380,17 +382,22 @@ defineFeature(feature, (test) => {
       })) as any;
 
       const loginController = new LoginController({ loginView, loginService });
-      await loginController.loginByCommand({
-        inputFlags: { password: 'testPW' },
-      });
+      try {
+        await loginController.loginByCommand({
+          inputFlags: { password: 'testPW' },
+        });
+      } catch (error) {
+        forwardedError = error;
+      }
     });
 
     when('I provide a wrong password and username', () => {});
 
-    then('It should print the error message', () => {
+    then('It should print the error message and exit with code 1', () => {
       expect(consoleSpy).toHaveBeenCalledWith(
         expect.stringMatching(/Looks like something went wrong/),
       );
+      expect(forwardedError.message).toContain(errorMessage);
     });
   });
 
@@ -474,7 +481,7 @@ defineFeature(feature, (test) => {
         await getController.get({ domains: ['functions'] });
 
         expect(JSON.stringify(stdoutSpy.mock.calls)).toContain(
-          'FunctionSSO                   Productive',
+          'Name                          State          Last changed at                         Last changed by                         Event                                   ',
         );
       },
     );

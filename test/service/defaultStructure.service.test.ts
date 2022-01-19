@@ -41,15 +41,15 @@ describe('Default structure service', () => {
     ).toBeTruthy();
     expect(
       fs.existsSync(join(testDir, 'functions', 'exampleFunction')),
-    ).toBeTruthy();
+    ).toBeFalsy();
     expect(
       fs.existsSync(join(testDir, 'functions', 'exampleFunction', 'index.js')),
-    ).toBeTruthy();
+    ).toBeFalsy();
     expect(
       fs.existsSync(
         join(testDir, 'functions', 'exampleFunction', 'config.json'),
       ),
-    ).toBeTruthy();
+    ).toBeFalsy();
   });
 
   it('should create the default structure service with function name', () => {
@@ -96,5 +96,73 @@ describe('Default structure service', () => {
         'Folder with same name already exists (functionWithName1)',
       );
     }
+  });
+
+  it('should only create the bin folder for the update', () => {
+    defaultStructureService.create(undefined, true);
+
+    expect(fs.existsSync(join(testDir, 'README.md'))).toBeFalsy();
+    expect(fs.existsSync(join(testDir, '.vscode'))).toBeFalsy();
+    expect(fs.existsSync(join(testDir, '.idea'))).toBeFalsy();
+
+    expect(
+      fs.existsSync(join(testDir, 'bin', 'faas-debugger.js')),
+    ).toBeTruthy();
+    expect(fs.existsSync(join(testDir, 'bin', 'rewire.js'))).toBeTruthy();
+    expect(
+      fs.existsSync(join(testDir, 'bin', 'lp-faas-toolbelt/')),
+    ).toBeTruthy();
+  });
+
+  it('should throw an error if folder with same function already exists', () => {
+    defaultStructureService.createFunction({
+      description: 'foo',
+      event: 'bar',
+      name: 'baz',
+    });
+
+    try {
+      defaultStructureService.createFunction({
+        description: 'foo',
+        event: 'bar',
+        name: 'baz',
+      });
+    } catch (error) {
+      expect(error.message).toBe('Folder with same name already exists (baz)');
+    }
+  });
+
+  it('should throw an error if lambda name not defined', () => {
+    try {
+      defaultStructureService.createFunction({
+        description: 'foo',
+        event: 'bar',
+        name: '',
+      });
+    } catch (error) {
+      expect(error.message).toBe('Name is required');
+    }
+  });
+
+  it('should make valid default values if no event and/or description is given', () => {
+    defaultStructureService.createFunction({
+      description: '',
+      event: '',
+      name: 'undescribedNoEventFunction',
+    });
+
+    expect(
+      fs.existsSync(join(testDir, 'functions', 'undescribedNoEventFunction')),
+    ).toBeTruthy();
+
+    const lambdaConfiguration = fileService.read(
+      join(testDir, 'functions', 'undescribedNoEventFunction', 'config.json'),
+    );
+
+    expect(lambdaConfiguration.name).toEqual('undescribedNoEventFunction');
+    expect(lambdaConfiguration.event).toEqual('No Event');
+    expect(lambdaConfiguration.description).toEqual(
+      'undescribedNoEventFunction description',
+    );
   });
 });

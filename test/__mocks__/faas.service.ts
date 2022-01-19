@@ -10,6 +10,7 @@ import {
   getLambdaCounts,
   getInvocationCounts,
   getEvents,
+  push,
 } from './faasEndpoint';
 import { FileService } from '../../src/service/file.service';
 import { ILambda, IRuntime } from '../../src/types';
@@ -84,7 +85,7 @@ export class FaasService {
       };
     } catch (error) {
       return {
-        message: error.error.errorMsg,
+        message: error.errorMsg,
         uuid,
       };
     }
@@ -99,7 +100,7 @@ export class FaasService {
       };
     } catch (error) {
       return {
-        message: error.error.errorMsg,
+        message: error.errorMsg,
         uuid,
       };
     }
@@ -128,8 +129,9 @@ export class FaasService {
             additionalParams: `&name=${name}`,
           });
           if (!foundLambdas && !collectNonExistingLambas) {
-            throw new Error(`Function ${name} were not found on the platform.
-            Please make sure the function with the name ${name} was pushed to the LivePerson Functions platform`);
+            throw new Error(
+              `Function ${name} were not found on the platform. Please make sure the function with the name ${name} was pushed to the LivePerson Functions platform`,
+            );
           }
           return foundLambdas || { name };
         }),
@@ -149,6 +151,27 @@ export class FaasService {
     }
   }
 
+  public async createSchedule(schedule): Promise<any> {
+    return {
+      uuid: '1111-2222-3333-4444',
+      lambdaUUID: schedule.lambdaUUID,
+      cronExpression: schedule.cronExpression,
+      nextExecution: '2020-11-10T09:47:00.850Z',
+      lastExecution: '2020-11-10T09:46:00.850Z',
+      didLastExecutionFail: true,
+      isActive: schedule.isActive,
+      createdBy: 'user',
+    };
+  }
+
+  public async addDomain(domain: string): Promise<any> {
+    return {
+      id: '1111-2222-3333-4444',
+      domain,
+      additionalProp1: {},
+    };
+  }
+
   public async push({
     method,
     body,
@@ -157,17 +180,18 @@ export class FaasService {
     method: HttpMethods;
     body: ILambda;
     uuid?: string;
-  }): Promise<void> {
+  }): Promise<boolean> {
     try {
       const urlPart = `/lambdas${uuid ? `/${uuid}` : ''}`;
-      await this.doFetch({ urlPart, method, body });
+      const response = await this.doFetch({ urlPart, method, body });
+      return response.statusCode !== 304;
     } catch (error) {
       if (body.implementation.code.includes('lammbda')) {
         throw new Error(
           `Push Error: The code of function '${body.name}' you are trying to push is not a valid lambda.`,
         );
       }
-      throw new Error(error.error.errorMsg);
+      throw new Error(error.errorMsg);
     }
   }
 
@@ -214,11 +238,23 @@ export class FaasService {
     return `${csdsType}.liveperson.com`;
   }
 
+  public async getLogs(options: {
+    uuid: string;
+    start?: string;
+    end?: string;
+    levels?: string[];
+    removeHeader?: boolean;
+  }): Promise<void> {
+    if (options.uuid === 'error') throw new Error('expected');
+    else process.stdout.write(JSON.stringify(options));
+  }
+
   // eslint-disable-next-line complexity
   private async doFetch({
     urlPart,
     method,
     additionalParams = '',
+    body,
   }: {
     urlPart: string;
     method: 'POST' | 'GET' | 'DELETE' | 'PUT';
@@ -231,6 +267,11 @@ export class FaasService {
       let response: any;
       if (method === 'POST' && urlPart.includes('invoke')) {
         response = invoke(url);
+      } else if (
+        (method === 'PUT' || method === 'POST') &&
+        urlPart.includes('lambdas')
+      ) {
+        response = push(body, method);
       } else if (method === 'GET' && urlPart.includes('reports/limitCounts')) {
         response = getLimitCounts();
       } else if (method === 'GET' && urlPart.includes('reports/lambdaCounts')) {
@@ -251,7 +292,7 @@ export class FaasService {
       } else if (method === 'GET' && urlPart.includes('events')) {
         response = getEvents();
       }
-      return JSON.parse(response.body);
+      return JSON.parse(response?.body);
     } catch (error) {
       if (error.message?.includes('401')) {
         throw new Error('401 (Unauthorized)');

@@ -183,4 +183,34 @@ export function getEvents() {
   };
 }
 
+export function push(body: any, method: string): any {
+  if (body.name === 'TestFunction1' && method === 'PUT') {
+    return {
+      body: JSON.stringify({
+        statusCode: 304,
+      }),
+    };
+  }
+  if (body.name === 'TestFunction7') {
+    throw new Error('wrong code');
+  }
+  if (method === 'PUT') {
+    return {
+      body: JSON.stringify({
+        statusCode: 202,
+      }),
+    };
+  }
+  if (method === 'POST') {
+    return {
+      body: JSON.stringify({
+        statusCode: 201,
+      }),
+    };
+  }
+  return {
+    body: {},
+  };
+}
+
 resetAttempts();

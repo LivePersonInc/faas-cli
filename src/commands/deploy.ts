@@ -37,8 +37,12 @@ export class Deploy extends Command {
    * @memberof Deploy
    */
   public async run(): Promise<void> {
-    const { flags: inputFlags } = this.parse(Deploy);
-    const lambdaFunctions = parseInput(Deploy.flags, this.argv);
-    this.deployController.deploy({ lambdaFunctions, inputFlags });
+    try {
+      const { flags: inputFlags } = this.parse(Deploy);
+      const lambdaFunctions = parseInput(Deploy.flags, this.argv);
+      await this.deployController.deploy({ lambdaFunctions, inputFlags });
+    } catch (error) {
+      this.exit(1);
+    }
   }
 }

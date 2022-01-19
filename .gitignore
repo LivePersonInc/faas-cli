@@ -13,3 +13,4 @@ node_modules
 /bin/example/bin/lp-faas-toolbelt/*
 !/bin/example/bin/lp-faas-toolbelt/package.json
 /functions
+.DS_Store

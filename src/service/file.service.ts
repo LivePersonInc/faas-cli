@@ -3,12 +3,14 @@ import * as fsDefault from 'fs-extra';
 import { system } from 'systeminformation';
 import * as os from 'os';
 import { join } from 'path';
+import * as semver from 'semver';
 import { ILambdaConfig } from '../types';
 
 interface IFileServiceConstructorConfig {
   cwd?: string;
   fs?: any;
   sysinfo?: any;
+  dirname?: string;
 }
 
 export class FileService {
@@ -18,14 +20,18 @@ export class FileService {
 
   private sysinfo: any;
 
+  private dirname: string;
+
   constructor({
     cwd = process.cwd(),
     fs = fsDefault,
     sysinfo = system,
+    dirname = __dirname,
   }: IFileServiceConstructorConfig = {}) {
     this.cwd = cwd;
     this.fs = fs;
     this.sysinfo = sysinfo;
+    this.dirname = dirname;
   }
 
   public copy(sourcePath: string, destinationPath: string): void | Error {
@@ -234,7 +240,7 @@ export class FileService {
   }
 
   /**
-   * Returns config files for mulitple passed functions.
+   * Returns config files for multiple passed functions.
    * @param {string[]} [lambdaFunctions] - lambda functions
    * @returns {ILambdaConfig[]} - Lambda configs
    * @memberof FileService
@@ -309,12 +315,28 @@ export class FileService {
     );
   }
 
+  public needUpdateBinFolder() {
+    try {
+      const cliPackage = this.read(
+        join(this.dirname, '..', '..', 'package.json'),
+      );
+      const cliVersion = cliPackage?.version;
+      const toolbeltPackage = this.read(
+        join(this.getRoot(), 'bin', 'lp-faas-toolbelt', 'package.json'),
+      );
+      const toolbeltVersion = toolbeltPackage?.version;
+      return semver.gt(cliVersion, toolbeltVersion);
+    } catch {
+      return false;
+    }
+  }
+
   /**
-   * Return the config for crpyto.
+   * Return the config for crypto.
    * Takes the uuid of the system as password for pseudo encryption.
    * @returns {Promise<{ algorithm: string; key: Buffer; iv: string }>}
    */
-  public async getCrpytoConfig(): Promise<{
+  public async getCryptoConfig(): Promise<{
     algorithm: string;
     key: Buffer;
     iv: string;
@@ -335,7 +357,7 @@ export class FileService {
   }
 
   private async encrypt(data: any) {
-    const { algorithm, key, iv } = await this.getCrpytoConfig();
+    const { algorithm, key, iv } = await this.getCryptoConfig();
     const cipher = crypto.createCipheriv(algorithm, key, iv);
     let encrypted = cipher.update(JSON.stringify(data), 'utf8', 'hex');
     encrypted += cipher.final('hex');
@@ -343,7 +365,7 @@ export class FileService {
   }
 
   private async decrypt(data: any) {
-    const { algorithm, key, iv } = await this.getCrpytoConfig();
+    const { algorithm, key, iv } = await this.getCryptoConfig();
     const decipher = crypto.createDecipheriv(algorithm, key, iv);
     let decrypted = decipher.update(data, 'hex', 'utf8');
     decrypted += decipher.final('utf8');

@@ -28,8 +28,7 @@ defineFeature(feature, (test) => {
   test('Run the init command', async ({ when, then, and }) => {
     let initController: InitController;
     const tasklist = new TaskList({ renderer: 'silent' });
-    const exec = jest.fn();
-    const initView = new InitView({ tasklist, exec });
+    const initView = new InitView({ tasklist });
 
     when('I run the init command with lpf init', async () => {
       fs.ensureDirSync(testDir);
@@ -39,7 +38,7 @@ defineFeature(feature, (test) => {
 
     then('It should print a success message', () => {
       expect(tasklist.getTasks()).toEqual([
-        { task: expect.any(Function), title: 'Initialise example function' },
+        { task: expect.any(Function), title: 'Initializing structure' },
         { task: expect.any(Function), title: 'Install packages' },
       ]);
     });
@@ -50,7 +49,17 @@ defineFeature(feature, (test) => {
         setTimeout(() => {
           expect(fs.existsSync(join(testDir, 'README.md'))).toBeTruthy();
           expect(fs.existsSync(join(testDir, '.vscode'))).toBeTruthy();
+          expect(
+            fs.existsSync(
+              join(testDir, '.vscode', 'faas-snippets.code-snippets'),
+            ),
+          ).toBeTruthy();
           expect(fs.existsSync(join(testDir, '.idea'))).toBeTruthy();
+          expect(
+            fs.existsSync(
+              join(testDir, '.idea', 'settings_live_templates.zip'),
+            ),
+          ).toBeTruthy();
           expect(fs.existsSync(join(testDir, '.gitignore'))).toBeTruthy();
           expect(
             fs.existsSync(join(testDir, 'bin', 'faas-debugger.js')),
@@ -93,7 +102,7 @@ defineFeature(feature, (test) => {
       fs.ensureDirSync(testDir);
       fs.writeFileSync(
         join(testDir, 'bin', 'lp-faas-toolbelt', 'package-lock.json'),
-        {},
+        JSON.stringify({}),
       );
       fs.ensureDirSync(
         join(testDir, 'bin', 'lp-faas-toolbelt', 'node_modules'),

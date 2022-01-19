@@ -1,4 +1,5 @@
 import { Answers } from 'inquirer';
+import { PrettyPrintableError } from '@oclif/errors';
 import { ILambda } from '../../types';
 import { DeployView } from '../../view/deploy.view';
 import { DeploymentController } from './deployment.controller';
@@ -63,7 +64,13 @@ export class DeployController extends DeploymentController {
         noWatch: inputFlags?.['no-watch'],
       });
     } catch (error) {
-      this.deployView.showErrorMessage(error.message || error.error.errorMsg);
+      const prettyError: PrettyPrintableError = {
+        message: error.message || error.errorMsg,
+        suggestions: ['Use "lpf deploy --help" for more information'],
+        ref: 'https://github.com/LivePersonInc/faas-cli#deploy',
+      };
+      this.deployView.showErrorMessage(prettyError);
+      throw new Error('exit');
     }
   }
 }

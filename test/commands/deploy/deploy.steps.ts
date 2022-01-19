@@ -206,7 +206,9 @@ defineFeature(feature, async (test) => {
       'This function is not available on the logged in account on the platform',
       async () => {
         const deployController = new DeployController();
-        await deployController.deploy({ lambdaFunctions: ['TestFunction3'] });
+        await expect(
+          deployController.deploy({ lambdaFunctions: ['TestFunction3'] }),
+        ).rejects.toThrow('exit');
       },
     );
 

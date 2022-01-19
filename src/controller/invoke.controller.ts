@@ -1,9 +1,11 @@
 import { join } from 'path';
+import { PrettyPrintableError } from '@oclif/errors';
+import { CLIErrorCodes } from '../shared/errorCodes';
 import { FileService } from '../service/file.service';
 import { factory } from '../service/faasFactory.service';
-import { IInvokeResponse } from '../service/faas.service';
 import { InvokeView } from '../view/invoke.view';
 import { FaasDebugger } from '../shared/faas-debugger';
+import { InitController } from './init.controller';
 
 interface IInvokeConfig {
   lambdaFunctions: string[];
@@ -13,41 +15,27 @@ interface IInvokeConfig {
 interface IInvokeControllerConfig {
   invokeView?: InvokeView;
   fileService?: FileService;
-}
-
-interface IInvokeErrorLogs {
-  errorCode: string;
-  errorMsg: string;
-  errorLogs: any[];
+  initController?: InitController;
 }
 
 export class InvokeController {
-  private result: IInvokeResponse;
-
-  private errorLogs: IInvokeErrorLogs;
-
   private invokeView: InvokeView;
 
   private fileService: FileService;
 
   private lambdaToInvoke: any;
 
+  private initController: InitController;
+
   constructor({
     invokeView = new InvokeView(),
     fileService = new FileService(),
+    initController = new InitController(),
   }: IInvokeControllerConfig = {}) {
-    this.result = {
-      result: {},
-      logs: [],
-    };
-    this.errorLogs = {
-      errorCode: '',
-      errorMsg: '',
-      errorLogs: [],
-    };
     this.invokeView = invokeView;
     this.fileService = fileService;
     this.lambdaToInvoke = {};
+    this.initController = initController;
   }
 
   /**
@@ -61,6 +49,10 @@ export class InvokeController {
     inputFlags,
   }: IInvokeConfig): Promise<void> {
     try {
+      if (this.fileService.needUpdateBinFolder()) {
+        await this.initController.init({ update: true });
+      }
+
       const localLambdaInformation = this.fileService.collectLocalLambdaInformation(
         lambdaFunctions,
       );
@@ -84,7 +76,7 @@ export class InvokeController {
         await this.invokeRemote();
       }
     } catch (error) {
-      this.invokeView.printError(error.message || error.error.errorMsg);
+      this.invokeView.showErrorMessage(error.message || error.errorMsg);
     }
   }
 
@@ -96,10 +88,16 @@ export class InvokeController {
 
     /* istanbul ignore next */
     if (!currentLambda) {
-      throw new Error(
-        `Function ${this.lambdaToInvoke.name} were not found on the platform.
-Please make sure the function with the name ${this.lambdaToInvoke.name} was pushed to the LivePerson Functions platform`,
-      );
+      const prettyError: PrettyPrintableError = {
+        message: `Function ${this.lambdaToInvoke.name} were not found on the platform. Please make sure the function with the name ${this.lambdaToInvoke.name} was pushed to the LivePerson Functions platform`,
+        suggestions: [
+          'Use "lpf push exampleFunction" to push and "lpf deploy exampleFunction" to deploy a function',
+        ],
+        ref: 'https://github.com/LivePersonInc/faas-cli#invoke',
+        code: CLIErrorCodes.NoLambdasFound,
+      };
+      this.invokeView.showErrorMessage(prettyError);
+      throw new Error('exit');
     }
 
     const response = await faasService.invoke(

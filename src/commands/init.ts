@@ -29,7 +29,11 @@ export class Init extends Command {
    * @memberof Init
    */
   public async run(): Promise<void> {
-    const functionNames = parseInput(Init.flags, this.argv);
-    this.initController.init({ functionNames });
+    try {
+      const functionNames = parseInput(Init.flags, this.argv);
+      await this.initController.init({ functionNames });
+    } catch (error) {
+      this.exit(1);
+    }
   }
 }

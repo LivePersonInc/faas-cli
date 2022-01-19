@@ -1,5 +1,6 @@
 /* eslint-disable no-async-promise-executor */
 /* eslint-disable no-shadow */
+import { PrettyPrintableError } from '@oclif/errors/lib/errors/pretty-print';
 import { Answers } from 'inquirer';
 import * as moment from 'moment-timezone';
 import {
@@ -99,14 +100,14 @@ export class DeployView {
       this.tasklist.addTask({
         title: `Deploying ${entry.name}`,
         // eslint-disable-next-line consistent-return
-        task: async (ctx, task) => {
+        task: async (_, task) => {
           const faasService = await factory.get();
           const response = await faasService.deploy(entry.uuid);
           if (response.uuid) {
             return task.skip(`${response.message} (${entry.uuid})`);
           }
           if (!noWatch) {
-            return new Promise(async (resolve) => {
+            return new Promise<void>(async (resolve) => {
               // eslint-disable-next-line unicorn/consistent-function-scoping
               function checkIfLambdaIsDeployed(): Promise<boolean> {
                 return new Promise(async (resolve) => {
@@ -126,7 +127,7 @@ export class DeployView {
 
               function watchDeployment(): Promise<any> {
                 let deployed = false;
-                return new Promise((resolve) => {
+                return new Promise<void>((resolve) => {
                   const timer = setIntervalAsync(async () => {
                     deployed = await checkIfLambdaIsDeployed();
                     /* istanbul ignore else */
@@ -150,12 +151,11 @@ export class DeployView {
 
   /**
    * Shows an error message
-   * @param {string} error - message
-   * @returns {void}
+   * @param {string|PrettyPrintableError} message - message
    * @memberof DeployView
    */
-  public showErrorMessage(error: string): void {
-    return this.error.print(error);
+  public showErrorMessage(message: string | PrettyPrintableError): void {
+    this.error.print(message);
   }
 
   private preparePromptMessage(lambda: any) {

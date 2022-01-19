@@ -41,7 +41,7 @@ Feature: Login Command
     Given Token is invalid
     When I run the login command and select an accountId
     When I provide a wrong password and username
-    Then It should print the error message
+    Then It should print the error message and exit with code 1
 
   Scenario: Run the login command with SSO workflow
     Given I have fetched the token and userId following the instructions

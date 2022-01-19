@@ -59,10 +59,11 @@ export class PushController {
       );
       const allLambdaBodies: ILambda[] = await Promise.all(
         allLambdas.map(async (lambda) => {
+          const lambdaConfig = this.fileService.getFunctionConfig(lambda.name);
           if (Object.prototype.hasOwnProperty.call(lambda, 'uuid')) {
-            return this.createUpdateLambdaBody(lambda as ILambda);
+            return this.createUpdateLambdaBody(lambda as ILambda, lambdaConfig);
           }
-          return this.createNewLambdaBody(lambda.name);
+          return this.createNewLambdaBody(lambdaConfig);
         }),
       );
 
@@ -91,24 +92,24 @@ export class PushController {
       if (error.name !== 'ListrError') {
         this.pushView.showErrorMessage(error.message || error.error?.errorMsg);
       }
+      throw new Error(error);
     }
   }
 
-  private async createNewLambdaBody(name: string): Promise<any> {
-    const lambdaConfig = this.fileService.getFunctionConfig(name);
+  private async createNewLambdaBody(lambdaConfig: any): Promise<any> {
     const faasService = await factory.get();
     return {
       ...(lambdaConfig.event &&
         lambdaConfig.event !== 'No Event' && { eventId: lambdaConfig.event }),
       uuid: '',
       version: -1,
-      name,
+      name: lambdaConfig.name,
       description: lambdaConfig.description,
       state: 'Draft',
       runtime: await faasService.getRuntime(),
       implementation: {
         code: this.fileService.read(
-          this.fileService.getPathToFunction(name, 'index.js'),
+          this.fileService.getPathToFunction(lambdaConfig.name, 'index.js'),
           false,
         ),
         dependencies: [],
@@ -120,11 +121,10 @@ export class PushController {
     };
   }
 
-  private createUpdateLambdaBody(lambda: ILambda): any {
-    const lambdaConfig = this.fileService.getFunctionConfig(lambda.name);
+  private createUpdateLambdaBody(lambda: ILambda, lambdaConfig: any): any {
     return {
       uuid: lambda.uuid,
-      version: lambda.version + 1,
+      version: lambda.version,
       state: lambda.state === 'Draft' ? 'Draft' : 'Modified',
       name: lambda.name,
       eventId: lambda.eventId,

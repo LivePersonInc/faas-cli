@@ -4,6 +4,13 @@ import { FileService } from './file.service';
 interface IDefaultStructureServiceConstructorConfig {
   fileService?: FileService;
   cwd?: string;
+  dirname?: string;
+}
+
+export interface IFunctionConfig {
+  name?: string;
+  event?: string;
+  description?: string;
 }
 
 export class DefaultStructureService {
@@ -13,13 +20,17 @@ export class DefaultStructureService {
 
   private functionName: string;
 
+  private dirname: string;
+
   constructor({
     fileService = new FileService(),
     cwd = process.cwd(),
+    dirname = __dirname,
   }: IDefaultStructureServiceConstructorConfig = {}) {
     this.fileService = fileService;
     this.cwd = cwd;
     this.functionName = '';
+    this.dirname = dirname;
   }
 
   /**
@@ -27,54 +38,65 @@ export class DefaultStructureService {
    * @param {string} [functionName=''] - creates the necessary files for the init command
    * @memberof DefaultStructureService
    */
-  public create(functionName = ''): void {
-    if (
-      this.fileService.directoryOrFileExists(
-        join(this.cwd, 'functions', functionName),
-      )
-    ) {
-      throw new Error(`Folder with same name already exists (${functionName})`);
-    } else {
-      this.createFunctionsFolder(functionName);
-    }
-
-    /* istanbul ignore else */
-    if (!this.fileService.directoryOrFileExists(join(this.cwd, 'README.md'))) {
-      this.createReadme();
-    }
-
-    /* istanbul ignore else */
-    if (!this.fileService.directoryOrFileExists(join(this.cwd, 'bin'))) {
+  // eslint-disable-next-line complexity
+  public create(functionName?: string, update?: boolean): void {
+    if (update) {
       this.createDefaultServices();
-    }
+    } else {
+      if (
+        functionName &&
+        this.fileService.directoryOrFileExists(
+          join(this.cwd, 'functions', functionName),
+        )
+      ) {
+        throw new Error(
+          `Folder with same name already exists (${functionName})`,
+        );
+      } else {
+        this.createFunctionsFolder(functionName);
+      }
+      /* istanbul ignore else */
+      if (
+        !this.fileService.directoryOrFileExists(join(this.cwd, 'README.md'))
+      ) {
+        this.createReadme();
+      }
 
-    /* istanbul ignore else */
-    if (!this.fileService.directoryOrFileExists(join(this.cwd, '.vscode'))) {
-      this.copyVsCodeSettings();
-    }
+      /* istanbul ignore else */
+      if (!this.fileService.directoryOrFileExists(join(this.cwd, 'bin'))) {
+        this.createDefaultServices();
+      }
 
-    /* istanbul ignore else */
-    if (!this.fileService.directoryOrFileExists(join(this.cwd, '.idea'))) {
-      this.copyIntellijSettings();
-    }
+      /* istanbul ignore else */
+      if (!this.fileService.directoryOrFileExists(join(this.cwd, '.vscode'))) {
+        this.copyVsCodeSettings();
+      }
 
-    /* istanbul ignore else */
-    if (!this.fileService.directoryOrFileExists(join(this.cwd, '.gitignore'))) {
-      this.copyGitIgnore();
-    }
+      /* istanbul ignore else */
+      if (!this.fileService.directoryOrFileExists(join(this.cwd, '.idea'))) {
+        this.copyIntellijSettings();
+      }
 
-    /* istanbul ignore else */
-    if (
-      !this.fileService.directoryOrFileExists(
-        join(this.cwd, 'functions', 'settings.json'),
-      )
-    ) {
-      this.copySettings();
-    }
+      /* istanbul ignore else */
+      if (
+        !this.fileService.directoryOrFileExists(join(this.cwd, '.gitignore'))
+      ) {
+        this.copyGitIgnore();
+      }
 
-    /* istanbul ignore else */
-    if (this.fileService) {
-      this.renameFunction();
+      /* istanbul ignore else */
+      if (
+        !this.fileService.directoryOrFileExists(
+          join(this.cwd, 'functions', 'settings.json'),
+        )
+      ) {
+        this.copySettings();
+      }
+
+      /* istanbul ignore else */
+      if (this.fileService && functionName) {
+        this.renameFunction();
+      }
     }
   }
 
@@ -85,52 +107,59 @@ export class DefaultStructureService {
    */
   public createFunctionsFolder(functionName?: string, takeRoot = false): void {
     const path = takeRoot ? this.fileService.getRoot() : this.cwd;
-    this.functionName = functionName || 'exampleFunction';
-    this.fileService.copy(
-      join(
-        __dirname,
-        '..',
-        '..',
-        'bin',
-        'example',
-        'functions',
-        'exampleFunction',
-      ),
-      join(path, 'functions', this.functionName),
-    );
+    if (functionName) {
+      this.functionName = functionName;
+      this.fileService.copy(
+        join(
+          this.dirname,
+          '..',
+          '..',
+          'bin',
+          'example',
+          'functions',
+          'exampleFunction',
+        ),
+        join(path, 'functions', functionName),
+      );
+    } else {
+      this.copySettings();
+    }
   }
 
   private createReadme(): void {
     this.fileService.copy(
-      join(__dirname, '..', '..', 'bin', 'example', 'README.md'),
+      join(this.dirname, '..', '..', 'bin', 'example', 'README.md'),
       join(this.cwd, 'README.md'),
     );
   }
 
   private createDefaultServices(): void {
     this.fileService.copy(
-      join(__dirname, '..', '..', 'bin', 'example', 'bin'),
+      join(this.dirname, '..', '..', 'bin', 'example', 'bin'),
       join(this.cwd, 'bin'),
     );
   }
 
   private copyIntellijSettings(): void {
+    // will be changed to .idea because '.' folder/files are ignored by npm publish
     this.fileService.copy(
-      join(__dirname, '..', '..', 'bin', 'example', 'idea'),
+      join(this.dirname, '..', '..', 'bin', 'example', 'idea'),
       join(this.cwd, '.idea'),
     );
   }
 
   private copyVsCodeSettings(): void {
+    // will be changed to .vscode because '.' folder/files are ignored by npm publish
     this.fileService.copy(
-      join(__dirname, '..', '..', 'bin', 'example', 'vscode'),
+      join(this.dirname, '..', '..', 'bin', 'example', 'vscode'),
       join(this.cwd, '.vscode'),
     );
   }
 
   private copyGitIgnore(): void {
+    // will be changed to .ignore because '.' folder/files are ignored by npm publish
     this.fileService.copy(
-      join(__dirname, '..', '..', 'bin', 'example', 'gitignore'),
+      join(this.dirname, '..', '..', 'bin', 'example', 'gitignore'),
       join(this.cwd, '.gitignore'),
     );
   }
@@ -138,7 +167,7 @@ export class DefaultStructureService {
   private copySettings(): void {
     this.fileService.copy(
       join(
-        __dirname,
+        this.dirname,
         '..',
         '..',
         'bin',
@@ -157,6 +186,36 @@ export class DefaultStructureService {
     );
     file.name = this.functionName;
     file.description = `${this.functionName} description`;
+    this.fileService.write(path, file);
+  }
+
+  public createFunction(functionConfig: IFunctionConfig): void {
+    const { name } = functionConfig;
+    if (
+      name &&
+      this.fileService.directoryOrFileExists(join(this.cwd, 'functions', name))
+    ) {
+      throw new Error(`Folder with same name already exists (${name})`);
+    }
+    this.createFunctionsFolder(name);
+    this.adjustDefaultConfig(functionConfig);
+  }
+
+  private adjustDefaultConfig({
+    name,
+    event,
+    description,
+  }: IFunctionConfig): void {
+    if (!name) {
+      throw new Error('Name is required');
+    }
+    const path = join(this.cwd, 'functions', name, 'config.json');
+    const file = this.fileService.read(
+      join(this.cwd, 'functions', name, 'config.json'),
+    );
+    file.name = name;
+    file.description = description || `${this.functionName} description`;
+    file.event = event || 'No Event';
     this.fileService.write(path, file);
   }
 }

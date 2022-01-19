@@ -17,7 +17,9 @@ jest.mock('../../../src/service/faasFactory.service', () =>
 
 import { InvokeController } from '../../../src/controller/invoke.controller';
 import { FileService } from '../../../src/service/file.service';
-
+import { DefaultStructureService } from '../../../src/service/defaultStructure.service';
+import { InitView } from '../../../src/view/init.view';
+import { InitController } from '../../../src/controller/init.controller';
 
 const feature = loadFeature('test/commands/invoke/invoke.feature');
 defineFeature(feature, (test) => {
@@ -25,6 +27,8 @@ defineFeature(feature, (test) => {
   const testDir = join(__dirname, 'test');
   let consoleSpy;
   const fileService = new FileService();
+
+  jest.spyOn(process.stdout, 'write').mockImplementation();
 
   beforeEach(() => {
     consoleSpy = jest.spyOn(global.console, 'log').mockImplementation();
@@ -235,6 +239,130 @@ defineFeature(feature, (test) => {
     );
   });
 
+  test('Invoke a function local and an update of the bin folder is required', ({
+    given,
+    when,
+    then,
+  }) => {
+    fs.ensureDirSync(testDir);
+    fs.writeFileSync(
+      join(testDir, 'package.json'),
+      JSON.stringify({
+        version: '1.0.0',
+      }),
+    );
+    fs.ensureDirSync(join(testDir, 'bin', 'lp-faas-toolbelt'));
+    fs.writeFileSync(
+      join(testDir, 'bin', 'lp-faas-toolbelt', 'package.json'),
+      JSON.stringify({
+        version: '0.0.9',
+      }),
+    );
+
+    given('I have done the local init', () => {
+      fs.ensureDirSync(join(testDir, 'functions', 'InvokeFunctionLocal'));
+    });
+
+    given('I have a local function with the config.json', () => {
+      fs.writeFileSync(
+        join(testDir, 'functions', 'InvokeFunctionLocal', 'config.json'),
+        JSON.stringify({
+          name: 'InvokeFunctionLocal',
+          event: null,
+          input: {
+            headers: [],
+            payload: {},
+          },
+          environmentVariables: [
+            {
+              key: 'TestKey',
+              value: 'TestValue',
+            },
+          ],
+        }),
+      );
+      fs.writeFileSync(
+        join(testDir, 'functions', 'InvokeFunctionLocal', 'index.js'),
+        `function lambda(input, callback) {
+  callback(null, 'Hello World');
+}
+`,
+      );
+      fs.copySync(
+        join(
+          process.cwd(),
+          '..',
+          '..',
+          '..',
+          '..',
+          'bin',
+          'example',
+          'bin',
+          'rewire.js',
+        ),
+        join(testDir, 'bin', 'rewire.js'),
+      );
+    });
+
+    when(
+      'I run the invoke command and pass the function name and local flag',
+      async () => {
+        process.env.DEBUG_PATH = 'true';
+
+        const mockFileService = new FileService({
+          dirname: join(testDir, 'test', 'test'),
+        });
+
+        const defaultStructureService = new DefaultStructureService();
+        defaultStructureService.create = jest.fn(() => {
+          fs.copySync(
+            join(testDir, 'package.json'),
+            join(testDir, 'bin', 'lp-faas-toolbelt', 'package.json'),
+          );
+        });
+        const initView = new InitView({ defaultStructureService });
+        const initController = new InitController({
+          initView,
+        });
+
+        const invokeController = new InvokeController({
+          initController,
+          fileService: mockFileService,
+        });
+        await invokeController.invoke({
+          lambdaFunctions: ['InvokeFunctionLocal'],
+          inputFlags: { local: true },
+        });
+      },
+    );
+
+    then('It should set the passed env variables', () => {
+      const containsTestKey = Object.keys(process.env).some(
+        (e) => e === 'TestKey',
+      );
+      expect(containsTestKey).toBeTruthy();
+    });
+
+    then('Bin folder gets updated', async () => {
+      const toolbeltPackage = JSON.parse(
+        await fs.readFile(
+          join(testDir, 'bin', 'lp-faas-toolbelt', 'package.json'),
+          'utf8',
+        ),
+      );
+      expect(toolbeltPackage.version).toBe('1.27.1');
+    });
+
+    then(
+      'It invokes the command local and print the logs to the console',
+      () => {
+        expect(consoleSpy).toBeCalledWith(
+          expect.stringContaining('Hello World'),
+        );
+      },
+    );
+  });
+
   test('Invoke a function local with an console.error in it', ({
     given,
     when,
@@ -279,7 +407,7 @@ defineFeature(feature, (test) => {
             'index.js',
           ),
           `function lambda(input, callback) {
-    console.error(new Error('INVALID LAMBDA'));
+    console.error('INVALID LAMBDA');
     callback(null, 'Hello World');
 }
 `,
@@ -303,7 +431,7 @@ defineFeature(feature, (test) => {
       'It invokes the command local and print the logs with error to the console',
       () => {
         expect(consoleSpy).toBeCalledWith(
-          expect.stringContaining('com.liveperson.faas.handler.custom-failure'),
+          expect.stringContaining('Hello World'),
         );
         expect(consoleSpy).toBeCalledWith(
           expect.stringContaining('INVALID LAMBDA'),
@@ -312,29 +440,29 @@ defineFeature(feature, (test) => {
     );
   });
 
-  test('Invoke a function local with a runtime longer than 30 seconds', ({
+  test('Invoke a function local which throws an error during invocation', ({
     given,
     when,
     then,
   }) => {
     given('I have done the local init', () => {
       fs.ensureDirSync(
-        join(testDir, 'functions', 'InvokeFunctionLocal30Seconds'),
+        join(testDir, 'functions', 'InvokeFunctionLocalWithThrowError'),
       );
     });
 
     given(
-      'I have a local function with the config.json (runtime is longer than 30 seconds)',
+      'I have a local function with the config.json (throw error implemented)',
       () => {
         fs.writeFileSync(
           join(
             testDir,
             'functions',
-            'InvokeFunctionLocal30Seconds',
+            'InvokeFunctionLocalWithThrowError',
             'config.json',
           ),
           JSON.stringify({
-            name: 'InvokeFunctionLocal30Seconds',
+            name: 'InvokeFunctionLocalWithThrowError',
             event: null,
             input: {
               headers: [],
@@ -352,13 +480,12 @@ defineFeature(feature, (test) => {
           join(
             testDir,
             'functions',
-            'InvokeFunctionLocal30Seconds',
+            'InvokeFunctionLocalWithThrowError',
             'index.js',
           ),
           `function lambda(input, callback) {
-  setTimeout(() => {
+    throw new Error('ERROR INSIDE FUNCTION!');
     callback(null, 'Hello World');
-  }, 31000)
 }
 `,
         );
@@ -371,14 +498,183 @@ defineFeature(feature, (test) => {
         process.env.DEBUG_PATH = 'true';
         const invokeController = new InvokeController();
         await invokeController.invoke({
-          lambdaFunctions: ['InvokeFunctionLocal30Seconds'],
+          lambdaFunctions: ['InvokeFunctionLocalWithThrowError'],
           inputFlags: { local: true },
         });
       },
     );
 
     then(
-      'It invokes the command local and print an error that the functions runs longer than 30 seconds',
+      'It invokes the command local and print the logs with error to the console',
+      () => {
+        expect(consoleSpy).toBeCalledWith(
+          expect.stringContaining('com.liveperson.faas.handler.custom-failure'),
+        );
+        expect(consoleSpy).toBeCalledWith(
+          expect.stringContaining('ERROR INSIDE FUNCTION!'),
+        );
+      },
+    );
+  });
+
+  test('Invoke a function local which has an incorrect error format', ({
+    given,
+    when,
+    then,
+  }) => {
+    given('I have done the local init', () => {
+      fs.ensureDirSync(
+        join(
+          testDir,
+          'functions',
+          'InvokeFunctionLocalWithIncorrectErrorFormat',
+        ),
+      );
+    });
+
+    given(
+      'I have a local function with the config.json (incorrect error format implemented)',
+      () => {
+        fs.writeFileSync(
+          join(
+            testDir,
+            'functions',
+            'InvokeFunctionLocalWithIncorrectErrorFormat',
+            'config.json',
+          ),
+          JSON.stringify({
+            name: 'InvokeFunctionLocalWithIncorrectErrorFormat',
+            event: null,
+            input: {
+              headers: [],
+              payload: {},
+            },
+            environmentVariables: [
+              {
+                key: '',
+                value: '',
+              },
+            ],
+          }),
+        );
+        fs.writeFileSync(
+          join(
+            testDir,
+            'functions',
+            'InvokeFunctionLocalWithIncorrectErrorFormat',
+            'index.js',
+          ),
+          `function lambda(input, callback) {
+            const promise = new Promise((resolve, reject) => {
+              setTimeout(() => {
+                resolve('Hello World');
+              }, 1500);
+              reject('ERROR DURING CALLBACK PROMISE');
+            });
+            callback(null, promise);
+}
+`,
+        );
+      },
+    );
+
+    when(
+      'I run the invoke command and pass the function name and local flag',
+      async () => {
+        process.env.DEBUG_PATH = 'true';
+        const invokeController = new InvokeController();
+        await invokeController.invoke({
+          lambdaFunctions: ['InvokeFunctionLocalWithIncorrectErrorFormat'],
+          inputFlags: { local: true },
+        });
+      },
+    );
+
+    then(
+      'It invokes the command local and print the logs with error to the console',
+      () => {
+        expect(consoleSpy).toBeCalledWith(
+          expect.stringContaining('com.liveperson.faas.handler.custom-failure'),
+        );
+        expect(consoleSpy).toBeCalledWith(
+          expect.stringContaining('ERROR DURING CALLBACK PROMISE'),
+        );
+        expect(consoleSpy).toBeCalledWith(
+          expect.stringContaining(
+            'Received error in an incorrect format. Please provide an error object to the callback.',
+          ),
+        );
+      },
+    );
+  });
+
+  test('Invoke a function local with a runtime longer than 60 seconds', ({
+    given,
+    when,
+    then,
+  }) => {
+    given('I have done the local init', () => {
+      fs.ensureDirSync(
+        join(testDir, 'functions', 'InvokeFunctionLocalExecutionTimeLimit'),
+      );
+    });
+
+    given(
+      'I have a local function with the config.json (runtime is longer than 60 seconds)',
+      () => {
+        fs.writeFileSync(
+          join(
+            testDir,
+            'functions',
+            'InvokeFunctionLocalExecutionTimeLimit',
+            'config.json',
+          ),
+          JSON.stringify({
+            name: 'InvokeFunctionLocalExecutionTimeLimit',
+            event: null,
+            input: {
+              headers: [],
+              payload: {},
+            },
+            environmentVariables: [
+              {
+                key: '',
+                value: '',
+              },
+            ],
+          }),
+        );
+        fs.writeFileSync(
+          join(
+            testDir,
+            'functions',
+            'InvokeFunctionLocalExecutionTimeLimit',
+            'index.js',
+          ),
+          `function lambda(input, callback) {
+  setTimeout(() => {
+    callback(null, 'Hello World');
+  }, 61000)
+}
+`,
+        );
+      },
+    );
+
+    when(
+      'I run the invoke command and pass the function name and local flag',
+      async () => {
+        process.env.DEBUG_PATH = 'true';
+        const invokeController = new InvokeController();
+        await invokeController.invoke({
+          lambdaFunctions: ['InvokeFunctionLocalExecutionTimeLimit'],
+          inputFlags: { local: true },
+        });
+      },
+    );
+
+    then(
+      'It invokes the command local and print an error that the functions runs longer than 60 seconds',
       () => {
         expect(consoleSpy).toBeCalledWith(
           expect.stringContaining(

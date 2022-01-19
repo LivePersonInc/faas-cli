@@ -6,6 +6,7 @@ import {
   clearIntervalAsync,
   setIntervalAsync,
 } from 'set-interval-async/dynamic';
+import { PrettyPrintableError } from '@oclif/errors/lib/errors/pretty-print';
 import { factory } from '../service/faasFactory.service';
 import { ILambda } from '../types';
 import {
@@ -91,7 +92,7 @@ export class UndeployView {
       this.tasklist.addTask({
         title: `Undeploying ${entry.name}`,
         // eslint-disable-next-line consistent-return
-        task: async (ctx, task) => {
+        task: async (_, task) => {
           const faasService = await factory.get();
           const response = await faasService.undeploy(entry.uuid);
           if (response.uuid) {
@@ -137,8 +138,13 @@ export class UndeployView {
     return this.tasklist.run();
   }
 
-  public showErrorMessage(error: string) {
-    this.error.print(error);
+  /**
+   * Shows an error message
+   * @param {string|PrettyPrintableError} message - message
+   * @memberof UndeployView
+   */
+  public showErrorMessage(message: string | PrettyPrintableError): void {
+    this.error.print(message);
   }
 
   private preparePromptMessage(lambda: any) {

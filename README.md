@@ -5,7 +5,7 @@
 
 The LivePerson Functions Command Line Interface (CLI) is an open-source command-line tool provided by LivePerson that enables developers to create, edit and process their functions on their local development machines, in their favorite IDE of their choice. That way it’s very easy to keep the source code under version control in any Source Control Management (SCM).
 
-The CLI offers nearly all functionality from the platfrom (e.g. deploy, undeploy and invoke).
+The CLI offers nearly all functionality from the platform (e.g. deploy, undeploy and invoke).
 
 Besides that it offers many commands to support developers during the development of a function (e.g. pull, push and debug).
 
@@ -25,19 +25,23 @@ For more information about LivePerson Functions see [developers.liveperson.com](
   - [Invoke](#invoke)
   - [Debug](#debug)
   - [Get](#get)
+  - [Logs](#logs)
   - [Help](#help)
   - [Autocomplete](#autocomplete)
   - [Version and Update](#version-and-update)
 - [Local development and debugging](#local-development-and-debugging)
   - [Introduction](#introduction)
   - [Preparation](#preparation)
+  - [Snippets](##snippets)
   - [Debugging with VSC](#debugging-with-vsc)
-  - [Debugging with Intellij](#debugging-with-intellij)
+  - [Debugging with IntelliJ](#debugging-with-intellij)
   - [Debugging with other IDEs or Debugger](#debugging-with-other-ides-or-debugger)
+- [Troubleshooting](#troubleshooting)
+  - [Using a proxy](#using-a-proxy)
 
 ## Installation
 
-Before you start using lpf, you have to make it available on your computer. Even if it's already installed, it's probably a good idea to update to the latest version. You can either install it as a package, via another installer or download the source code.
+Before you start using lpf, you have to make it available on your computer. Even if it's already installed, it's probably a good idea to update to the latest version. You can install it as a npm package.
 
 ### Npm
 
@@ -59,7 +63,7 @@ Before you start using lpf, you have to make it available on your computer. Even
 <tbody>
   <tr>
     <td>Init</td>
-    <td>Initialize the project with the necessary files. If the project is already initialised it will add a new function.</td>
+    <td>Initialize the project with the necessary files. If the project is already initialized it will add a new function.</td>
   </tr>
   <tr>
     <td>Login</td>
@@ -84,7 +88,7 @@ Before you start using lpf, you have to make it available on your computer. Even
   <tr>
     <td>Undeploy</td>
     <td>Undeploys a function on the LivePerson functions platform.</td>
-  </tr>  
+  </tr>
   <tr>
     <td>Invoke</td>
     <td>Invokes a function (remote or local).</td>
@@ -114,15 +118,15 @@ Before you start using lpf, you have to make it available on your computer. Even
 
 ### Init
 
-Initialize the project with the necessary files. If the project is already initialised it will add a new function with the passed functionname. 
+Initialize the project with the necessary files. If the project is already initialized it will add a new function with the passed function name.
 
 The folder name has to be same as the function name (saved in the `config.json`).
 
-In the `config.json` of a function you can change the description, event, related input and environment variables of the function. 
+In the `config.json` of a function you can change the description, event, related input and environment variables of the function.
 
 For the `event` field please use `lpf get events` to get the related event and paste the eventId as `event`.
 
-Follwoing files will be created: 
+Following files will be created:
 
 * README: Contains information about the usage of the CLI
 * .gitignore: Specifies intentionally untracked files to ignore ([Link](https://git-scm.com/docs/gitignore))
@@ -173,7 +177,7 @@ functions/
 
 | Parameter    | Description                                              |
 | ------------ | -------------------------------------------------------- |
-| functionname | Adds a function with the passed name (multiple possible) |
+| function name | Adds a function with the passed name (multiple possible) |
 
 | Flag      | Description                    |
 | --------- | ------------------------------ |
@@ -184,15 +188,15 @@ functions/
 <summary>Example</summary>
 
 ```
-> lpf init <functionname>
+> lpf init <function name>
 
-> lpf init <functionname> <functionsname>
+> lpf init <function name> <function name>
 ```
 </details>
 
 ### Login
 
-Performs the login with LiveEngage Credentials. 
+Performs the login with LiveEngage Credentials.
 
 After a successful login, it is valid for 8 hours. After this period of time a new login has to be performed. It is also possible to have multiple logins saved, but only one at a time is active.
 
@@ -228,7 +232,7 @@ If you want to add a new account just run the login command and select `other`.
 > lpf login
 
 > lpf login --accountId 123456789 --username user@liveperson.com --password p4ssw0rd
- 
+
 > lpf login -a 123456789 -u user@liveperson.com -p p4ssw0rd
 ```
 </details>
@@ -248,7 +252,7 @@ To get the token and the userId do following steps:
 5. Copy token and userId.
    - Token: 'glob'
    - UserId: 'config.userId'
-<img src="faas-cli-fetch-token.png" class="fancyimage" width="100%" alt="LivePerson Functions CLI token"> 
+<img src="faas-cli-fetch-token.png" class="fancyimage" width="100%" alt="LivePerson Functions CLI token">
 
 6. Run the login command as follows: `lpf login --token <bearer> --accountId <accountId> --userId <userId>`
 
@@ -289,7 +293,7 @@ Futhermore it's possible to provide a delete flag, then the account will be dele
 > lpf logout --accountId 123456789
 
 > lpf logout --accountId 123456789 --delete
- 
+
 > lpf logout -a 123456789 -d
 ```
 </details>
@@ -298,7 +302,7 @@ Futhermore it's possible to provide a delete flag, then the account will be dele
 
 Pulls a function from the LivePerson functions platform (function has to exist on the platform).
 
-You will be asked, if you want to overwrite your local state with the one from the platfrom.
+You will be asked, if you want to overwrite your local state with the one from the platform.
 
 The confirmation can be skipped by passing the --yes flag.
 
@@ -317,13 +321,13 @@ You can pass the --all flag, if you want to pull all functions from the platform
 
 | Parameter    | Description                                    |
 | ------------ | ---------------------------------------------- |
-| functionname | Pass the function for pull (mulitple possible) |
+| function name | Pass the function for pull (multiple possible) |
 
 | Flag          | Description                                                             |
 | ------------- | ----------------------------------------------------------------------- |
 | -h --help     | Show help for the pull command                                          |
 | -y --yes      | Agrees to the approval of the pull and prevents the confirmation dialog |
-| -w --no-watch | Hide informations about the pull process                                |
+| -w --no-watch | Hide information about the pull process                                |
 | -a --all      | Pulls all functions from the platform                                   |
 </details>
 
@@ -364,13 +368,13 @@ You can pass the --all flag, if you want to push all local functions to the plat
 
 | Parameter    | Description                                    |
 | ------------ | ---------------------------------------------- |
-| functionname | Pass the function for push (mulitple possible) |
+| function name | Pass the function for push (multiple possible) |
 
 | Flag          | Description                                                             |
 | ------------- | ----------------------------------------------------------------------- |
 | -h --help     | Show help for the push command                                          |
 | -y --yes      | Agrees to the approval of the push and prevents the confirmation dialog |
-| -w --no-watch | Hide informations about the push process                                |
+| -w --no-watch | Hide information about the push process                                |
 | -a --all      | Pushes all local functions                                              |
 </details>
 
@@ -389,13 +393,13 @@ You can pass the --all flag, if you want to push all local functions to the plat
 
 ### Deploy
 
-Deploys a function on the LivePerson functions platform. 
+Deploys a function on the LivePerson functions platform.
 
-To undeploy a function it has to exist on the LivePerson functions platform. You can use the `push command` in order to ensure this.
+To deploy a function it has to exist on the LivePerson functions platform. You can use the `push command` in order to ensure this.
 
 If the passed function is already deployed, it will be redeployed.
 
-The command can be run from the root directory or functions folder, then it's necessary to pass a functionname. If the user runs the command inside a functions folder, it's not necessary and the command will take the function of the current directory.
+The command can be run from the root directory or functions folder, then it's necessary to pass a function name. If the user runs the command inside a functions folder, it's not necessary and the command will take the function of the current directory.
 
 <details>
 <summary>Usage</summary>
@@ -410,13 +414,13 @@ The command can be run from the root directory or functions folder, then it's ne
 
 | Parameter    | Description                                          |
 | ------------ | ---------------------------------------------------- |
-| functionname | Pass the function for deployment (mulitple possible) |
+| function name | Pass the function for deployment (multiple possible) |
 
 | Flag          | Description                                                                   |
 | ------------- | ----------------------------------------------------------------------------- |
 | -h --help     | Show help for the deploy command                                              |
 | -y --yes      | Agrees to the approval of the deployment and prevents the confirmation dialog |
-| -w --no-watch | Hide informations about the deployment process                                |
+| -w --no-watch | Hide information about the deployment process                                |
 </details>
 
 <details>
@@ -437,7 +441,7 @@ Undeploys a function on the LivePerson functions platform.
 
 To undeploy a function it has to exist on the LivePerson functions platform. You can use the `push command` in order to ensure this.
 
-The command can be run from the root directory or functions folder, then it's necessary to pass a functionname. If the user runs the command inside a functions folder, it's not necessary and the command will take the function of the current directory.
+The command can be run from the root directory or functions folder, then it's necessary to pass a function name. If the user runs the command inside a functions folder, it's not necessary and the command will take the function of the current directory.
 
 
 <details>
@@ -453,13 +457,13 @@ The command can be run from the root directory or functions folder, then it's ne
 
 | Parameter    | Description                                            |
 | ------------ | ------------------------------------------------------ |
-| functionname | Pass the function for undeployment (mulitple possible) |
+| function name | Pass the function for undeployment (multiple possible) |
 
 | Flag          | Description                                                                     |
 | ------------- | ------------------------------------------------------------------------------- |
 | -h --help     | Show help for the deploy command                                                |
 | -y --yes      | Agrees to the approval of the undeployment and prevents the confirmation dialog |
-| -w --no-watch | Hide informations about the undeployment process                                |
+| -w --no-watch | Hide information about the undeployment process                                |
 </details>
 
 <details>
@@ -482,7 +486,7 @@ If you pass the --local flag the function will be invoked locally. Otherwise it 
 
 For both cases it will use the input from the related function config.json.
 
-> The local invocation uses the mocked `faas-toolbelt` so please have a look at [Preparation](#preparation) for further informations.
+> The local invocation uses the mocked `faas-toolbelt` so please have a look at [Preparation](#preparation) for further information.
 
 <details>
 <summary>Usage</summary>
@@ -497,7 +501,7 @@ For both cases it will use the input from the related function config.json.
 
 | Parameter    | Description                 |
 | ------------ | --------------------------- |
-| functionname | Pass the function to invoke |
+| function name | Pass the function to invoke |
 
 | Flag       | Description                               |
 | ---------- | ----------------------------------------- |
@@ -534,7 +538,7 @@ Starts a debug port in the range of 30500 - 31000 for a passed function.
 
 | Parameter    | Description                |
 | ------------ | -------------------------- |
-| functionname | Pass the function to debug |
+| function name | Pass the function to debug |
 
 | Flag      | Description                     |
 | --------- | ------------------------------- |
@@ -547,13 +551,13 @@ Starts a debug port in the range of 30500 - 31000 for a passed function.
 ```
 > lpf debug exampleFunction
 ```
-</details>                                                
+</details>
 
 ### Get
 
-Get information about the passed domain. Possible domains are deployments, functions, account and events. 
+Get information about the passed domain. Possible domains are deployments, functions, account and events.
 
-The following informations will be displayed:
+The following information will be displayed:
 
 * Deployment: Name, Undeployed changes from, Last successful deployment, deployed by, deployment state
 * Function: Name, Status, last changed at, last changed by, Event
@@ -564,7 +568,7 @@ The following informations will be displayed:
 <summary>Usage</summary>
 
 ```
-> lpf get [paramter] [--flag]
+> lpf get [parameter] [--flag]
 ```
 </details>
 
@@ -573,7 +577,7 @@ The following informations will be displayed:
 
 | Parameter | Description                             |
 | --------- | --------------------------------------- |
-| domain    | Pass a valid domain (mulitple possible) |
+| domain    | Pass a valid domain (multiple possible) |
 
 | Flag      | Description                   |
 | --------- | ----------------------------- |
@@ -586,11 +590,55 @@ The following informations will be displayed:
 ```
 > lpf get account
 
-> lpf get functions deployments 
+> lpf get functions deployments
 
 > lpf get functions deployments account
 
 > lpf get functions deployments account events
+```
+</details>
+
+### Logs
+
+Get logs from function.
+
+<details>
+<summary>Usage</summary>
+
+```
+> lpf logs [parameter] [--flag]
+```
+</details>
+
+<details>
+<summary>Options</summary>
+
+| Parameter | Description                             |
+| --------- | --------------------------------------- |
+| function  | function name to fetch logs from        |
+
+| Flag                         | Description                                                                               |
+| ---------------------------- | ----------------------------------------------------------------------------------------- |
+| -h --help                    | Show help for the get command                                                             |
+| -s, --start=start            | (required) start timestamp                                                                |
+| -e, --end=end                | end timestamp                                                                             |
+| -l, --levels=Info|Warn|Error | log-levels - for multiple levels just use levels with space separated (e.g. -l Info Warn) |
+| -r, --removeHeader           | Removes the header of the logs                                                            |
+</details>
+
+<details>
+<summary>Example</summary>
+
+```
+> lpf logs exampleFunction --start=1626156400000
+
+> lpf logs exampleFunction --start=1626156400000 --end=1626157400000
+
+> lpf logs exampleFunction --start=1626156400000 --levels=Info Warn
+
+Fetching logs via cronjob every 10 minutes (delayed by 1 minute to be sure no logs are missed) and write it to a file::
+MacOS:
+1/10 * * * * lpf logs exampleFunction --start=$(date -v0S -v-11M +%s000) --end=$(date -v0S -v-1M +%s000) >> exampleFunction.log
 ```
 </details>
 
@@ -648,7 +696,7 @@ Displays autocomplete instructions (only supports zsh and bash)
 
 ### Version and Update
 
-The version command shows the current installed version of the CLI. 
+The version command shows the current installed version of the CLI.
 If a newer version is available the user will see an update information which shows his current version, the new version and a information about how to update to the new version.
 
 The update notification will appear one time and then it's muted for two days.
@@ -671,19 +719,34 @@ The update notification will appear one time and then it's muted for two days.
 
 The CLI provides a way to debug and develop functions locally.
 
-For the best developer experience it's recommended to use [Visual Studio Code](https://code.visualstudio.com/) (VSC) or [Intellij](https://www.jetbrains.com/idea/), because a configuration for the integrated debugger is provided by the CLI.
+For the best developer experience it's recommended to use [Visual Studio Code](https://code.visualstudio.com/) (VSC) or [IntelliJ](https://www.jetbrains.com/idea/), because a configuration for the integrated debugger is provided by the CLI.
 
 During the debugging process all console outputs will be printed to your terminal. At the end a history with all printed console outputs will be displayed.
 
-### Preparation
+### Snippets/Live-Templates
 
-It's necessary to run the `lpf init` command to initialize the project structure and to install all required packages for the local faas-toolbelt. 
+We include a number of snippets (vscode) and Live-Templates (IntelliJ IDEA) for you to ease development. Your vscode should automatically detect `faas-snippets.code-snippets` in the `.vscode` folder. Meanwhile you will have to [manually import](https://www.jetbrains.com/help/idea/sharing-live-templates.html#import) the `settings_live_templates.zip` from the `.idea` folder to use the same functionality inside IntelliJ IDEA.
+
+Once setup you can use the following snippets/Live-Templates:
+
+* HTTP Snippet
+* Read/Update Secret Snippets
+* Create/Read/Update/Delete Context Session Store Snippet
+* Conversation Util Snippet
+* GDPR Util Snippet
+* SDE Util Snippet
+* Salesforce Snippet
+
+
+### Preparation for Debugging
+
+It's necessary to run the `lpf init` command to initialize the project structure and to install all required packages for the local faas-toolbelt.
 
 To get started with the local development and debugging some preparation is needed:
 * Local secrets and whitelisting can be stored in the settings.json
 * Local environment variables and input can be stored in the config.json in the functions folder
 * The Debugger will use a mocked `faas-toolbelt`
-* To have access to the LivePerson services it's necessary to be logged in or set an environment variable called `BRAND_ID` with your `accountId` 
+* To have access to the LivePerson services it's necessary to be logged in or set an environment variable called `BRAND_ID` with your `accountId`
   * Example with BRAND_ID and debug command: `BRAND_ID=123456789 lpf debug TestFunction`
 
 
@@ -691,29 +754,35 @@ To get started with the local development and debugging some preparation is need
 
 1. Set a breakpoint in your desired function.
 2. Run the debugger (two options available)
-   1. `lpf debug <functionname>`
+   1. `lpf debug <function name>`
    2. Open command palette -> `Tasks: Run Task` -> `Debug Function`
 3. Run `Attach FaaS Debugger` from the `launch.json`.
 4. The debugger will start and pause at the auto-generated code.
-5. Use Intellij debugger to navigate through your code.
+5. Use IntelliJ debugger to navigate through your code.
 
-### Debugging with Intellij
+### Debugging with IntelliJ
 
 1. Set a breakpoint in your desired function.
 2. Run the debugger (two options available)
    1. Use the built-in bar at the right top corner or
-   2. Click on `Run` -> `Run...` 
+   2. Click on `Run` -> `Run...`
 3. Select `Start FaaS Debugger` and run the command.
 4. Select `Attach FaaS Debugger` and run the command.
 5. The debugger will start and pause at the auto-generated code.
-6. Use Intellij debugger to navigate through your code.
+6. Use IntelliJ debugger to navigate through your code.
 
 ### Debugging with other IDEs or Debugger
 
 1. Set a breakpoint in your desired function.
 2. Run the debugger (two options available)
-   1. Run `lpf debug <functionname>` or
-   2. Run `node ../bin/debug.js <functionname>`
+   1. Run `lpf debug <function name>` or
+   2. Run `node ../bin/debug.js <function name>`
 3. A debug port will start on the port 1337
 4. Attach your favorite IDE or debugger to this port
 5. Use the debugger to navigate through your code.
+
+## Troubleshooting
+
+### Using a proxy
+
+If the envar `HTTPS_PROXY` or `https_proxy` is set the `lpf` command will use the respective URLs to forward all calls.

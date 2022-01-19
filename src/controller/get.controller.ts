@@ -1,3 +1,5 @@
+import { PrettyPrintableError } from '@oclif/errors';
+import { CLIErrorCodes } from '../shared/errorCodes';
 import { GetView } from '../view/get.view';
 import { factory } from '../service/faasFactory.service';
 
@@ -32,27 +34,47 @@ export class GetController {
   public async get(
     /* istanbul ignore next */ { domains = [] }: IGetConfig = {},
   ): Promise<void> {
-    try {
-      if (domains.length === 0) {
-        throw new Error(
+    if (domains.length === 0) {
+      const prettyError: PrettyPrintableError = {
+        message:
           'Please provide a domain (functions, deployments and/or account)',
-        );
-      }
+        suggestions: ['Functions, deployments, account or events.'],
+        ref: 'https://github.com/LivePersonInc/faas-cli#get',
+        code: CLIErrorCodes.DomainMissing,
+      };
+      this.getView.showErrorMessage(prettyError);
+      throw new Error('exit');
+    }
 
-      /* istanbul ignore else */
-      if (!domains.some((e) => this.domains.includes(e))) {
-        throw new Error(
+    /* istanbul ignore else */
+    if (!domains.some((e) => this.domains.includes(e))) {
+      const prettyError: PrettyPrintableError = {
+        message:
           'Unsupported domain found. Only functions, deployments and account are supported!',
-        );
-      }
+        suggestions: ['Functions, deployments, account or events.'],
+        ref: 'https://github.com/LivePersonInc/faas-cli#get',
+        code: CLIErrorCodes.UnsupportedDomain,
+      };
+      this.getView.showErrorMessage(prettyError);
+      throw new Error('exit');
+    }
 
-      const faasService = await factory.get();
+    const faasService = await factory.get();
 
+    try {
       const allLambdas = await faasService.getAllLambdas();
 
       /* istanbul ignore else */
       if (allLambdas.length === 0) {
-        throw new Error('There are no functions created on your account!');
+        const prettyError: PrettyPrintableError = {
+          message: 'There are no functions created on your account!',
+          suggestions: [
+            'Use "lpf create:function exampleFunction" to create a function first.',
+          ],
+          ref: 'https://github.com/LivePersonInc/faas-cli#get',
+          code: CLIErrorCodes.NoLambdasFound,
+        };
+        throw prettyError;
       }
 
       const updatedLambdas = allLambdas.map((func) => {
@@ -80,7 +102,11 @@ export class GetController {
           }));
         this.getView.printDeployments(productiveLambdas);
       }
-
+    } catch (error) {
+      this.getView.showErrorMessage(error);
+      throw new Error('exit');
+    }
+    try {
       /* istanbul ignore else */
       if (domains.includes('account')) {
         const accountInfo = await faasService.getAccountStatistic();
@@ -93,7 +119,8 @@ export class GetController {
         this.getView.printEvents(events);
       }
     } catch (error) {
-      this.getView.showErrorMessage(error.message || error.error.errorMsg);
+      this.getView.showErrorMessage(error);
+      throw new Error('exit');
     }
   }
 }

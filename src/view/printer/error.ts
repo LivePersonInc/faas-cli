@@ -1,4 +1,6 @@
+/* eslint-disable no-console */
 import * as chalkDefault from 'chalk';
+import { PrettyPrintableError } from '@oclif/errors';
 
 export class ErrorMessage {
   private chalk: any;
@@ -13,9 +15,43 @@ export class ErrorMessage {
    * @param {...any[]} optionalParams - optionalParams
    * @memberof ErrorMessage
    */
-  public print(message: string, ...optionalParams: any[]): void {
-    const errorMessage = this.chalk.red.bold(message);
-    // eslint-disable-next-line no-console
-    console.log(errorMessage, ...optionalParams);
+  public print(
+    message: string | PrettyPrintableError,
+    ...optionalParams: any[]
+  ): void {
+    if (ErrorMessage.isPrettyError(message)) {
+      this.printPretty(message as PrettyPrintableError);
+    } else {
+      const errorMessage = this.chalk.red.bold(message);
+      console.log(errorMessage, ...optionalParams);
+    }
+  }
+
+  private printPretty(
+    { code, ref, message, suggestions }: PrettyPrintableError,
+    ...optionalParams
+  ) {
+    if (message) {
+      const coloredMessage = this.chalk.red.bold(message);
+      console.log(`Error: ${coloredMessage}`, ...optionalParams);
+    }
+
+    if (code) {
+      console.log(`Code: ${code}`, ...optionalParams);
+    }
+
+    if (suggestions) {
+      for (const suggestion of suggestions) {
+        console.log(`Try this: ${suggestion}`, ...optionalParams);
+      }
+    }
+
+    if (ref) {
+      console.log(`Reference: ${ref}`, ...optionalParams);
+    }
+  }
+
+  static isPrettyError(error: any): error is PrettyPrintableError {
+    return typeof error === 'object';
   }
 }

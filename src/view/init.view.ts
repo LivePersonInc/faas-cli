@@ -1,3 +1,4 @@
+import { PrettyPrintableError } from '@oclif/errors';
 import { exec as execDefault } from 'child_process';
 import { PackageManager } from '../controller/init.controller';
 import { DefaultStructureService } from '../service/defaultStructure.service';
@@ -14,6 +15,7 @@ interface ITaskListConfig {
   packageManager: PackageManager;
   needDependencyInstallation: boolean;
   functionNames?: string[];
+  update?: boolean;
 }
 
 export class InitView {
@@ -38,13 +40,12 @@ export class InitView {
   }
 
   /**
-   * Prints an error message
-   * @param {string} message - message
-   * @returns {void}
+   * Shows an error message
+   * @param {string|PrettyPrintableError} message - message
    * @memberof InitView
    */
-  public errorMessage(message: string): void {
-    return this.error.print(message);
+  public showErrorMessage(message: string | PrettyPrintableError): void {
+    this.error.print(message);
   }
 
   /**
@@ -57,21 +58,22 @@ export class InitView {
     packageManager,
     needDependencyInstallation,
     functionNames,
+    update = false,
   }: ITaskListConfig): Promise<void> {
     if (functionNames?.length) {
-      functionNames.forEach((entry) => {
+      functionNames.forEach((functionName) => {
         this.tasklist.addTask({
-          title: `Initialise ${entry}`,
+          title: `Initialise ${functionName}`,
           task: async () => {
-            this.defaultStructureService.create(entry);
+            this.defaultStructureService.create(functionName);
           },
         });
       });
     } else {
       this.tasklist.addTask({
-        title: 'Initialise example function',
+        title: `${update ? 'Update files' : 'Initializing structure'}`,
         task: async () => {
-          this.defaultStructureService.create();
+          this.defaultStructureService.create(undefined, update);
         },
       });
     }
@@ -80,13 +82,19 @@ export class InitView {
     if (needDependencyInstallation) {
       this.tasklist.addTask({
         title: 'Install packages',
-        task: async (ctx) => {
+        task: async (ctx, task) => {
+          const command = `cd bin/lp-faas-toolbelt && ${
+            ctx.packageManager === 'npm' ? 'npm i' : 'yarn -i'
+          }`;
           /* istanbul ignore next */
-          if (ctx.packageManager === 'npm') {
-            this.exec('cd bin/lp-faas-toolbelt && npm i');
-          } else {
-            this.exec('cd bin/lp-faas-toolbelt && yarn -i');
-          }
+          return new Promise((resolve) => {
+            this.exec(command, (error: any) => {
+              if (error) {
+                task.skip(error.message);
+              }
+              resolve();
+            });
+          });
         },
       });
     }

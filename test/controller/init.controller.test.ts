@@ -5,6 +5,8 @@ import { InitController } from '../../src/controller/init.controller';
 import { InitView } from '../../src/view/init.view';
 import { FileService } from '../../src/service/file.service';
 
+jest.setTimeout(50000);
+
 describe('Init controller', () => {
   const testDir = join(__dirname, 'test');
 
@@ -23,6 +25,7 @@ describe('Init controller', () => {
     });
     const execView = jest.fn();
     const tasklist = new TaskList({ renderer: 'silent' });
+    tasklist.run = jest.fn();
     const initView = new InitView({ tasklist, exec: execView });
     await new InitController({
       initView,
@@ -30,7 +33,7 @@ describe('Init controller', () => {
       fileService,
     }).init();
     expect(tasklist.getTasks()).toEqual([
-      { task: expect.any(Function), title: 'Initialise example function' },
+      { task: expect.any(Function), title: 'Initializing structure' },
       { task: expect.any(Function), title: 'Install packages' },
     ]);
     fs.removeSync(testDir);

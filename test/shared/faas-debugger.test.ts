@@ -25,6 +25,8 @@ jest.mock('child_process', () => {
 describe('debugger', () => {
   const testDir = join(__dirname, 'test');
 
+  jest.spyOn(process.stdout, 'write').mockImplementation();
+
   beforeEach(() => {
     ensureDirSync(testDir);
   });
@@ -191,5 +193,62 @@ callback(null, 'Hello World');
       'utf8',
     );
     expect(ideaCodeConfig).toContain('55555');
+  });
+
+  it('should set map external packages to the toolbelt modules', async () => {
+    ensureDirSync(join(testDir, 'functions'));
+    ensureDirSync(join(testDir, 'functions', 'DebugFunction'));
+    ensureDirSync(join(testDir, '.vscode'));
+    ensureDirSync(join(testDir, '.idea'));
+    writeFileSync(
+      join(testDir, 'functions', 'DebugFunction', 'config.json'),
+      JSON.stringify({
+        name: 'DebugFunction',
+        event: null,
+        input: {
+          headers: [],
+          payload: {},
+        },
+        environmentVariables: [
+          {
+            key: 'TestKey',
+            value: 'TestValue',
+          },
+        ],
+      }),
+    );
+    writeFileSync(
+      join(testDir, 'functions', 'DebugFunction', 'index.js'),
+      `function lambda(input, callback) {
+const Toolbelt = require('lp-faas-toolbelt');
+const OAuth = require('oauth-1.0a');
+const luxon = require('luxon');
+const jsforce = require('jsforce');
+const lodash = require('lodash');
+callback(null, 'Hello World');
+}
+`,
+    );
+    copySync('./bin/example/vscode', join(testDir, '.vscode'));
+    copySync('./bin/example/idea', join(testDir, '.idea'));
+
+    process.env.DEBUG_FUNCTION = 'DebugFunction';
+    process.env.DEBUG_PORT = '55555';
+
+    const debug = new FaasDebugger({ cwd: testDir });
+
+    await debug.runDebugging();
+
+    const indexFile = readFileSync(
+      join(testDir, 'functions', 'DebugFunction', 'index.js'),
+      'utf8',
+    );
+    expect(indexFile).toContain("require('lp-faas-toolbelt')");
+    expect(indexFile).toContain("require('../bin/lp-faas-toolbelt/luxon')");
+    expect(indexFile).toContain("require('../bin/lp-faas-toolbelt/jsforce')");
+    expect(indexFile).toContain(
+      "require('../bin/lp-faas-toolbelt/oauth-1.0a')",
+    );
+    expect(indexFile).toContain("require('../bin/lp-faas-toolbelt/lodash')");
   });
 });

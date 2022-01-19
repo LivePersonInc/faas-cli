@@ -17,7 +17,9 @@ interface IInvokeErrorLogs {
   errorLogs: any[];
 }
 
-const EXECUTION_EXCEED_TIMEOUT = 30000;
+const EXECUTION_EXCEED_TIMEOUT = 60000;
+
+const EXTERNAL_PACKAGE_MAPPING = ['oauth-1.0a', 'luxon', 'jsforce', 'lodash'];
 
 function isLogLevel(input: any) {
   return Object.keys({
@@ -34,7 +36,7 @@ function didExecutionExceedTimewindow(timeStart: number, timeEnd: number) {
   return timeEnd - timeStart > EXECUTION_EXCEED_TIMEOUT;
 }
 
-function didExecutionFailWithError(result: any) {
+function didExecutionFailWithError(result: any[]) {
   return (
     result.filter((e: any) => e.level === 'Error' && e.message?.errorMsg)
       .length > 0
@@ -45,6 +47,39 @@ function throwInvalidProjectFolderError() {
   console.log(
     'Could not find index.js. Please make sure you have set up a functions folder with index.js and config.json',
   );
+}
+
+function didIncorrectErrorFormat(result: any[]) {
+  return result.some(
+    (e: any) =>
+      e.extras[0]?.originalFailure &&
+      e.message?.errorMsg.includes('incorrect format') &&
+      e.level === 'Warn',
+  );
+}
+
+function mapExternalPackagesToToolbelt(file: string): string {
+  const isReverse = EXTERNAL_PACKAGE_MAPPING.some((pkg) =>
+    file.includes(`require('../bin/lp-faas-toolbelt/${pkg}')`),
+  );
+  const needsMapping =
+    isReverse ||
+    EXTERNAL_PACKAGE_MAPPING.some((pkg) => file.includes(`require('${pkg}')`));
+  if (needsMapping) {
+    EXTERNAL_PACKAGE_MAPPING.forEach((pkg) => {
+      /* istanbul ignore next */
+      file = isReverse
+        ? file.replace(
+            `require('../bin/lp-faas-toolbelt/${pkg}')`,
+            `require('${pkg}')`,
+          )
+        : file.replace(
+            `require('${pkg}')`,
+            `require('../bin/lp-faas-toolbelt/${pkg}')`,
+          );
+    });
+  }
+  return file;
 }
 
 export class FaasDebugger {
@@ -122,8 +157,7 @@ export class FaasDebugger {
         detached: true,
       });
       const timeStart = performance.now();
-      childFork.on('message', (message) => {
-        const result = message as any[];
+      childFork.on('message', (result: any[]) => {
         const timeEnd = performance.now();
         if (didExecutionExceedTimewindow(timeStart, timeEnd)) {
           this.errorLogs = {
@@ -132,6 +166,27 @@ export class FaasDebugger {
               'Lambda did not call callback within execution time limit',
             errorLogs: result,
           };
+          console.log(JSON.stringify(this.errorLogs, null, 4));
+          return;
+        }
+        if (didIncorrectErrorFormat(result)) {
+          const error = result.filter(
+            (e) =>
+              e.extras[0]?.originalFailure &&
+              e.message?.errorMsg.includes('incorrect format') &&
+              e.level === 'Warn',
+          )[0];
+
+          this.errorLogs.errorCode = error.message.errorCode;
+          this.errorLogs.errorMsg = error.extras[0].originalFailure;
+          result[
+            result.findIndex(
+              (e) =>
+                e.level === 'Warn' &&
+                e.message?.errorMsg.includes('incorrect format'),
+            )
+          ].message = error.message.errorMsg;
+          this.errorLogs.errorLogs = result;
           console.log(JSON.stringify(this.errorLogs, null, 4));
           return;
         }
@@ -248,23 +303,26 @@ export class FaasDebugger {
 
   private updateLambdaFunctionForInvoke() {
     let file = readFileSync(this.indexPath, 'utf8');
-    file = `${file}
+    file = `require("module").prototype.require = require('../../bin/rewire').proxy; // Rewire require
+
+${file}
+
 // This is an auto generated code during the invocation/debugging
 // It rewires the requirements and parsing the output
-try {
-  console = require('../../bin/rewire').InvokeLogger;
-  require("module").prototype.require = require('../../bin/rewire').proxy;
-  const input = require('functions/${this.lambdaToInvoke}/config').input;
-  lambda(input, (error, response) => {
-    if (error) console.error(error);
-    if (response) console.response(response);
+(async () => {
+  try {
+    console = require('../../bin/rewire').InvokeLogger;
+    const input = require('functions/${this.lambdaToInvoke}/config').input;
+    const response = await require('../../bin/rewire').convertToPromisifiedLambda((input, cb) => lambda(input, cb))(input);
+    console.response(response);
     process.send(console.getHistory());
-  });
-} catch (error) {
-  console.error(error);
-  process.send(console.getHistory());
-}
-`;
+  } catch (error) {
+    console.customError(error);
+    process.send(console.getHistory());
+  }
+})();`;
+
+    file = mapExternalPackagesToToolbelt(file);
     writeFileSync(this.indexPath, file);
   }
 
@@ -273,33 +331,48 @@ try {
       join(this.functionPath, 'index.js'),
       'utf8',
     );
-    const updatedCode = `${originalCode}
+    let updatedCode = `require("module").prototype.require = require('../../bin/rewire').proxy; // Rewire require
+
+${originalCode}
+
 // This is an auto generated code during the invocation/debugging
 // It rewires the requirements and parsing the output
-console = require('../../bin/rewire').DebugLogger;
-require("module").prototype.require = require('../../bin/rewire').proxy;
-lambda(require('functions/${process.argv[2]}/config').input, (error, response) => {
-    if (error) console.error(error);
-    if (response) console.response(response);
+(async () => {
+  try {
+    console = require('../../bin/rewire').DebugLogger;
+    const input = require('functions/${process.argv[2]}/config').input;
+    const response = await require('../../bin/rewire').convertToPromisifiedLambda((input, cb) => lambda(input, cb))(input);
+    console.response(response);
     console.printHistory();
-});`;
+  } catch (error) {
+    console.customError(error);
+  }
+})();`;
+    updatedCode = mapExternalPackagesToToolbelt(updatedCode);
     writeFileSync(join(this.functionPath, 'index.js'), updatedCode);
   }
 
   private revertLambdaFunction(invoke = false) {
-    const updatedCode = readFileSync(
+    let updatedCode = readFileSync(
       invoke ? this.indexPath : join(this.functionPath, 'index.js'),
       'utf8',
     );
+
+    updatedCode = mapExternalPackagesToToolbelt(updatedCode);
+
     /* istanbul ignore else */
     if (updatedCode.includes('This is an auto generated code')) {
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
-      const [originalCode, _] = updatedCode.split(
-        '\n// This is an auto generated code',
-      );
+      const [_, originalCode1] = updatedCode.split(`// Rewire require
+
+`);
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      const [originalCode2] = originalCode1.split(`
+
+// This is an auto`);
       writeFileSync(
         invoke ? this.indexPath : join(this.functionPath, 'index.js'),
-        originalCode,
+        originalCode2,
       );
     }
   }

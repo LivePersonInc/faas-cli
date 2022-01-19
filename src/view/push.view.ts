@@ -1,14 +1,15 @@
 import { Answers } from 'inquirer';
+import { PrettyPrintableError } from '@oclif/errors/lib/errors/pretty-print';
 import { factory } from '../service/faasFactory.service';
 import { ILambda } from '../types';
 import {
   chalk as chalkDefault,
-  emoji as emojiDefault,
   ErrorMessage,
   LogMessage,
   Prompt,
   TaskList,
 } from './printer';
+import { FileService } from '../service/file.service';
 
 interface IPushViewConfig {
   emoji?: any;
@@ -17,6 +18,7 @@ interface IPushViewConfig {
   prompt?: Prompt;
   tasklist?: TaskList;
   error?: ErrorMessage;
+  fileService?: FileService;
 }
 
 export class PushView {
@@ -30,7 +32,7 @@ export class PushView {
 
   private readonly chalk: any;
 
-  private readonly emoji: any;
+  private readonly fileService: FileService;
 
   constructor(
     /* istanbul ignore next */ {
@@ -39,25 +41,24 @@ export class PushView {
       error = new ErrorMessage(),
       tasklist = new TaskList({ exitOnError: false, concurrent: true }),
       prompt = new Prompt(),
-      emoji = emojiDefault,
+      fileService = new FileService(),
     }: IPushViewConfig = {},
   ) {
-    this.emoji = emoji;
     this.log = log;
     this.chalk = chalk;
     this.prompt = prompt;
     this.tasklist = tasklist;
     this.error = error;
+    this.fileService = fileService;
   }
 
   /**
-   * Prints an Error Message
-   * @param {string} error The Error message to print
-   * @returns {void}
+   * Shows an error message
+   * @param {string|PrettyPrintableError} message - message
    * @memberof PushView
    */
-  public showErrorMessage(error: string): void {
-    return this.error.print(error);
+  public showErrorMessage(message: string | PrettyPrintableError): void {
+    this.error.print(message);
   }
 
   /**
@@ -108,7 +109,7 @@ export class PushView {
     pushRequestBodies.forEach((entry: any) => {
       this.tasklist.addTask({
         title: `Pushing ${entry.name}`,
-        task: async () => {
+        task: async (_, task) => {
           if (!entry.description) {
             throw new Error(
               'Push Error: Lambda description can not be null. Please add a description in the config.json',
@@ -117,11 +118,17 @@ export class PushView {
           // tslint:disable-next-line:no-shadowed-variable
           const faasService = await factory.get();
           const isNewLambda = entry.version === -1;
-          await faasService.push({
+          const wasModified = await faasService.push({
             method: isNewLambda ? 'POST' : 'PUT',
             body: entry,
             ...(!isNewLambda && { uuid: entry.uuid }),
           });
+          if (!wasModified) {
+            return task.skip(
+              `Push Skipped: The update contained no changes compared to the server version.`,
+            );
+          }
+          return wasModified;
         },
       });
     });
@@ -129,6 +136,19 @@ export class PushView {
   }
 
   private preparePromptMessage(pushBody, accountId) {
+    const event = pushBody.eventId || 'No Event';
+    let eventHint = '';
+    if (pushBody.version !== -1) {
+      const localConfig = this.fileService.getFunctionConfig(pushBody.name);
+      /* istanbul ignore else */
+      if (localConfig.event !== event) {
+        eventHint = `${this.chalk.yellow(
+          `The remote and local event are different (${event} | ${localConfig.event}).
+  Events cannot be changed after the creation of a function!`,
+        )}
+        `;
+      }
+    }
     const message = `Do you want to approve and ${
       pushBody.version === -1
         ? this.chalk.green('create')
@@ -139,10 +159,11 @@ ${
     ? ''
     : this.chalk.red('Caution: This action can NOT be reverted!\n')
 }
+  ${eventHint}
   AccountId:              ${this.chalk.green(accountId)}
   Name:                   ${pushBody.name}
   Description:            ${pushBody.description}
-  Event:                  ${pushBody.eventId || 'No Event'}
+  Event:                  ${event}
   Dependencies:           ${
     pushBody.implementation.dependencies.length > 0
       ? JSON.stringify(pushBody.implementation.dependencies)

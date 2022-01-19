@@ -1,6 +1,8 @@
 // tslint:disable:no-shadowed-variable
 import { execSync as ExecDefault } from 'child_process';
 import { join } from 'path';
+import { PrettyPrintableError } from '@oclif/errors';
+import { CLIErrorCodes } from '../shared/errorCodes';
 import { FileService } from '../service/file.service';
 import { InitView as InitViewDefault } from '../view/init.view';
 
@@ -8,6 +10,7 @@ export type PackageManager = 'npm' | 'yarn';
 
 interface IInitOptions {
   functionNames?: string[];
+  update?: boolean;
 }
 
 interface IInitControllerConfig {
@@ -26,6 +29,8 @@ export class InitController {
 
   private cwd: string;
 
+  private update: boolean;
+
   constructor(
     /* istanbul ignore next */ {
       initView = new InitViewDefault(),
@@ -38,6 +43,7 @@ export class InitController {
     this.exec = exec;
     this.fileService = fileService;
     this.cwd = cwd;
+    this.update = false;
   }
 
   /**
@@ -46,8 +52,12 @@ export class InitController {
    * @returns {Promise<void>} - init view
    * @memberof InitController
    */
-  public async init({ functionNames }: IInitOptions = {}): Promise<void> {
+  public async init({
+    functionNames,
+    update = false,
+  }: IInitOptions = {}): Promise<void> {
     try {
+      this.update = update;
       const packageManager = this.determinePackageManager();
       const needDependencyInstallation: boolean = this.needDependencyInstallation(
         packageManager,
@@ -56,11 +66,12 @@ export class InitController {
         packageManager,
         needDependencyInstallation,
         functionNames,
+        update: this.update,
       });
     } catch (error) {
       /* istanbul ignore else */
       if (error.name !== 'ListrError') {
-        this.initView.errorMessage(error.message || error.error.errorMsg);
+        this.initView.showErrorMessage(error.message || error.errorMsg);
       }
     }
   }
@@ -76,12 +87,19 @@ export class InitController {
       }
       throw new Error('Please make sure you have npm or yarn installed');
     } catch {
-      throw new Error('Please make sure you have npm or yarn installed');
+      const prettyError: PrettyPrintableError = {
+        message: 'Please make sure you have npm or yarn installed',
+        ref: 'https://yarnpkg.com/getting-started/install',
+        code: CLIErrorCodes.PackageManagerNotFound,
+      };
+      this.initView.showErrorMessage(prettyError);
+      throw new Error('exit');
     }
   }
 
   private needDependencyInstallation(packageManager: PackageManager): boolean {
     return (
+      this.update ||
       (packageManager === 'npm' &&
         !this.fileService.directoryOrFileExists(
           join(this.cwd, 'bin', 'lp-faas-toolbelt', 'package-lock.json'),

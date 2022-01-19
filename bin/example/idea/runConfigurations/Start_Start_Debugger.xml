@@ -1,5 +1,5 @@
 <component name="ProjectRunConfigurationManager">
-  <configuration default="false" name="Start FaaS Debugger" type="NodeJSConfigurationType" activateToolWindowBeforeRun="false" singleton="false" application-parameters="$Prompt$" path-to-js-file="bin/debug.js" working-dir="$PROJECT_DIR$">
+  <configuration default="false" name="Start FaaS Debugger" type="NodeJSConfigurationType" activateToolWindowBeforeRun="false" singleton="false" application-parameters="$Prompt$" path-to-js-file="bin/faas-debugger.js" working-dir="$PROJECT_DIR$">
     <method v="2" />
   </configuration>
 </component>

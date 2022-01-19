@@ -68,6 +68,7 @@ const promptMock = new Prompt();
 defineFeature(feature, (test) => {
   let consoleSpy;
   let stdoutSpy;
+  let forwardedError;
 
   afterEach(() => {
     fs.removeSync(testDir);
@@ -78,6 +79,7 @@ defineFeature(feature, (test) => {
     consoleSpy = jest.spyOn(global.console, 'log');
     stdoutSpy = jest.spyOn(process.stdout, 'write').mockImplementation();
     jest.spyOn(os, 'tmpdir').mockReturnValue(testDir);
+    forwardedError = null;
   });
 
   afterAll(() => {
@@ -224,7 +226,10 @@ defineFeature(feature, (test) => {
 
     when('I run the push command', async () => {
       promptMock.run = jest.fn(() => ({ TestFunction1: true })) as any;
-      const pushView = new PushView({ prompt: promptMock });
+      const pushView = new PushView({
+        prompt: promptMock,
+        fileService: mockFileService,
+      });
 
       const pushController = new PushController({
         pushView,
@@ -244,6 +249,56 @@ defineFeature(feature, (test) => {
       expect(JSON.stringify(stdoutSpy.mock.calls)).toContain(
         'Pushing TestFunction1',
       );
+    });
+  });
+
+  test('Updating a single function unsuccessfully due to no changes', ({
+    given,
+    when,
+    then,
+    and,
+  }) => {
+    given('I am located in the respective function folder', () => {});
+
+    given('I am authorized', async () => {
+      await fileService.writeTempFile({
+        '123456789': {
+          token: '454545478787',
+          userId: 'userId_123456789',
+          username: 'testUser@liveperson.com',
+          active: true,
+        },
+      });
+    });
+
+    given(
+      'the same version of my function already is available on the faas platform',
+      () => {},
+    );
+
+    when('I run the push command', async () => {
+      promptMock.run = jest.fn(() => ({ TestFunction1: true })) as any;
+      const pushView = new PushView({
+        prompt: promptMock,
+        fileService: mockFileService,
+      });
+
+      const pushController = new PushController({
+        pushView,
+        fileService: mockFileService,
+      });
+      await pushController.push({ lambdaFunctions: ['TestFunction1'] });
+    });
+
+    then('I see the confirmation prompt and confirm', () => {});
+
+    and('I expect to see a progress indicator', () => {});
+
+    and('I expect a skip message', () => {
+      expect(consoleSpy).toBeCalledWith(
+        expect.stringMatching(/Pushing following functions/),
+      );
+      expect(JSON.stringify(stdoutSpy.mock.calls)).toContain('Push Skipped');
     });
   });
 
@@ -267,16 +322,19 @@ defineFeature(feature, (test) => {
     when('I run the push command naming multiple folders/lambdas', async () => {
       promptMock.run = jest.fn(() => ({
         TestFunction6: true,
-        TestFunction7: true,
+        TestFunction8: true,
       })) as any;
-      const pushView = new PushView({ prompt: promptMock });
+      const pushView = new PushView({
+        prompt: promptMock,
+        fileService: mockFileService,
+      });
 
       const pushController = new PushController({
         pushView,
         fileService: mockFileService,
       });
       await pushController.push({
-        lambdaFunctions: ['TestFunction6', 'TestFunction7'],
+        lambdaFunctions: ['TestFunction6', 'TestFunction8'],
       });
     });
 
@@ -292,7 +350,7 @@ defineFeature(feature, (test) => {
         'Pushing TestFunction6',
       );
       expect(JSON.stringify(stdoutSpy.mock.calls)).toContain(
-        'Pushing TestFunction7',
+        'Pushing TestFunction8',
       );
     });
   });
@@ -316,14 +374,14 @@ defineFeature(feature, (test) => {
     when('I run the push command naming multiple folders/lambdas', async () => {
       promptMock.run = jest.fn(() => ({
         TestFunction6: true,
-        TestFunction7: true,
+        TestFunction7: true, // TestFunction7 will fail in mock server
         TestFunction8: true,
       })) as any;
-      const pushView = new PushView({ prompt: promptMock });
-      mockFileService.read = jest.fn((lambdaName) => {
-        if (lambdaName === 'TestFunction6' || lambdaName === 'TestFunction8') {
-          return 'function lambda(input, callback) {\n    callback(null, `Hello World`);\n}';
-        }
+      const pushView = new PushView({
+        prompt: promptMock,
+        fileService: mockFileService,
+      });
+      mockFileService.read = jest.fn(() => {
         return 'function lammbda(input, callback) {\n    callback(null, `Hello World`);\n}';
       });
 
@@ -331,9 +389,14 @@ defineFeature(feature, (test) => {
         pushView,
         fileService: mockFileService,
       });
-      await pushController.push({
-        lambdaFunctions: ['TestFunction6', 'TestFunction7', 'TestFunction8'],
-      });
+      try {
+        await pushController.push({
+          lambdaFunctions: ['TestFunction6', 'TestFunction7', 'TestFunction8'],
+        });
+      } catch (error) {
+        // error must be forwarded in order to exit with code 1
+        forwardedError = error;
+      }
     });
 
     when('I see the confirmation prompts and confirm', () => {});
@@ -344,6 +407,7 @@ defineFeature(feature, (test) => {
       expect(JSON.stringify(stdoutSpy.mock.calls)).toContain(
         `Push Error: The code of function 'TestFunction7'`,
       );
+      expect(forwardedError).not.toBe(null);
     });
 
     and('I expect the other lambdas to succeed', () => {
@@ -371,6 +435,7 @@ defineFeature(feature, (test) => {
     });
 
     when("I run the push command with 'all' flag set", async () => {
+      // TestFunction7 will fail in mock server so is not inclueded
       promptMock.run = jest.fn(() => ({
         TestFunction1: true,
         TestFunction2: true,
@@ -378,17 +443,27 @@ defineFeature(feature, (test) => {
         TestFunction4: true,
         TestFunction5: true,
         TestFunction6: true,
-        TestFunction7: true,
         TestFunction8: true,
       })) as any;
-      const pushView = new PushView({ prompt: promptMock });
+      const pushView = new PushView({
+        prompt: promptMock,
+        fileService: mockFileService,
+      });
 
       const pushController = new PushController({
         pushView,
         fileService: mockFileService,
       });
       await pushController.push({
-        lambdaFunctions: [],
+        lambdaFunctions: [
+          'TestFunction1',
+          'TestFunction2',
+          'TestFunction3',
+          'TestFunction4',
+          'TestFunction5',
+          'TestFunction6',
+          'TestFunction8',
+        ],
         inputFlags: { all: true },
       });
     });
@@ -420,7 +495,7 @@ defineFeature(feature, (test) => {
         'Pushing TestFunction6',
       );
       expect(JSON.stringify(stdoutSpy.mock.calls)).toContain(
-        'Pushing TestFunction7',
+        'Pushing TestFunction8',
       );
     });
   });
@@ -438,24 +513,35 @@ defineFeature(feature, (test) => {
     });
 
     when("I run the push command with 'all' flag set", async () => {
-      promptMock.run = jest.fn(() => ({})) as any;
-      const pushView = new PushView({ prompt: promptMock });
+      promptMock.run = jest.fn(() => ({
+        TestFunction1: true,
+        TestFunction2: true,
+        TestFunction3: true,
+        TestFunction4: true,
+        TestFunction5: true,
+        TestFunction6: true,
+        TestFunction7: true,
+        TestFunction8: true,
+      })) as any;
 
-      mockFileService.read = jest.fn((lambdaName) => {
-        if (lambdaName === 'TestFunction7') {
-          return 'function lammbda(input, callback) {\n    callback(null, `Hello World`);\n}';
-        }
-        return 'function lambda(input, callback) {\n    callback(null, `Hello World`);\n}';
+      const pushView = new PushView({
+        prompt: promptMock,
+        fileService: mockFileService,
       });
 
       const pushController = new PushController({
         pushView,
         fileService: mockFileService,
       });
-      await pushController.push({
-        lambdaFunctions: [],
-        inputFlags: { all: true },
-      });
+      try {
+        await pushController.push({
+          lambdaFunctions: [],
+          inputFlags: { all: true },
+        });
+      } catch (error) {
+        // error must be forwarded in order to exit with code 1
+        forwardedError = error;
+      }
     });
 
     when('I see the confirmation prompt and confirm', () => {});
@@ -466,6 +552,7 @@ defineFeature(feature, (test) => {
       expect(JSON.stringify(stdoutSpy.mock.calls)).toContain(
         `Push Error: The code of function 'TestFunction7'`,
       );
+      expect(forwardedError).not.toBe(null);
     });
 
     and('I expect the other lambdas to succeed', () => {
@@ -506,7 +593,10 @@ defineFeature(feature, (test) => {
     });
 
     when('I call the push command and all lambdas are failing', async () => {
-      const pushView = new PushView({ prompt: promptMock });
+      const pushView = new PushView({
+        prompt: promptMock,
+        fileService: mockFileService,
+      });
 
       mockFileService.getFunctionsDirectories = jest.fn(() => {
         throw new Error('Will I be printed?');
@@ -516,16 +606,22 @@ defineFeature(feature, (test) => {
         pushView,
         fileService: mockFileService,
       });
-      await pushController.push({
-        lambdaFunctions: [],
-        inputFlags: { all: true },
-      });
+      try {
+        await pushController.push({
+          lambdaFunctions: [],
+          inputFlags: { all: true },
+        });
+      } catch (error) {
+        // error must be forwarded in order to exit with code 1
+        forwardedError = error;
+      }
     });
 
     then('I expect an error message', () => {
       expect(JSON.stringify(stdoutSpy.mock.calls)).toContain(
         `Will I be printed?`,
       );
+      expect(forwardedError).not.toBe(null);
     });
   });
 
@@ -549,10 +645,13 @@ defineFeature(feature, (test) => {
       'I run the push command for a lambda without a description',
       async () => {
         promptMock.run = jest.fn(() => ({ TestFunction6: true })) as any;
-        const pushView = new PushView({ prompt: promptMock });
+        const pushView = new PushView({
+          prompt: promptMock,
+          fileService: mockFileService,
+        });
         mockFileService.getFunctionConfig = jest.fn((lambdaName: string) => {
-          // eslint-disable-next-line max-nested-callbacks
           const [lambdaConfig] = localLambdaConfigs.filter(
+            // eslint-disable-next-line max-nested-callbacks
             (lambdaConfigParam: ILambdaConfig) =>
               lambdaConfigParam.name === lambdaName,
           );
@@ -563,7 +662,13 @@ defineFeature(feature, (test) => {
           pushView,
           fileService: mockFileService,
         });
-        await pushController.push({ lambdaFunctions: ['TestFunction6'] });
+
+        try {
+          await pushController.push({ lambdaFunctions: ['TestFunction6'] });
+        } catch (error) {
+          // error must be forwarded in order to exit with code 1
+          forwardedError = error;
+        }
       },
     );
 
@@ -571,6 +676,7 @@ defineFeature(feature, (test) => {
       expect(JSON.stringify(stdoutSpy.mock.calls)).toContain(
         `Push Error: Lambda description can not be null`,
       );
+      expect(forwardedError).not.toBe(null);
     });
   });
 });

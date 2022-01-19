@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 /* eslint-disable global-require */
 const { join } = require('path');
-
+const externalLibs = ['oauth-1.0a', 'luxon', 'jsforce', 'lodash']
 /**
  * Is used for rewiring the require, so the lambda code will stay the same
  * Uses the proxy to overwrite the module.require.
@@ -12,12 +12,27 @@ const { join } = require('path');
 const proxy = new Proxy(require('module').prototype.require, {
   apply(target, thisArg, argumentsList) {
     const name = argumentsList.length > 0 ? argumentsList[0] : '';
-    if (name.includes('lp-faas-toolbelt')) {
+    if (
+      externalLibs.some(
+        (pkg) => name.includes(pkg) && name.includes('lp-faas-toolbelt'),
+      )
+    ) {
+      argumentsList[0] = join(
+        '..',
+        '..',
+        'bin',
+        'lp-faas-toolbelt',
+        'node_modules',
+        name.split('/').pop(),
+      );
+    } else if (name.includes('lp-faas-toolbelt')) {
       argumentsList[0] = join('..', '..', 'bin', 'lp-faas-toolbelt');
     }
     if (name.match(/functions\/.*\/config/)) {
       const [_, functionName] = name.split('/');
-      argumentsList[0] = process.env.DEBUG_PATH ? './config.json' : join(process.cwd(), 'functions', functionName, 'config.json');
+      argumentsList[0] = process.env.DEBUG_PATH
+        ? './config.json'
+        : join(process.cwd(), 'functions', functionName, 'config.json');
     }
     return Reflect.apply(target, thisArg, argumentsList);
   },
@@ -42,7 +57,16 @@ function hasOptionals(optionals) {
 }
 
 function isRuntimeError(e) {
-  return !!e && (e.constructor === TypeError || e.constructor === SyntaxError || e.constructor === ReferenceError);
+  return (
+    !!e &&
+    (e.constructor === TypeError ||
+      e.constructor === SyntaxError ||
+      e.constructor === ReferenceError)
+  );
+}
+
+function isLoggableError(error) {
+  return error && error.message;
 }
 
 class Logger {
@@ -85,14 +109,30 @@ class Logger {
   }
 
   error(message, ...optionalParams) {
-    if (message instanceof Error) {
-      if (isRuntimeError(message)) {
-        this.writeLogs(LogLevels.Error, { errorMsg: message.message, errorCode: RUNTIME_ERROR_CODE }, ...optionalParams);
+    this.writeLogs(LogLevels.Error, message, ...optionalParams);
+  }
+
+  customError(message, ...optionalParams) {
+    if (isLoggableError(message)) {
+      if (message instanceof Error) {
+        if (isRuntimeError(message)) {
+          this.writeLogs(
+            LogLevels.Error,
+            { errorMsg: message.message, errorCode: RUNTIME_ERROR_CODE },
+            ...optionalParams,
+          );
+        } else {
+          this.writeLogs(
+            LogLevels.Error,
+            { errorMsg: message.message, errorCode: CUSTOM_FAILURE_CODE },
+            ...optionalParams,
+          );
+        }
       } else {
-        this.writeLogs(LogLevels.Error, { errorMsg: message.message, errorCode: CUSTOM_FAILURE_CODE }, ...optionalParams);
+        this.writeLogs(LogLevels.Error, message, ...optionalParams);
       }
     } else {
-      this.writeLogs(LogLevels.Error, message, ...optionalParams);
+      this.notLoggableErrorWarning(message);
     }
   }
 
@@ -107,6 +147,46 @@ class Logger {
   getHistory() {
     return this.history;
   }
+
+  notLoggableErrorWarning(error) {
+    this.writeLogs(
+      LogLevels.Warn,
+      {
+        errorMsg:
+          'Received error in an incorrect format. Please provide an error object to the callback.',
+        errorCode: CUSTOM_FAILURE_CODE,
+      },
+      {
+        originalFailure: error,
+      },
+    );
+  }
+}
+
+function convertToPromisifiedLambda(fn) {
+  return (input) => {
+    // eslint-disable-next-line consistent-return
+    return new Promise((resolve, reject) => {
+      try {
+        // Resolving will be only possible via callback
+        const callback = (err, response) => {
+          if (err === undefined || err === null) {
+            return resolve(response);
+          }
+          return reject(err);
+        };
+        const returnValue = fn(input, callback);
+
+        if (returnValue && typeof returnValue.then === 'function') {
+          // We only consider the result returned via the callback. However we will catch errors.
+          // eslint-disable-next-line @typescript-eslint/no-empty-function
+          return returnValue.then((_) => {}).catch(reject);
+        }
+      } catch (error) {
+        return reject(error);
+      }
+    });
+  };
 }
 
 module.exports = {
@@ -114,4 +194,5 @@ module.exports = {
   DebugLogger: new Logger(true),
   InvokeLogger: new Logger(),
   LogLevels,
+  convertToPromisifiedLambda,
 };
