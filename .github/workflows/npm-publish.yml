@@ -1,0 +1,61 @@
+# This workflow will run tests using node and then publish a package to GitHub Packages when a release is created
+# For more information see: https://help.github.com/actions/language-and-framework-guides/publishing-nodejs-packages
+
+name: Node.js Package
+
+on:
+  workflow_dispatch:
+      inputs:
+        version-increment:
+          type: choice
+          description: 'Version Increment'     
+          required: true
+          options: 
+            - 'patch'
+            - 'minor'
+            - 'major'
+          default: 'patch'
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-node@v2
+        with:
+          node-version: 16
+      - run: npm ci
+      - run: npm version ${{ github.event.inputs.version-increment }}
+
+  publish-npm:
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-node@v2
+        with:
+          node-version: 16
+          registry-url: https://registry.npmjs.org/
+      - run: npm publish --dry-run --no-git-tag-version
+        env:
+          NODE_AUTH_TOKEN: ${{secrets.NPM_PUBLISH_TEST}}
+
+  commit-to-branch:
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - run: echo "hallo" >> $version
+      - run: git checkout -b renovate/"$version"
+      
+  commit-to-repository:
+    needs: publish-npm
+    runs-on: ubuntu-latest
+    steps:
+      - uses: peter-evans/create-pull-request@v3.12.0
+      - with:
+          commit-message: update changelog
+          title: Update Changelog
+          body: Update changelog to reflect release changes
+          branch: update-changelog
+          base: main
