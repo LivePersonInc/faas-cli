@@ -31,7 +31,6 @@ jobs:
     needs: build
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
       - uses: actions/setup-node@v2
         with:
           node-version: 16
@@ -47,11 +46,7 @@ jobs:
       - uses: actions/checkout@v2
       - run: echo "hallo" >> $version
       - run: git checkout -b renovate/"$version"
-      
-  commit-to-repository:
-    needs: publish-npm
-    runs-on: ubuntu-latest
-    steps:
+      - name: Create Pull Request
       - uses: peter-evans/create-pull-request@v3.12.0
       - with:
           commit-message: update changelog
@@ -59,3 +54,10 @@ jobs:
           body: Update changelog to reflect release changes
           branch: update-changelog
           base: main
+
+      
+  commit-to-repository:
+    needs: publish-npm
+    runs-on: ubuntu-latest
+    steps:
+      
