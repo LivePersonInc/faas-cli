@@ -54,10 +54,3 @@ jobs:
           body: Update changelog to reflect release changes
           branch: update-changelog
           base: main
-
-      
-  commit-to-repository:
-    needs: publish-npm
-    runs-on: ubuntu-latest
-    steps:
-      
