@@ -8,9 +8,9 @@ on:
       inputs:
         version-increment:
           type: choice
-          description: 'Version Increment'     
+          description: 'Version Increment'
           required: true
-          options: 
+          options:
             - 'patch'
             - 'minor'
             - 'major'
@@ -20,26 +20,32 @@ jobs:
   publish-on-npm:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout and build
-      - uses: actions/checkout@v2
-      - uses: actions/setup-node@v2
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - name: Setup environment
+        uses: actions/setup-node@v2
         with:
           node-version: 16
           registry-url: https://registry.npmjs.org/
-      - run: npm ci
-      - run: npm version ${{ github.event.inputs.version-increment }}
-      
+
+      - name: Build
+        run: npm ci
+
+      - name: Versionate
+        run: npm version ${{ github.event.inputs.version-increment }}
+
       - name: Publish npm
-      - run: npm publish --dry-run --no-git-tag-version
+        run: npm publish --dry-run --no-git-tag-version
         env:
           NODE_AUTH_TOKEN: ${{secrets.NPM_PUBLISH_TEST}}
-      
+
       - name: Create Pull Request
-      - run: echo "hallo" >> $version
-      - uses: peter-evans/create-pull-request@v3.12.0
-      - with:
+        run: echo "hallo" >> $version
+        uses: peter-evans/create-pull-request@v3.12.0
+        with:
           commit-message: Updated repository to ${{version}}
           title: Bump version to ${{version}}
-          body: New release build 
+          body: New release build
           branch: renovate/${{version}}
           base: main
