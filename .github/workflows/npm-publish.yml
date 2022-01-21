@@ -33,7 +33,10 @@ jobs:
         run: npm ci
 
       - name: Versionate
-        run: npm version ${{ github.event.inputs.version-increment }}
+        run: |
+          git config --local user.email "action@github.com"
+          git config --local user.name "GitHub Action"
+          npm version ${{ github.event.inputs.version-increment }}
 
       - name: Publish npm
         id: publish
