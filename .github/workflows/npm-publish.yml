@@ -17,40 +17,29 @@ on:
           default: 'patch'
 
 jobs:
-  build:
+  publish-on-npm:
     runs-on: ubuntu-latest
     steps:
+      - name: Checkout and build
       - uses: actions/checkout@v2
-      - uses: actions/setup-node@v2
-        with:
-          node-version: 16
-      - run: npm ci
-      - run: npm version ${{ github.event.inputs.version-increment }}
-
-  publish-npm:
-    needs: build
-    runs-on: ubuntu-latest
-    steps:
       - uses: actions/setup-node@v2
         with:
           node-version: 16
           registry-url: https://registry.npmjs.org/
+      - run: npm ci
+      - run: npm version ${{ github.event.inputs.version-increment }}
+      
+      - name: Publish npm
       - run: npm publish --dry-run --no-git-tag-version
         env:
           NODE_AUTH_TOKEN: ${{secrets.NPM_PUBLISH_TEST}}
-
-  commit-to-branch:
-    needs: build
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v2
-      - run: echo "hallo" >> $version
-      - run: git checkout -b renovate/"$version"
+      
       - name: Create Pull Request
+      - run: echo "hallo" >> $version
       - uses: peter-evans/create-pull-request@v3.12.0
       - with:
-          commit-message: update changelog
-          title: Update Changelog
-          body: Update changelog to reflect release changes
-          branch: update-changelog
+          commit-message: Updated repository to ${{version}}
+          title: Bump version to ${{version}}
+          body: New release build 
+          branch: renovate/${{version}}
           base: main
