@@ -36,17 +36,17 @@ jobs:
         run: npm version ${{ github.event.inputs.version-increment }}
 
       - name: Publish npm
-        run: npm publish --dry-run --no-git-tag-version
-        env:
-          NODE_AUTH_TOKEN: ${{secrets.NPM_PUBLISH_TEST}}
-
-      - name: Get version number
-        run: echo "hallo" >> $version
+      - id: publish
+      - uses: JS-DevTools/npm-publish@v1
+        with:
+          token: ${{ secrets.NPM_PUBLISH_TEST }}
+          dry-run: true
+          
       - name: Create PR
         uses: peter-evans/create-pull-request@v3.12.0
         with:
-          commit-message: Updated repository to ${{env.version}}
-          title: Bump version to ${{env.version}}
+          commit-message: Updated repository to ${{ steps.publish.outputs.type }}
+          title: Bump version to ${{ steps.publish.outputs.type }}
           body: New release build
-          branch: renovate/${{env.version}}
+          branch: renovate/${{ steps.publish.outputs.type }}
           base: main
