@@ -45,8 +45,8 @@ jobs:
       - name: Create PR
         uses: peter-evans/create-pull-request@v3.12.0
         with:
-          commit-message: Updated repository to ${{version}}
-          title: Bump version to ${{version}}
+          commit-message: Updated repository to ${{env.version}}
+          title: Bump version to ${{env.version}}
           body: New release build
-          branch: renovate/${{version}}
+          branch: renovate/${{env.version}}
           base: main
