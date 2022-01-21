@@ -36,8 +36,8 @@ jobs:
         run: npm version ${{ github.event.inputs.version-increment }}
 
       - name: Publish npm
-      - id: publish
-      - uses: JS-DevTools/npm-publish@v1
+        id: publish
+        uses: JS-DevTools/npm-publish@v1
         with:
           token: ${{ secrets.NPM_PUBLISH_TEST }}
           dry-run: true
