@@ -1,5 +1,10 @@
 {
   "extends": [
-    "config:base"
+    "config:js-lib",
+    ":disableDependencyDashboard",
+    ":rebaseStalePrs",
+    ":prNotPending",
+    ":maintainLockFilesMonthly",
+    "npm:unpublishSafe"
   ]
 }
