@@ -5,7 +5,12 @@ name: Node.js CI
 
 on:
   pull_request:
-    branches: [ master ]
+    branches:
+      - master
+  push:
+    branches:    
+      - master
+      - renovate/**
 
 jobs:
   build:
