@@ -80,7 +80,7 @@
     "globby": "11.0.4",
     "jest": "25.5.4",
     "jest-cucumber": "2.0.13",
-    "prettier": "2.4.1",
+    "prettier": "2.5.1",
     "prettier-eslint": "9.0.2",
     "ts-jest": "25.5.1",
     "ts-node": "8.10.2",
