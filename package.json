@@ -77,7 +77,7 @@
     "eslint-plugin-import": "2.25.4",
     "eslint-plugin-prettier": "3.1.2",
     "eslint-plugin-unicorn": "18.0.1",
-    "globby": "11.0.4",
+    "globby": "11.1.0",
     "jest": "25.5.4",
     "jest-cucumber": "2.0.13",
     "prettier": "2.5.1",
