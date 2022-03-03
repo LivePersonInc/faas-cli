@@ -72,7 +72,7 @@
     "eslint": "6.8.0",
     "eslint-config-airbnb-base": "14.2.1",
     "eslint-config-oclif": "3.1.0",
-    "eslint-config-oclif-typescript": "0.2.0",
+    "eslint-config-oclif-typescript": "1.0.2",
     "eslint-config-prettier": "6.15.0",
     "eslint-plugin-import": "2.25.4",
     "eslint-plugin-prettier": "3.4.1",
