@@ -1,4 +1,5 @@
 /* eslint-disable no-throw-literal */
+/* eslint-disable node/no-unsupported-features/node-builtins */
 import * as os from 'os';
 import { Readable } from 'stream';
 import { FaasService } from '../../src/service/faas.service';
