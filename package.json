@@ -79,7 +79,7 @@
     "eslint-plugin-unicorn": "18.0.1",
     "globby": "13.1.1",
     "jest": "26.0.0",
-    "jest-cucumber": "2.0.13",
+    "jest-cucumber": "3.0.1",
     "prettier": "2.5.1",
     "prettier-eslint": "9.0.2",
     "ts-jest": "25.5.1",
