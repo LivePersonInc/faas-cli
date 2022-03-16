@@ -38,9 +38,8 @@ export class DeployController extends DeploymentController {
     inputFlags,
   }: IDeployConfig): Promise<void> {
     try {
-      const functionsToDeploy: ILambda[] = await this.collectLambdaInformationForAllLambdas(
-        lambdaFunctions,
-      );
+      const functionsToDeploy: ILambda[] =
+        await this.collectLambdaInformationForAllLambdas(lambdaFunctions);
 
       let confirmedFunctionsToDeploy: ILambda[] = [];
       if (inputFlags?.yes) {

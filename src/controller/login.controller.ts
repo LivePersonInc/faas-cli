@@ -138,12 +138,11 @@ export class LoginController {
       displayAccountId?: boolean;
     } = { showBanner: false, displayAccountId: false },
   ): Promise<void> {
-    const promptAnswer: IPromptAnswer = await this.loginView.askForUsernameAndPassword(
-      {
+    const promptAnswer: IPromptAnswer =
+      await this.loginView.askForUsernameAndPassword({
         password,
         username,
-      },
-    );
+      });
 
     try {
       const response: ILoginResponse = await this.loginService.login({
@@ -198,9 +197,8 @@ export class LoginController {
         };
       }
 
-      const { token, userId, username, csrf, sessionId } = this.tempFile[
-        activeAccountId
-      ];
+      const { token, userId, username, csrf, sessionId } =
+        this.tempFile[activeAccountId];
       if (
         validToken ||
         (await this.loginService.isTokenValid({
