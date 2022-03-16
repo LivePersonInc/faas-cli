@@ -108,7 +108,7 @@ describe('file service', () => {
   it('should throw an error while getting path to function', () => {
     fs.ensureDirSync(join(testDir, 'functions'));
 
-    const functionName = (undefined as unknown) as string;
+    const functionName = undefined as unknown as string;
 
     expect(() => {
       fileService.getPathToFunction(functionName);

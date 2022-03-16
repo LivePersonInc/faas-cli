@@ -59,9 +59,8 @@ export class InitController {
     try {
       this.update = update;
       const packageManager = this.determinePackageManager();
-      const needDependencyInstallation: boolean = this.needDependencyInstallation(
-        packageManager,
-      );
+      const needDependencyInstallation: boolean =
+        this.needDependencyInstallation(packageManager);
       await this.initView.showInitialiseTaskList({
         packageManager,
         needDependencyInstallation,
