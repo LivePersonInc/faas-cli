@@ -38,9 +38,8 @@ export class UndeployController extends DeploymentController {
     inputFlags,
   }: IUndeployConfig): Promise<void> {
     try {
-      const functionsToUndeploy: ILambda[] = await this.collectLambdaInformationForAllLambdas(
-        lambdaFunctions,
-      );
+      const functionsToUndeploy: ILambda[] =
+        await this.collectLambdaInformationForAllLambdas(lambdaFunctions);
 
       let confirmedFunctionsToUndeploy: ILambda[] = [];
       if (inputFlags?.yes) {
