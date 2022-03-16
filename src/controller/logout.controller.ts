@@ -49,10 +49,11 @@ export class LogoutController {
     if (inputFlags.accountId) {
       selectedAccountId = inputFlags.accountId;
     } else {
-      const answer: IPromptAnswer = await this.logoutView.showAccountIdSelection(
-        accountIds,
-        inputFlags.delete,
-      );
+      const answer: IPromptAnswer =
+        await this.logoutView.showAccountIdSelection(
+          accountIds,
+          inputFlags.delete,
+        );
       selectedAccountId = answer.accountId;
     }
 
