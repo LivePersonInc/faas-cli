@@ -30,7 +30,7 @@
     "js-yaml": "^4.0.0",
     "jsforce": "^1.9.3",
     "jsonwebtoken": "^8.5.1",
-    "latest-version": "^5.1.0",
+    "latest-version": "^6.0.0",
     "listr": "^0.14.3",
     "lodash": "^4.17.21",
     "moment": "^2.24.0",
