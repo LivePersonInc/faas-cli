@@ -83,8 +83,8 @@
     "prettier": "2.5.1",
     "prettier-eslint": "13.0.0",
     "ts-jest": "25.5.1",
-    "ts-node": "8.10.2",
-    "tslib": "2.3.1",
+    "ts-node": "10.7.0",
+     "tslib": "2.3.1",
     "tslint-config-prettier": "1.18.0",
     "typescript": "3.9.10"
   },
