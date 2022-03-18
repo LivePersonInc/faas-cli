@@ -81,7 +81,7 @@
     "jest": "26.0.0",
     "jest-cucumber": "3.0.1",
     "prettier": "2.5.1",
-    "prettier-eslint": "12.0.0",
+    "prettier-eslint": "13.0.0",
     "ts-jest": "25.5.1",
     "ts-node": "8.10.2",
     "tslib": "1.14.1",
