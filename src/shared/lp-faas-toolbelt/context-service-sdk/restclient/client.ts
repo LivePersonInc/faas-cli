@@ -174,7 +174,7 @@ export class RestClient implements IRestClient {
                     ({
                         name: current?.name as string,
                         createdAt: new Date(current?.createdAt as string),
-                        ...(current?.ttlSecond && { ttlSecond: current?.ttlSecond }), // Will add property if present
+                        ...(current?.ttlSecond && { ttlSecond: current?.ttlSecond }) as object, // Will add property if present
                     } as Namespace),
             );
         } catch (error) {
