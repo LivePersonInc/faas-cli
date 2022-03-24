@@ -1,3 +1,9 @@
+export interface IRuntime {
+  uuid: string;
+  name: string;
+  baseImageName: string;
+}
+
 /**
  * Structure of the lambda
  * @export
@@ -42,7 +48,7 @@ export interface ILambda {
         createdBy: string;
         updatedBy: string;
       }
-    | {};
+    | Record<string, unknown>;
   implementation: {
     code: string;
     dependencies:
@@ -60,10 +66,4 @@ export interface ILambda {
       },
     ];
   };
-}
-
-export interface IRuntime {
-  uuid: string;
-  name: string;
-  baseImageName: string;
 }

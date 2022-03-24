@@ -12,7 +12,8 @@
     "allowSyntheticDefaultImports": true,
     "types": ["node", "jest"],
     "experimentalDecorators": true,
-    "noImplicitAny": false
+    "noImplicitAny": false,
+    "useUnknownInCatchVariables": false // fix for Object is of type 'unknown' for Error.
   },
   "include": ["src/**/*"],
   "exclude": ["node_modules", "**/*.spec.ts", "bin/example"]
