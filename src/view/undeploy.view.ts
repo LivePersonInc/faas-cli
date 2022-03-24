@@ -99,7 +99,7 @@ export class UndeployView {
             return task.skip(`${response.message} (${entry.uuid})`);
           }
           if (!noWatch) {
-            return new Promise(async (resolve) => {
+            return new Promise<void>(async (resolve) => {
               // eslint-disable-next-line unicorn/consistent-function-scoping
               function waitUntilLambdaIsUndeployed(): Promise<boolean> {
                 return new Promise(async (resolve) => {
@@ -116,7 +116,7 @@ export class UndeployView {
 
               function watchUndeployment(): Promise<any> {
                 let deployed = false;
-                return new Promise((resolve) => {
+                return new Promise<void>((resolve) => {
                   const timer = setIntervalAsync(async () => {
                     deployed = await waitUntilLambdaIsUndeployed();
                     /* istanbul ignore else */
