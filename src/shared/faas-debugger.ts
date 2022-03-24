@@ -151,7 +151,7 @@ export class FaasDebugger {
   }
 
   private createChildProcessForInvokeLocal() {
-    return new Promise((resolve) => {
+    return new Promise<void>((resolve) => {
       const childFork = fork(this.indexPath, [], {
         env: process.env,
         detached: true,
