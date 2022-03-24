@@ -87,7 +87,7 @@ export class InitView {
             ctx.packageManager === 'npm' ? 'npm i' : 'yarn -i'
           }`;
           /* istanbul ignore next */
-          return new Promise((resolve) => {
+          return new Promise<void>((resolve) => {
             this.exec(command, (error: any) => {
               if (error) {
                 task.skip(error.message);
