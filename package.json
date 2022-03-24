@@ -26,6 +26,7 @@
     "fs-extra": "^10.0.0",
     "get-port": "^6.0.0",
     "got": "^10.7.0",
+    "hpagent": "0.1.2",
     "inquirer": "^8.0.0",
     "js-yaml": "^4.0.0",
     "jsforce": "^1.9.3",
@@ -33,6 +34,7 @@
     "latest-version": "^6.0.0",
     "listr": "^0.14.3",
     "lodash": "^4.17.21",
+    "lodash.template": "^4.5.0",
     "moment": "^2.24.0",
     "moment-timezone": "^0.5.28",
     "node-emoji": "^1.10.0",
@@ -42,8 +44,7 @@
     "semver": "^7.2.1",
     "set-interval-async": "^1.0.30",
     "systeminformation": "^5.3.1",
-    "uuid": "8.3.2",
-    "hpagent": "0.1.2"
+    "uuid": "8.3.2"
   },
   "devDependencies": {
     "@babel/core": "7.17.7",
@@ -84,7 +85,7 @@
     "prettier-eslint": "13.0.0",
     "ts-jest": "25.5.1",
     "ts-node": "10.7.0",
-     "tslib": "2.3.1",
+    "tslib": "2.3.1",
     "tslint-config-prettier": "1.18.0",
     "typescript": "3.9.10"
   },
