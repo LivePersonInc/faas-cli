@@ -26,7 +26,7 @@ export class Prompt {
    */
   public addQuestion(question: IPromptAnswer | IPromptAnswer[]): Prompt {
     Array.isArray(question)
-      ? (this.prompts = this.prompts.concat(question))
+      ? (this.prompts = [...this.prompts, ...question])
       : this.prompts.push(question);
     return this;
   }

@@ -1,4 +1,4 @@
-/* eslint-disable no-console */
+/* eslint-disable no-console, unicorn/import-style */
 import * as chalkDefault from 'chalk';
 import { PrettyPrintableError } from '@oclif/errors';
 

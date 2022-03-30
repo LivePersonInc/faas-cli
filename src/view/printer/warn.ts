@@ -1,4 +1,4 @@
-import * as chalkDefault from 'chalk';
+const chalkDefault = require('chalk');
 
 export class WarnMessage {
   private chalk: any;

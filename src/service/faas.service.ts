@@ -323,7 +323,7 @@ export class FaasService implements IFaaSService {
       method: 'GET',
       additionalParams: `&startTimestamp=${firstDayOfMonth}&endTimestamp=${currentDate}`,
     });
-
+    /* eslint-disable unicorn/no-array-reduce, unicorn/no-await-expression-member */
     return (await Promise.all([limitCounts, lambdaCounts, invocations])).reduce(
       (acc, e) => ({ ...acc, ...e }),
       {},

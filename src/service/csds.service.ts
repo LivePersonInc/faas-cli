@@ -62,7 +62,7 @@ export class CsdsClient {
       });
 
       /* istanbul ignore else */
-      if (baseURIs && baseURIs.length !== 0) {
+      if (baseURIs && baseURIs.length > 0) {
         this.lastCacheTimestamp = Date.now();
         this.domains = baseURIs;
 

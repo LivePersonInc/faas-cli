@@ -1,3 +1,4 @@
+/* eslint-disable unicorn/no-null */
 import { FileService } from '../service/file.service';
 import { ILoginResponse, LoginService } from '../service/login.service';
 import { LoginView } from '../view/login.view';
@@ -253,9 +254,9 @@ export class LoginController {
   private async updateTempFile(): Promise<any> {
     /* istanbul ignore else */
     if (this.tempFile) {
-      Object.keys(this.tempFile).forEach((entry) => {
+      for (const entry of Object.keys(this.tempFile)) {
         this.tempFile[entry].active = false;
-      });
+      }
       this.tempFile[this.accountId].active = true;
       await this.fileService.writeTempFile(this.tempFile);
     }

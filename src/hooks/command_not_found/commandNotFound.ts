@@ -1,4 +1,4 @@
-/* eslint-disable no-console */
+/* eslint-disable no-console, unicorn/prefer-array-flat */
 import { color } from '@oclif/color';
 import { Hook } from '@oclif/config';
 import * as Levenshtein from 'fast-levenshtein';

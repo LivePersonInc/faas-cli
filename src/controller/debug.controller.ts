@@ -1,3 +1,4 @@
+/* eslint-disable unicorn/import-style */
 import { execFileSync } from 'child_process';
 import { join } from 'path';
 import * as getPort from 'get-port';

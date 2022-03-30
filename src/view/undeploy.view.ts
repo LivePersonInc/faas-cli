@@ -57,13 +57,13 @@ export class UndeployView {
    * @memberof UndeployView
    */
   public async askForConfirmation(lambdas: any): Promise<Answers> {
-    lambdas.forEach((lambda: any) => {
+    for (const lambda of lambdas) {
       this.prompt.addQuestion({
         name: `${lambda.name}`,
         type: 'confirm',
         message: this.preparePromptMessage(lambda),
       });
-    });
+    }
 
     return this.prompt.run();
   }
@@ -88,7 +88,7 @@ export class UndeployView {
     } else {
       this.log.print('\nUndeploying following functions:\n');
     }
-    confirmedFunctionsToUndeploy.forEach(async (entry: any) => {
+    for (const entry of confirmedFunctionsToUndeploy) {
       this.tasklist.addTask({
         title: `Undeploying ${entry.name}`,
         // eslint-disable-next-line consistent-return
@@ -133,7 +133,7 @@ export class UndeployView {
           }
         },
       });
-    });
+    }
 
     return this.tasklist.run();
   }

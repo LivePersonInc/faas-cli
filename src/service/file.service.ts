@@ -1,3 +1,4 @@
+/* eslint-disable unicorn/no-null, unicorn/no-lonely-if, unicorn/import-style  */
 import * as crypto from 'crypto';
 import * as fsDefault from 'fs-extra';
 import { system } from 'systeminformation';

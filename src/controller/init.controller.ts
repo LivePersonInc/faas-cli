@@ -1,4 +1,5 @@
 // tslint:disable:no-shadowed-variable
+/* eslint-disable unicorn/import-style */
 import { execSync as ExecDefault } from 'child_process';
 import { join } from 'path';
 import { PrettyPrintableError } from '@oclif/errors';

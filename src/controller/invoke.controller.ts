@@ -1,3 +1,4 @@
+/* eslint-disable unicorn/import-style */
 import { join } from 'path';
 import { PrettyPrintableError } from '@oclif/errors';
 import { CLIErrorCodes } from '../shared/errorCodes';

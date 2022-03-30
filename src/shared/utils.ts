@@ -1,9 +1,11 @@
 export function parseInput(flags: any, argv: string[]) {
   const parsedFlags: string[] = [];
-  Object.keys(flags).forEach((e) => {
-    parsedFlags.push(`--${flags[e].name}`);
-    parsedFlags.push(`-${flags[e].char}`);
-  });
+  for (const e of Object.keys(flags)) {
+    const name = `--${flags[e].name}`;
+    const char = `-${flags[e].char}`;
+    parsedFlags.push(name, char);
+  }
+
   return argv.filter((arg) => !parsedFlags.includes(arg));
 }
 

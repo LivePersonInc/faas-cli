@@ -69,11 +69,12 @@ export class LoginView {
     accountIds: string[],
   ): Promise<IPromptAnswer[]> {
     if (accountIds.length > 0) {
+      const other = ['other'];
       this.prompt.addQuestion({
         name: 'accountId',
         type: 'list',
         message: 'Choose accountId or select other',
-        choices: accountIds.concat(['other']),
+        choices: [...accountIds, ...other],
       });
       this.prompt.addQuestion({
         name: 'other',

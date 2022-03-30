@@ -1,4 +1,4 @@
-/* eslint-disable no-console */
+/* eslint-disable no-console, unicorn/prefer-array-some, unicorn/import-style, unicorn/no-null  */
 import { readFileSync, writeFileSync, existsSync } from 'fs';
 import { fork, spawn } from 'child_process';
 import { join } from 'path';
@@ -66,7 +66,7 @@ function mapExternalPackagesToToolbelt(file: string): string {
     isReverse ||
     EXTERNAL_PACKAGE_MAPPING.some((pkg) => file.includes(`require('${pkg}')`));
   if (needsMapping) {
-    EXTERNAL_PACKAGE_MAPPING.forEach((pkg) => {
+    for (const pkg of EXTERNAL_PACKAGE_MAPPING) {
       /* istanbul ignore next */
       file = isReverse
         ? file.replace(
@@ -77,7 +77,7 @@ function mapExternalPackagesToToolbelt(file: string): string {
             `require('${pkg}')`,
             `require('../bin/lp-faas-toolbelt/${pkg}')`,
           );
-    });
+    }
   }
   return file;
 }
@@ -380,7 +380,9 @@ ${originalCode}
   private updatePort(filePath: string) {
     let content = readFileSync(filePath, 'utf8');
     const oldPort = content.match(new RegExp(/\d{4,5}/g)) as any[];
-    oldPort.forEach((e) => (content = content.replace(e, `${this.port}`)));
+    for (const e of oldPort) {
+      content = content.replace(e, `${this.port}`);
+    }
     writeFileSync(filePath, content);
   }
 

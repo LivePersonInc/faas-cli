@@ -1,3 +1,4 @@
+/* eslint-disable unicorn/no-null */
 import { PrettyPrintableError } from '@oclif/errors/lib/errors/pretty-print';
 import { LogMessage, ErrorMessage, chalk as chalkDefault } from './printer';
 

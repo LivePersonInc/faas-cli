@@ -1,3 +1,4 @@
+/* eslint-disable unicorn/import-style */
 import { Hook, IConfig } from '@oclif/config';
 import * as chalk from 'chalk';
 import * as fs from 'fs-extra';

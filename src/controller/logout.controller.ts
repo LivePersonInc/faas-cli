@@ -1,3 +1,4 @@
+/* eslint-disable unicorn/no-null */
 import { LogoutView } from '../view/logout.view';
 import { FileService } from '../service/file.service';
 import { ITempFile } from './login.controller';
