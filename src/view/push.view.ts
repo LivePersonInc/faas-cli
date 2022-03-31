@@ -72,13 +72,13 @@ export class PushView {
     lambdas: ILambda[],
     accountId?: string,
   ): Promise<Answers> {
-    for (const lambda of lambdas) {
+    lambdas.forEach((lambda: ILambda) => {
       this.prompt.addQuestion({
         name: `${lambda.name}`,
         type: 'confirm',
         message: this.preparePromptMessage(lambda, accountId),
       });
-    }
+    });
 
     return this.prompt.run();
   }
@@ -106,7 +106,7 @@ export class PushView {
     } else {
       this.log.print('\nPushing following functions:\n');
     }
-    for (const entry of pushRequestBodies) {
+    pushRequestBodies.forEach((entry: any) => {
       this.tasklist.addTask({
         title: `Pushing ${entry.name}`,
         task: async (_, task) => {
@@ -131,7 +131,7 @@ export class PushView {
           return wasModified;
         },
       });
-    }
+    });
     await this.tasklist.run();
   }
 

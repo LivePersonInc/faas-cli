@@ -66,13 +66,13 @@ export class PullView {
     lambdas: ILambda[],
     accountId: string,
   ): Promise<Answers> {
-    for (const lambda of lambdas) {
+    lambdas.forEach((lambda: ILambda) => {
       this.prompt.addQuestion({
         name: `${lambda.name}`,
         type: 'confirm',
         message: this.preparePromptMessage(lambda, accountId),
       });
-    }
+    });
 
     return this.prompt.run();
   }
@@ -97,7 +97,7 @@ export class PullView {
       this.log.print('\nPulling following functions:\n');
     }
 
-    for (const lambda of confirmedLambdasToPull) {
+    confirmedLambdasToPull.forEach((lambda: ILambda) => {
       this.tasklist.addTask({
         title: `Pulling ${lambda.name}`,
         task: async () => {
@@ -132,7 +132,7 @@ export class PullView {
           );
         },
       });
-    }
+    });
 
     await this.tasklist.run();
   }

@@ -61,14 +61,14 @@ export class InitView {
     update = false,
   }: ITaskListConfig): Promise<void> {
     if (functionNames?.length) {
-      for (const functionName of functionNames) {
+      functionNames.forEach((functionName) => {
         this.tasklist.addTask({
           title: `Initialise ${functionName}`,
           task: async () => {
             this.defaultStructureService.create(functionName);
           },
         });
-      }
+      });
     } else {
       this.tasklist.addTask({
         title: `${update ? 'Update files' : 'Initializing structure'}`,

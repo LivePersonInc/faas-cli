@@ -52,7 +52,6 @@ export class AddController {
     }
 
     const faasService = await factory.get();
-    // eslint-disable-next-line unicorn/no-array-for-each
     domains.forEach(async (domain) => {
       try {
         await faasService.addDomain(domain);

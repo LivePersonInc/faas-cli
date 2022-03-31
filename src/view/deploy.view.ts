@@ -65,13 +65,13 @@ export class DeployView {
    * @memberof DeployView
    */
   public async askForConfirmation(lambdas: any): Promise<Answers> {
-    for (const lambda of lambdas) {
+    lambdas.forEach((lambda: any) => {
       this.prompt.addQuestion({
         name: `${lambda.name}`,
         type: 'confirm',
         message: this.preparePromptMessage(lambda),
       });
-    }
+    });
 
     return this.prompt.run();
   }
@@ -96,7 +96,7 @@ export class DeployView {
     } else {
       this.log.print('\nDeploying following functions:\n');
     }
-    for (const entry of confirmedFunctionsToDeploy) {
+    confirmedFunctionsToDeploy.forEach((entry: any) => {
       this.tasklist.addTask({
         title: `Deploying ${entry.name}`,
         // eslint-disable-next-line consistent-return
@@ -144,7 +144,7 @@ export class DeployView {
           }
         },
       });
-    }
+    });
 
     return this.tasklist.run();
   }

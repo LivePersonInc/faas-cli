@@ -1,4 +1,3 @@
-/* eslint-disable unicorn/no-null */
 import { FileService } from '../service/file.service';
 import { ILoginResponse, LoginService } from '../service/login.service';
 import { LoginView } from '../view/login.view';

@@ -88,7 +88,7 @@ export class UndeployView {
     } else {
       this.log.print('\nUndeploying following functions:\n');
     }
-    for (const entry of confirmedFunctionsToUndeploy) {
+    confirmedFunctionsToUndeploy.forEach(async (entry: any) => {
       this.tasklist.addTask({
         title: `Undeploying ${entry.name}`,
         // eslint-disable-next-line consistent-return
@@ -133,7 +133,7 @@ export class UndeployView {
           }
         },
       });
-    }
+    });
 
     return this.tasklist.run();
   }

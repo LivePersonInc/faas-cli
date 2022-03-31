@@ -59,6 +59,15 @@ module.exports = {
     'unicorn/prefer-object-from-entries': 0,
     'unicorn/prefer-optional-catch-binding': 0,
     'unicorn/no-object-as-default-parameter': 0,
+    'unicorn/no-array-for-each': 0, // to avoid the issues that are caused by existing code when refactored
+    'unicorn/no-array-push-push': 0, // to avoid the issues that are caused by existing code when refactored
+    'unicorn/no-null': 0, // to avoid the issues that are caused by existing code when refactored
+    'unicorn/import-style': 0, // to avoid the issues that are caused by existing code when refactored
+    'unicorn/prefer-export-from': 0, // to avoid the use of require which is a legacy way
+    'unicorn/no-array-reduce': 0, //to avoid the issues that are caused by existing code when refactored
+    'unicorn/prefer-array-some': 0,
+    'unicorn/no-lonely-if': 0,
+    'unicorn/prefer-array-flat': 0, //to avoid the issues that are caused by existing code when refactored
     'new-cap': 0,
   },
 };

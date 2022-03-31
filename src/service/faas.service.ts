@@ -323,12 +323,12 @@ export class FaasService implements IFaaSService {
       method: 'GET',
       additionalParams: `&startTimestamp=${firstDayOfMonth}&endTimestamp=${currentDate}`,
     });
-    /* eslint-disable unicorn/no-array-reduce, unicorn/no-await-expression-member */
-    const accountLimits = await Promise.all([limitCounts, lambdaCounts, invocations]);
-    return accountLimits.reduce(
-      (acc, e) => ({ ...acc, ...e }),
-      {},
-    );
+    const accountLimits = await Promise.all([
+      limitCounts,
+      lambdaCounts,
+      invocations,
+    ]);
+    return accountLimits.reduce((acc, e) => ({ ...acc, ...e }), {});
   }
 
   public async push({

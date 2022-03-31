@@ -1,22 +1,19 @@
 /**
  * {@link https://github.com/chalk/chalk}
  */
-const chalk = require('chalk');
-
+import * as chalk from 'chalk';
 /**
  * {@link https://www.npmjs.com/package/figlet}
  */
-const figlet = require('figlet');
-
+import * as figlet from 'figlet';
 /**
  * {@link https://www.npmjs.com/package/node-emoji}
  */
-const { emoji } = require('node-emoji');
-
+import { emoji } from 'node-emoji';
 /**
  * {@link https://github.com/oclif/cli-ux}
  */
-const cliUX = require('cli-ux').cli;
+import { cli as cliUX } from 'cli-ux';
 
 export { ErrorMessage } from './error';
 export { LogMessage } from './log';

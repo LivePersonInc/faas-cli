@@ -1,4 +1,3 @@
-/* eslint-disable unicorn/import-style */
 import { join } from 'path';
 import { FileService } from './file.service';
 
