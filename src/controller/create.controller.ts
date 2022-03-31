@@ -158,7 +158,8 @@ export class CreateController {
 
     const faasService = await factory.get();
     // eslint-disable-next-line unicorn/no-await-expression-member
-    const deployedLambdas = (await faasService.getAllLambdas()).filter(
+    const allLambdas = await faasService.getAllLambdas()
+    const deployedLambdas = allLambdas.filter(
       ({ state }) => ['Productive', 'Modified'].includes(state),
     );
     scheduleConfig.lambdaUUID = deployedLambdas.find(
