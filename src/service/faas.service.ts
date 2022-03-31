@@ -324,7 +324,8 @@ export class FaasService implements IFaaSService {
       additionalParams: `&startTimestamp=${firstDayOfMonth}&endTimestamp=${currentDate}`,
     });
     /* eslint-disable unicorn/no-array-reduce, unicorn/no-await-expression-member */
-    return (await Promise.all([limitCounts, lambdaCounts, invocations])).reduce(
+    const accountLimits = await Promise.all([limitCounts, lambdaCounts, invocations]);
+    return accountLimits.reduce(
       (acc, e) => ({ ...acc, ...e }),
       {},
     );
