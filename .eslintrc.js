@@ -50,6 +50,7 @@ module.exports = {
     'unicorn/prevent-abbreviations': 'off',
     'unicorn/no-abusive-eslint-disable': 0,
     'unicorn/import-index': 0,
+    'prefer-regex-literals': 0,
     'new-cap': 0,
   },
 };
