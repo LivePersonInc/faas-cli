@@ -132,7 +132,8 @@ export class DeployView {
                     deployed = await checkIfLambdaIsDeployed();
                     /* istanbul ignore else */
                     if (deployed) {
-                      await clearIntervalAsync(timer);
+                      // with the update to v2 the await clearIntervalAsync(timer) requires to be wrapped inside an immediately-invoke function expression or remove the await so that it resolves the timeout it causes because of not finishing the process
+                      clearIntervalAsync(timer);
                       resolve();
                     }
                   }, 3000);
