@@ -132,8 +132,10 @@ export class DeployView {
                     deployed = await checkIfLambdaIsDeployed();
                     /* istanbul ignore else */
                     if (deployed) {
-                      await clearIntervalAsync(timer);
-                      resolve();
+                      (async () => {
+                        await clearIntervalAsync(timer);
+                        resolve();
+                      })();
                     }
                   }, 3000);
                 });
