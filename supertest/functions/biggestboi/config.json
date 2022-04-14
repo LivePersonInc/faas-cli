@@ -1,0 +1,15 @@
+{
+    "name": "biggestboi",
+    "event": "conversational_command",
+    "description": "the biggest boi",
+    "input": {
+        "headers": [],
+        "payload": {}
+    },
+    "environmentVariables": [
+        {
+            "key": "",
+            "value": ""
+        }
+    ]
+}

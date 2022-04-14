@@ -18,7 +18,9 @@ export class Add extends Command {
 
   public static strict = false;
 
-  public static examples = ['> <%= config.bin %> add:domain *.liveperson.com'];
+  public static examples = [
+    '> <%= config.bin %> add:domain "*.liveperson.com"',
+  ];
 
   /**
    * Runs the create command and parses the passed functions

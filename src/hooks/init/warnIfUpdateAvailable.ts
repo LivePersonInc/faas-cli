@@ -1,4 +1,5 @@
-import { Hook, Config } from '@oclif/core';
+import { Hook } from '@oclif/core';
+import { Config } from '@oclif/core/lib/interfaces';
 import * as chalk from 'chalk';
 import * as fs from 'fs-extra';
 import * as path from 'path';

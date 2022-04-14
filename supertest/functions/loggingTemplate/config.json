@@ -1,0 +1,15 @@
+{
+    "name": "loggingTemplate",
+    "event": "No Event",
+    "description": "loggingFunction",
+    "input": {
+        "headers": [],
+        "payload": {}
+    },
+    "environmentVariables": [
+        {
+            "key": "",
+            "value": ""
+        }
+    ]
+}
