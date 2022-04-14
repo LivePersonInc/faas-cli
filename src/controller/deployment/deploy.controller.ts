@@ -1,5 +1,5 @@
 import { Answers } from 'inquirer';
-import { PrettyPrintableError } from '@oclif/errors';
+import { PrettyPrintableError } from '@oclif/core/lib/interfaces';
 import { ILambda } from '../../types';
 import { DeployView } from '../../view/deploy.view';
 import { DeploymentController } from './deployment.controller';
@@ -38,9 +38,8 @@ export class DeployController extends DeploymentController {
     inputFlags,
   }: IDeployConfig): Promise<void> {
     try {
-      const functionsToDeploy: ILambda[] = await this.collectLambdaInformationForAllLambdas(
-        lambdaFunctions,
-      );
+      const functionsToDeploy: ILambda[] =
+        await this.collectLambdaInformationForAllLambdas(lambdaFunctions);
 
       let confirmedFunctionsToDeploy: ILambda[] = [];
       if (inputFlags?.yes) {

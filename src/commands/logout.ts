@@ -1,16 +1,16 @@
-import { Command, flags } from '@oclif/command';
+import { Command, Flags } from '@oclif/core';
 import { LogoutController } from '../controller/logout.controller';
 
 export default class Logout extends Command {
   public static description = 'Performs the logout of your account';
 
   public static flags = {
-    help: flags.help({ char: 'h' }),
-    accountId: flags.string({
+    help: Flags.help({ char: 'h' }),
+    accountId: Flags.string({
       char: 'a',
       description: 'Account which will be logged out',
     }),
-    delete: flags.boolean({
+    delete: Flags.boolean({
       char: 'd',
       description: 'Deletes the account credentials from the local machine',
     }),
@@ -32,7 +32,7 @@ export default class Logout extends Command {
    */
   async run(): Promise<void> {
     try {
-      const { flags: inputFlags } = this.parse(Logout);
+      const { flags: inputFlags } = await this.parse(Logout);
       this.logoutController.logout(inputFlags);
     } catch (error) {
       this.exit(1);

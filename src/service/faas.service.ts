@@ -13,6 +13,21 @@ import { LogsTransform } from '../transform/LogsTransform';
 
 export type HttpMethods = 'POST' | 'GET' | 'DELETE' | 'PUT';
 
+export interface IPayload {
+  headers: string[];
+  payload: any;
+}
+
+export interface IInvokeResponse {
+  result: any;
+  logs: {
+    level: string;
+    message: any;
+    extras: any[];
+    timestamp: number;
+  }[];
+}
+
 interface IFetchConfig {
   urlPart: string;
   method: HttpMethods;
@@ -53,6 +68,7 @@ export interface IFaaSService {
    * @returns {Promise<FaasService>}
    * @memberof IFaaSService
    */
+  // eslint-disable-next-line no-use-before-define
   setup(): Promise<FaasService>;
 
   /**
@@ -173,21 +189,6 @@ interface IFaasServiceConfig {
   loginController?: LoginController;
   csdsClient?: CsdsClient;
   gotDefault?: Got;
-}
-
-export interface IPayload {
-  headers: string[];
-  payload: any;
-}
-
-export interface IInvokeResponse {
-  result: any;
-  logs: {
-    level: string;
-    message: any;
-    extras: any[];
-    timestamp: number;
-  }[];
 }
 
 export class FaasService implements IFaaSService {
@@ -400,9 +401,9 @@ export class FaasService implements IFaaSService {
     }`;
 
     if (levels && levels.length > 0) {
-      for (const level of levels) {
+      levels.forEach((level) => {
         additionalParams += `&filterLevels=${level}`;
-      }
+      });
     }
 
     return this.getStream(
@@ -441,8 +442,8 @@ export class FaasService implements IFaaSService {
     try {
       const domain = await this.getCsdsEntry(csds);
       const url = `https://${domain}/api/account/${this.accountId}${urlPart}?userId=${this.userId}&v=1${additionalParams}`;
-      const { HTTPS_PROXY, https_proxy } = process.env;
-      const proxyURL = HTTPS_PROXY || https_proxy || '';
+      const { HTTPS_PROXY, https_proxy: httpsProxy } = process.env;
+      const proxyURL = HTTPS_PROXY || httpsProxy || '';
 
       await new Promise<void>((resolve, reject) => {
         this.got
@@ -470,7 +471,7 @@ export class FaasService implements IFaaSService {
             reject(e);
           })
           .pipe(transformer)
-          .on('finish', function () {
+          .on('finish', () => {
             resolve();
           });
       });
@@ -508,8 +509,8 @@ export class FaasService implements IFaaSService {
     try {
       const domain = await this.getCsdsEntry(csds);
       const url = `https://${domain}/api/account/${this.accountId}${urlPart}?userId=${this.userId}&v=1${additionalParams}`;
-      const { HTTPS_PROXY, https_proxy } = process.env;
-      const proxyURL = HTTPS_PROXY || https_proxy || '';
+      const { HTTPS_PROXY, https_proxy: httpsProxy } = process.env;
+      const proxyURL = HTTPS_PROXY || httpsProxy || '';
 
       const response = await this.got(url, {
         method,

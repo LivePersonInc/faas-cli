@@ -1,7 +1,7 @@
 // tslint:disable:no-shadowed-variable
 import { execSync as ExecDefault } from 'child_process';
 import { join } from 'path';
-import { PrettyPrintableError } from '@oclif/errors';
+import { PrettyPrintableError } from '@oclif/core/lib/interfaces';
 import { CLIErrorCodes } from '../shared/errorCodes';
 import { FileService } from '../service/file.service';
 import { InitView as InitViewDefault } from '../view/init.view';
@@ -59,9 +59,8 @@ export class InitController {
     try {
       this.update = update;
       const packageManager = this.determinePackageManager();
-      const needDependencyInstallation: boolean = this.needDependencyInstallation(
-        packageManager,
-      );
+      const needDependencyInstallation: boolean =
+        this.needDependencyInstallation(packageManager);
       await this.initView.showInitialiseTaskList({
         packageManager,
         needDependencyInstallation,

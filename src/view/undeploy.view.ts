@@ -6,7 +6,7 @@ import {
   clearIntervalAsync,
   setIntervalAsync,
 } from 'set-interval-async/dynamic';
-import { PrettyPrintableError } from '@oclif/errors/lib/errors/pretty-print';
+import { PrettyPrintableError } from '@oclif/core/lib/interfaces';
 import { factory } from '../service/faasFactory.service';
 import { ILambda } from '../types';
 import {
@@ -99,8 +99,7 @@ export class UndeployView {
             return task.skip(`${response.message} (${entry.uuid})`);
           }
           if (!noWatch) {
-            return new Promise(async (resolve) => {
-              // eslint-disable-next-line unicorn/consistent-function-scoping
+            return new Promise<void>(async (resolve) => {
               function waitUntilLambdaIsUndeployed(): Promise<boolean> {
                 return new Promise(async (resolve) => {
                   const lambdaInformation = await faasService.getLambdaByUUID(
@@ -116,7 +115,7 @@ export class UndeployView {
 
               function watchUndeployment(): Promise<any> {
                 let deployed = false;
-                return new Promise((resolve) => {
+                return new Promise<void>((resolve) => {
                   const timer = setIntervalAsync(async () => {
                     deployed = await waitUntilLambdaIsUndeployed();
                     /* istanbul ignore else */

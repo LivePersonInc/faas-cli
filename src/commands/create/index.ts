@@ -1,4 +1,4 @@
-import { Command, flags } from '@oclif/command';
+import { Command, Flags } from '@oclif/core';
 import { CreateView } from '../../view/create.view';
 
 export class Create extends Command {
@@ -8,7 +8,7 @@ export class Create extends Command {
   private readonly view = new CreateView();
 
   public static flags = {
-    help: flags.help({
+    help: Flags.help({
       char: 'h',
       description: 'Show help for the create command',
     }),

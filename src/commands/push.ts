@@ -1,4 +1,4 @@
-import { Command, flags } from '@oclif/command';
+import { Command, Flags } from '@oclif/core';
 import { PushController } from '../controller/push.controller';
 import { parseInput } from '../shared/utils';
 
@@ -7,17 +7,17 @@ export default class Push extends Command {
     'Push local functions to the LivePerson functions platform';
 
   public static flags = {
-    help: flags.help({ char: 'h' }),
-    yes: flags.boolean({
+    help: Flags.help({ char: 'h' }),
+    yes: Flags.boolean({
       char: 'y',
       description:
         'Agrees to the approval of the push and prevents the confirmation dialog',
     }),
-    'no-watch': flags.boolean({
+    'no-watch': Flags.boolean({
       char: 'w',
       description: "Don't watch push process",
     }),
-    all: flags.boolean({ char: 'a', description: 'Pushes all functions' }),
+    all: Flags.boolean({ char: 'a', description: 'Pushes all functions' }),
   };
 
   public static strict = false;
@@ -34,7 +34,7 @@ export default class Push extends Command {
 
   public async run(): Promise<void> {
     try {
-      const { flags: inputFlags } = this.parse(Push);
+      const { flags: inputFlags } = await this.parse(Push);
       const lambdaFunctions = parseInput(Push.flags, this.argv);
       await this.pushController.push({ lambdaFunctions, inputFlags });
     } catch (error) {

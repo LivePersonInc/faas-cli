@@ -1,4 +1,4 @@
-import { PrettyPrintableError } from '@oclif/errors';
+import { PrettyPrintableError } from '@oclif/core/lib/interfaces';
 import { exec as execDefault } from 'child_process';
 import { PackageManager } from '../controller/init.controller';
 import { DefaultStructureService } from '../service/defaultStructure.service';
@@ -87,7 +87,7 @@ export class InitView {
             ctx.packageManager === 'npm' ? 'npm i' : 'yarn -i'
           }`;
           /* istanbul ignore next */
-          return new Promise((resolve) => {
+          return new Promise<void>((resolve) => {
             this.exec(command, (error: any) => {
               if (error) {
                 task.skip(error.message);

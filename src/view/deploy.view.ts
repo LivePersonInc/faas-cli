@@ -1,6 +1,6 @@
 /* eslint-disable no-async-promise-executor */
 /* eslint-disable no-shadow */
-import { PrettyPrintableError } from '@oclif/errors/lib/errors/pretty-print';
+import { PrettyPrintableError } from '@oclif/core/lib/interfaces';
 import { Answers } from 'inquirer';
 import * as moment from 'moment-timezone';
 import {
@@ -108,7 +108,6 @@ export class DeployView {
           }
           if (!noWatch) {
             return new Promise<void>(async (resolve) => {
-              // eslint-disable-next-line unicorn/consistent-function-scoping
               function checkIfLambdaIsDeployed(): Promise<boolean> {
                 return new Promise(async (resolve) => {
                   const lambdaInformation = (await faasService.getLambdaByUUID(

@@ -1,4 +1,4 @@
-import { PrettyPrintableError } from '@oclif/errors';
+import { PrettyPrintableError } from '@oclif/core/lib/interfaces';
 // tslint:disable:no-shadowed-variable
 import { CreateView as CreateViewDefault } from '../view/create.view';
 import {
@@ -48,9 +48,8 @@ export class CreateController {
    */
   public async createFunction(functionParameters = {}): Promise<void> {
     try {
-      const missingParameters = await this.checkAndAskForMissingFunctionParameters(
-        functionParameters,
-      );
+      const missingParameters =
+        await this.checkAndAskForMissingFunctionParameters(functionParameters);
 
       const functionConfig: IFunctionConfig = {
         ...functionParameters,
@@ -121,9 +120,8 @@ export class CreateController {
    */
   public async createSchedule(scheduleParameters = {}): Promise<void> {
     try {
-      const missingParameters = await this.checkAndAskForMissingScheduleParameters(
-        scheduleParameters,
-      );
+      const missingParameters =
+        await this.checkAndAskForMissingScheduleParameters(scheduleParameters);
 
       const scheduleConfig: IScheduleConfig = {
         ...missingParameters,
@@ -159,9 +157,9 @@ export class CreateController {
     }
 
     const faasService = await factory.get();
-    const deployedLambdas = (
-      await faasService.getAllLambdas()
-    ).filter(({ state }) => ['Productive', 'Modified'].includes(state));
+    const deployedLambdas = (await faasService.getAllLambdas()).filter(
+      ({ state }) => ['Productive', 'Modified'].includes(state),
+    );
     scheduleConfig.lambdaUUID = deployedLambdas.find(
       ({ name }) => functionName === name,
     )?.uuid;

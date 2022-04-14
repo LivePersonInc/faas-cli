@@ -1,5 +1,5 @@
 import * as moment from 'moment-timezone';
-import { PrettyPrintableError } from '@oclif/errors/lib/errors/pretty-print';
+import { PrettyPrintableError } from '@oclif/core/lib/interfaces';
 import { LogMessage, ErrorMessage, cliUX, chalk } from './printer';
 import { ILambda } from '../types';
 

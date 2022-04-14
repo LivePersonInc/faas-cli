@@ -1,10 +1,10 @@
-import { Command, flags } from '@oclif/command';
+import { Command, Flags } from '@oclif/core';
 import { AddController } from '../../controller/add.controller';
 import { parseInput } from '../../shared/utils';
 
 export class Domain extends Command {
   public static flags = {
-    help: flags.help({
+    help: Flags.help({
       char: 'h',
       description: 'Show help for the add:domain command',
     }),

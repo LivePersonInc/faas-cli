@@ -151,7 +151,7 @@ export class FaasDebugger {
   }
 
   private createChildProcessForInvokeLocal() {
-    return new Promise((resolve) => {
+    return new Promise<void>((resolve) => {
       const childFork = fork(this.indexPath, [], {
         env: process.env,
         detached: true,
@@ -283,6 +283,8 @@ export class FaasDebugger {
         'utf8',
       ),
     );
+    // better readable than forEach
+    // eslint-disable-next-line no-restricted-syntax
     for (const env of environmentVariables) {
       if (
         !Object.prototype.hasOwnProperty.call(env, 'key') ||

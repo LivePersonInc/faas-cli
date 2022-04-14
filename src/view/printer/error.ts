@@ -1,6 +1,6 @@
 /* eslint-disable no-console */
 import * as chalkDefault from 'chalk';
-import { PrettyPrintableError } from '@oclif/errors';
+import { PrettyPrintableError } from '@oclif/core/lib/interfaces';
 
 export class ErrorMessage {
   private chalk: any;
@@ -41,9 +41,9 @@ export class ErrorMessage {
     }
 
     if (suggestions) {
-      for (const suggestion of suggestions) {
+      suggestions.forEach((suggestion) => {
         console.log(`Try this: ${suggestion}`, ...optionalParams);
-      }
+      });
     }
 
     if (ref) {

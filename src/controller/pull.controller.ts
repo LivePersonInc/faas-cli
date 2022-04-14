@@ -1,4 +1,4 @@
-import { PrettyPrintableError } from '@oclif/errors';
+import { PrettyPrintableError } from '@oclif/core/lib/interfaces';
 import { CLIErrorCodes } from '../shared/errorCodes';
 import { PullView } from '../view/pull.view';
 import { factory } from '../service/faasFactory.service';
