@@ -1,9 +1,0 @@
-{
-  "secrets": [
-    {
-      "key": "",
-      "value": ""
-    }
-  ],
-  "whitelist": ["*.liveperson.com"]
-}
