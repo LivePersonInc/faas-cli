@@ -14,7 +14,7 @@ export class Create extends Command {
     }),
   };
 
-  public static description = 'Create functions locally nd schedules remotely';
+  public static description = 'Create functions locally and schedules remotely';
 
   public static strict = false;
 
