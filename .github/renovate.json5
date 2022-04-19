@@ -1,0 +1,18 @@
+{
+  "extends": [
+    "config:js-lib",
+    ":disableDependencyDashboard",
+    ":rebaseStalePrs",
+    ":prNotPending",
+    ":maintainLockFilesMonthly",
+    "npm:unpublishSafe"
+  ],
+  "packageRules": [
+    {
+      "matchPackagePrefixes": [
+        "@oclif/"
+      ],
+      "groupName": "oclif dependencies"
+    }
+  ]
+}

@@ -13,7 +13,7 @@
     "types": ["node", "jest"],
     "experimentalDecorators": true,
     "noImplicitAny": false,
-    "useUnknownInCatchVariables": false
+    "useUnknownInCatchVariables": false,
   },
   "include": ["src/**/*"],
   "exclude": ["node_modules", "**/*.spec.ts", "bin/example"]

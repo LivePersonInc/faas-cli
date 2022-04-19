@@ -59,6 +59,21 @@ export interface IDeploymentResponse {
   uuid?: string;
 }
 
+export interface IPayload {
+  headers: string[];
+  payload: any;
+}
+
+export interface IInvokeResponse {
+  result: any;
+  logs: {
+    level: string;
+    message: any;
+    extras: any[];
+    timestamp: number;
+  }[];
+}
+
 export interface IFaaSService {
   /**
    * Runs the initial setup for the faas service.
