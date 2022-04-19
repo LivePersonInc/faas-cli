@@ -1,8 +1,8 @@
 import { Hook } from '@oclif/core';
 import * as semver from 'semver';
+import chalk = require('chalk');
 import { factory } from '../../service/faasFactory.service';
 
-import chalk = require('chalk');
 /**
  * Hook which will run if the invoke command was triggered.
  * Will display the difference of the remote and local node.js version

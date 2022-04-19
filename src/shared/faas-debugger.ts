@@ -381,7 +381,7 @@ ${originalCode}
 
   private updatePort(filePath: string) {
     let content = readFileSync(filePath, 'utf8');
-    const oldPort = content.match(new RegExp(/\d{4,5}/g)) as any[];
+    const oldPort = content.match(/\d{4,5}/g) as any[];
     oldPort.forEach((e) => (content = content.replace(e, `${this.port}`)));
     writeFileSync(filePath, content);
   }

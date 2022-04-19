@@ -4,13 +4,13 @@ import { FileService } from '../../src/service/file.service';
 const fileService = new FileService();
 
 function getUserId(uri: string) {
-  const userIdRegex = new RegExp(/userId=(userId_.*)&v=1/);
+  const userIdRegex = /userId=(userId_.*)&v=1/;
   const userId = new RegExp(userIdRegex).exec(uri) as any[];
   return userId[1];
 }
 
 function getFunctionname(uri: string) {
-  const functionNameRegex = new RegExp(/&name=(.*)/);
+  const functionNameRegex = /&name=(.*)/;
   const functionName = new RegExp(functionNameRegex).exec(uri) as any[];
   return functionName[1];
 }
@@ -67,10 +67,8 @@ export function undeploy() {
 }
 
 function getUUID(uri: string) {
-  const uuidRegex = new RegExp(
-    /[\dA-F]{8}-[\dA-F]{4}-4[\dA-F]{3}-[89AB][\dA-F]{3}-[\dA-F]{12}/,
-    'i',
-  );
+  const uuidRegex =
+    /[\dA-F]{8}-[\dA-F]{4}-4[\dA-F]{3}-[89AB][\dA-F]{3}-[\dA-F]{12}/i;
   const uuid = new RegExp(uuidRegex).exec(uri) as any[];
   return uuid[0];
 }

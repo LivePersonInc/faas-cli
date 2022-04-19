@@ -76,7 +76,7 @@ export class InitController {
   }
 
   private determinePackageManager(): PackageManager {
-    const versionRegex = new RegExp(/(?:\d{1,2}.){2}\d{1,2}/);
+    const versionRegex = /(?:\d{1,2}.){2}\d{1,2}/;
     try {
       if (versionRegex.test(this.exec('npm -v', { encoding: 'utf8' }))) {
         return 'npm';
