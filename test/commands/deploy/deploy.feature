@@ -7,12 +7,6 @@ Feature: Deploy Command
     Then I will be asked if I want to approve the deployment and I approve it
     And The deployment process will start and will indicate if it's finished
 
-  Scenario: Run the deploy command with an alternatively defined lambda
-    Given I have a valid token
-    Given I have a function available on the LivePerson Functions platform
-    When I run the deploy command and pass a functions folder name
-    Then I will be asked if I want to approve the deployment and I approve it
-    And The deployment process will start and will indicate if it's finished
 
   Scenario: Run the deploy command (with passed function names), don't want to watch the process and approve all with the yes flag
     Given I have a valid token
