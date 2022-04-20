@@ -48,7 +48,7 @@
     "@babel/core": "7.17.8",
     "@babel/preset-env": "7.16.11",
     "@babel/preset-typescript": "7.16.7",
-    "@oclif/test": "^1.2.9",
+    "@oclif/test": "1.2.9",
     "@types/figlet": "1.5.4",
     "@types/fs-extra": "9.0.13",
     "@types/inquirer": "8.2.1",
