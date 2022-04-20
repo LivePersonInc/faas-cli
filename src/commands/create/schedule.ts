@@ -1,17 +1,17 @@
-import { Command, flags } from '@oclif/command';
+import { Command, Flags } from '@oclif/core';
 import { CreateController } from '../../controller/create.controller';
 
 export class Schedule extends Command {
   public static flags = {
-    help: flags.help({
+    help: Flags.help({
       char: 'h',
       description: 'Show help for the create command',
     }),
-    functionName: flags.string({
+    functionName: Flags.string({
       char: 'f',
       description: 'name of (deployed) function which will be scheduled',
     }),
-    cronExpression: flags.string({
+    cronExpression: Flags.string({
       char: 'c',
       description: 'Cron Expression',
     }),
@@ -40,7 +40,7 @@ export class Schedule extends Command {
     try {
       const {
         flags: { functionName, cronExpression },
-      } = this.parse(Schedule);
+      } = await this.parse(Schedule);
       await this.createController.createSchedule({
         functionName,
         cronExpression,

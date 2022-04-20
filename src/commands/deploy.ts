@@ -1,4 +1,4 @@
-import { Command, flags } from '@oclif/command';
+import { Command, Flags } from '@oclif/core';
 import { DeployController } from '../controller/deployment/deploy.controller';
 import { parseInput } from '../shared/utils';
 
@@ -7,13 +7,13 @@ export class Deploy extends Command {
     'Deploys a function or multiple functions on the LivePerson Functions platform';
 
   public static flags = {
-    help: flags.help({ char: 'h' }),
-    yes: flags.boolean({
+    help: Flags.help({ char: 'h' }),
+    yes: Flags.boolean({
       char: 'y',
       description:
         'Agrees to the approval of the deployment and prevents the confirmation dialog',
     }),
-    'no-watch': flags.boolean({
+    'no-watch': Flags.boolean({
       char: 'w',
       description: "Don't watch deployment process",
     }),
@@ -38,7 +38,7 @@ export class Deploy extends Command {
    */
   public async run(): Promise<void> {
     try {
-      const { flags: inputFlags } = this.parse(Deploy);
+      const { flags: inputFlags } = await this.parse(Deploy);
       const lambdaFunctions = parseInput(Deploy.flags, this.argv);
       await this.deployController.deploy({ lambdaFunctions, inputFlags });
     } catch (error) {

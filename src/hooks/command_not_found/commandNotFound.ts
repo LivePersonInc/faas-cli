@@ -1,6 +1,6 @@
 /* eslint-disable no-console */
 import { color } from '@oclif/color';
-import { Hook } from '@oclif/config';
+import { Hook } from '@oclif/core';
 import * as Levenshtein from 'fast-levenshtein';
 import * as _ from 'lodash';
 
@@ -42,8 +42,10 @@ Run ${color.cmd(binHelp)} for a list of available commands.`);
  * @param { opts } - oclif configuration
  */
 /* istanbul ignore next */
-const hook: Hook<'command_not_found'> = async function (opts) {
-  // need to seperate the function for the test,
+const hook: Hook<'command_not_found'> = async function commandNotFoundHook(
+  opts,
+) {
+  // need to separate the function for the test,
   // because there is no context for the command_not_found during the test
   /* istanbul ignore next */
   await commandNotFound(opts);

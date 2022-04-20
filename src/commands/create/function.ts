@@ -1,21 +1,21 @@
-import { Command, flags } from '@oclif/command';
+import { Command, Flags } from '@oclif/core';
 import { CreateController } from '../../controller/create.controller';
 
 export class Function extends Command {
   public static flags = {
-    help: flags.help({
+    help: Flags.help({
       char: 'h',
       description: 'Show help for the create command',
     }),
-    name: flags.string({
+    name: Flags.string({
       char: 'n',
       description: 'name of function, allowed characters: A-Z, 0-9, _',
     }),
-    description: flags.string({
+    description: Flags.string({
       char: 'd',
       description: 'description of function, allowed characters: A-Z, 0-9, _',
     }),
-    event: flags.string({
+    event: Flags.string({
       char: 'e',
       description: 'ID of event, use <lpf get events> for more information',
     }),
@@ -28,7 +28,7 @@ export class Function extends Command {
   public static examples = [
     '> <%= config.bin %> create:function',
     '> <%= config.bin %> create:function -n exampleFunction -d "This is an example description"',
-    '> <%= config.bin %> create:function -n exampleFunction -e bot_connectors_custom_integration',
+    '> <%= config.bin %> create:function -n exampleFunction -e "bot_connectors_custom_integration"',
   ];
 
   private createController: CreateController = new CreateController();
@@ -42,7 +42,7 @@ export class Function extends Command {
     try {
       const {
         flags: { name, event, description },
-      } = this.parse(Function);
+      } = await this.parse(Function);
       await this.createController.createFunction({
         name,
         event,

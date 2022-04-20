@@ -1,4 +1,4 @@
-import { Command, flags } from '@oclif/command';
+import { Command, Flags } from '@oclif/core';
 import { InvokeController } from '../controller/invoke.controller';
 import { parseInput } from '../shared/utils';
 
@@ -6,8 +6,8 @@ export default class Invoke extends Command {
   public static description = 'Invokes a function';
 
   public static flags = {
-    help: flags.help({ char: 'h' }),
-    local: flags.boolean({
+    help: Flags.help({ char: 'h' }),
+    local: Flags.boolean({
       char: 'l',
       description:
         'Invokes the function locally with the input from the config.json',
@@ -33,7 +33,7 @@ export default class Invoke extends Command {
    */
   public async run(): Promise<void> {
     try {
-      const { flags: inputFlags } = this.parse(Invoke);
+      const { flags: inputFlags } = await this.parse(Invoke);
       const lambdaFunctions = parseInput(Invoke.flags, this.argv);
       await this.invokeController.invoke({ lambdaFunctions, inputFlags });
     } catch (error) {

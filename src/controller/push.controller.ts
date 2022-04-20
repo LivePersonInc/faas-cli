@@ -111,7 +111,7 @@ export class PushController {
           this.fileService.getPathToFunction(lambdaConfig.name, 'index.js'),
           false,
         ),
-        dependencies: [],
+        dependencies: lambdaConfig.dependencies || [],
         environmentVariables:
           lambdaConfig.environmentVariables[0].key === ''
             ? []
@@ -138,7 +138,7 @@ export class PushController {
           this.fileService.getPathToFunction(lambda.name, 'index.js'),
           false,
         ),
-        dependencies: [],
+        dependencies: lambdaConfig.dependencies || [],
         environmentVariables:
           lambdaConfig.environmentVariables[0].key === ''
             ? []

@@ -1,4 +1,4 @@
-import { Command, flags } from '@oclif/command';
+import { Command, Flags } from '@oclif/core';
 import { UndeployController } from '../controller/deployment/undeploy.controller';
 import { parseInput } from '../shared/utils';
 
@@ -7,13 +7,13 @@ export default class Undeploy extends Command {
     'Undeploys a function or multiple functions on the LivePerson Functions platform';
 
   public static flags = {
-    help: flags.help({ char: 'h' }),
-    yes: flags.boolean({
+    help: Flags.help({ char: 'h' }),
+    yes: Flags.boolean({
       char: 'y',
       description:
         'Agrees to the approval of the undeployment and prevents the confirmation dialog',
     }),
-    'no-watch': flags.boolean({
+    'no-watch': Flags.boolean({
       char: 'w',
       description: "Don't watch undeployment process",
     }),
@@ -38,7 +38,7 @@ export default class Undeploy extends Command {
    */
   public async run(): Promise<void> {
     try {
-      const { flags: inputFlags } = this.parse(Undeploy);
+      const { flags: inputFlags } = await this.parse(Undeploy);
       const lambdaFunctions = parseInput(Undeploy.flags, this.argv);
       await this.undeployController.undeploy({ lambdaFunctions, inputFlags });
     } catch (error) {

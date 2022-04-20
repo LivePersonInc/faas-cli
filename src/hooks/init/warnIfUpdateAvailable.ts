@@ -1,4 +1,5 @@
-import { Hook, IConfig } from '@oclif/config';
+import { Hook } from '@oclif/core';
+import { Config } from '@oclif/core/lib/interfaces';
 import * as chalk from 'chalk';
 import * as fs from 'fs-extra';
 import * as path from 'path';
@@ -26,14 +27,14 @@ function parseBorder(message: string): string {
  * If the timeout is over, it will fetch the latest version from the repo and get the current version from the version file.
  * And if they are unequal it will print the update hint.
  * @export
- * @param {IConfig} config - passed config from the oclif framework
+ * @param {Config} config - passed config from the oclif framework
  * @returns {Promise<void>} - update hint
  */
 export async function warnIfUpdateAvailable({
   config,
   id,
 }: {
-  config: IConfig;
+  config: Config;
   id?: string;
 }): Promise<void> {
   const {
@@ -106,8 +107,8 @@ export async function warnIfUpdateAvailable({
  * @param opts - oclif options
  */
 /* istanbul ignore next */
-const hook: Hook<'init'> = async function (opts) {
-  // need to seperate the function for the test,
+const hook: Hook<'init'> = async function warnIfUpdateHook(opts) {
+  // need to separate the function for the test,
   // because there is no context for the init command during the test
   /* istanbul ignore next */
   await warnIfUpdateAvailable({ id: opts.id, config: opts.config });

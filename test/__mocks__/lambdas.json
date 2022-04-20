@@ -20,7 +20,8 @@
         "createdAt": "2020-01-27T09:59:43.000Z",
         "updatedAt": "2020-01-27T09:59:43.000Z",
         "lastDeployment": {
-            "deployedAt": "2020-02-05T14:47:42.000Z"
+            "deployedAt": "2020-02-05T14:47:42.000Z",
+            "createdAt": "2020-02-05T14:47:42.000Z"
         },
         "implementation": {
             "code": "function lambda(input, callback) {\n    callback(null, `Hello World`);\n}",

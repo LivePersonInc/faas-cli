@@ -1,4 +1,4 @@
-import { PrettyPrintableError } from '@oclif/errors';
+import { PrettyPrintableError } from '@oclif/core/lib/interfaces';
 // tslint:disable:no-shadowed-variable
 import { CreateView as CreateViewDefault } from '../view/create.view';
 import {

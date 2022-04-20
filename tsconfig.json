@@ -6,14 +6,14 @@
     "outDir": "lib",
     "rootDir": "src",
     "strict": true,
-    "target": "es2017",
+    "target": "es2019",
     "moduleResolution": "node",
     "sourceMap": true,
     "allowSyntheticDefaultImports": true,
     "types": ["node", "jest"],
     "experimentalDecorators": true,
     "noImplicitAny": false,
-    "useUnknownInCatchVariables": false // fix for Object is of type 'unknown' for Error.
+    "useUnknownInCatchVariables": false,
   },
   "include": ["src/**/*"],
   "exclude": ["node_modules", "**/*.spec.ts", "bin/example"]

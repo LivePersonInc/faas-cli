@@ -1,4 +1,4 @@
-import { Command, flags } from '@oclif/command';
+import { Command, Flags } from '@oclif/core';
 import { CreateView } from '../../view/create.view';
 
 export class Add extends Command {
@@ -8,7 +8,7 @@ export class Add extends Command {
   private readonly view = new CreateView();
 
   public static flags = {
-    help: flags.help({
+    help: Flags.help({
       char: 'h',
       description: 'Show help for the Add command',
     }),
@@ -18,7 +18,9 @@ export class Add extends Command {
 
   public static strict = false;
 
-  public static examples = ['> <%= config.bin %> add:domain *.liveperson.com'];
+  public static examples = [
+    '> <%= config.bin %> add:domain "*.liveperson.com"',
+  ];
 
   /**
    * Runs the create command and parses the passed functions

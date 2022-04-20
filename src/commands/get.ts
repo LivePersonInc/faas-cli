@@ -1,4 +1,4 @@
-import { Command, flags } from '@oclif/command';
+import { Command, Flags } from '@oclif/core';
 import { GetController } from '../controller/get.controller';
 import { parseInput } from '../shared/utils';
 
@@ -7,7 +7,7 @@ export default class Get extends Command {
     'Get information about different domains (deployments, functions, account and events)';
 
   public static flags = {
-    help: flags.help({ char: 'h' }),
+    help: Flags.help({ char: 'h' }),
   };
 
   public static strict = false;

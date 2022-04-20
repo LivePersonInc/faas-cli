@@ -1,5 +1,5 @@
 import { Answers } from 'inquirer';
-import { PrettyPrintableError } from '@oclif/errors';
+import { PrettyPrintableError } from '@oclif/core/lib/interfaces';
 import { ILambda } from '../../types';
 import { DeployView } from '../../view/deploy.view';
 import { DeploymentController } from './deployment.controller';

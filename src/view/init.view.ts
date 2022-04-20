@@ -1,4 +1,4 @@
-import { PrettyPrintableError } from '@oclif/errors';
+import { PrettyPrintableError } from '@oclif/core/lib/interfaces';
 import { exec as execDefault } from 'child_process';
 import { PackageManager } from '../controller/init.controller';
 import { DefaultStructureService } from '../service/defaultStructure.service';

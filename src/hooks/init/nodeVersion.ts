@@ -1,9 +1,7 @@
-import chalk = require('chalk');
-/* eslint-disable import/first */
-import { Hook } from '@oclif/config';
+import { Hook } from '@oclif/core';
 import * as semver from 'semver';
+import chalk = require('chalk');
 import { factory } from '../../service/faasFactory.service';
-/* eslint-enable import/first */
 
 /**
  * Hook which will run if the invoke command was triggered.
@@ -53,8 +51,8 @@ export async function nodeVersion(
  * @param { config } - oclif configuration
  */
 /* istanbul ignore next */
-const hook: Hook<'init'> = async function (opts) {
-  // need to seperate the function for the test,
+const hook: Hook<'init'> = async function nodeVersionHook(opts) {
+  // need to separate the function for the test,
   // because there is no context for the init command during the test
   /* istanbul ignore next */
   await nodeVersion(opts);

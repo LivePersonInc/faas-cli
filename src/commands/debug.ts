@@ -1,4 +1,4 @@
-import { Command, flags } from '@oclif/command';
+import { Command, Flags } from '@oclif/core';
 import { DebugController } from '../controller/debug.controller';
 import { parseInput } from '../shared/utils';
 
@@ -7,7 +7,7 @@ export default class Debug extends Command {
     'Starts a debug port on 1337 for the provided function';
 
   public static flags = {
-    help: flags.help({ char: 'h' }),
+    help: Flags.help({ char: 'h' }),
   };
 
   public static strict = false;

@@ -1,10 +1,10 @@
-import { Command, flags } from '@oclif/command';
+import { Command, Flags } from '@oclif/core';
 import { InitController } from '../controller/init.controller';
 import { parseInput } from '../shared/utils';
 
 export class Init extends Command {
   public static flags = {
-    help: flags.help({
+    help: Flags.help({
       char: 'h',
       description: 'Show help for the init command',
     }),

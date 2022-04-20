@@ -5,7 +5,6 @@ module.exports = {
   },
   extends: [
     'airbnb-base',
-    'oclif',
     'oclif-typescript',
     'plugin:prettier/recommended',
     'prettier',
@@ -44,13 +43,8 @@ module.exports = {
     '@typescript-eslint/interface-name-prefix': 0,
     'no-param-reassign': 0,
     'no-return-assign': 0,
-    'unicorn/filename-case': 0,
     'valid-jsdoc': 0,
     'import/prefer-default-export': 0,
-    'unicorn/prevent-abbreviations': 'off',
-    'unicorn/no-abusive-eslint-disable': 0,
-    'unicorn/import-index': 0,
-    'prefer-regex-literals': 0,
     'new-cap': 0,
   },
 };

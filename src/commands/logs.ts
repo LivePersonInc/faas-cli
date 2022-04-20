@@ -1,4 +1,4 @@
-import { Command, flags } from '@oclif/command';
+import { Command, Flags } from '@oclif/core';
 import { LogsController } from '../controller/logs.controller';
 import { parseInput } from '../shared/utils';
 import { ErrorMessage } from '../view/printer';
@@ -8,22 +8,22 @@ export default class Logs extends Command {
     'Download function logs as CSV (limited to the first 500 logs of the provided timespan)';
 
   static flags = {
-    help: flags.help({ char: 'h' }),
-    start: flags.string({
+    help: Flags.help({ char: 'h' }),
+    start: Flags.string({
       char: 's',
       description: 'start timestamp',
       required: true,
     }),
-    removeHeader: flags.boolean({
+    removeHeader: Flags.boolean({
       char: 'r',
       description: 'Removes the header of the logs',
       default: false,
     }),
-    end: flags.string({
+    end: Flags.string({
       char: 'e',
       description: 'end timestamp (default current timestamp)',
     }),
-    levels: flags.string({
+    levels: Flags.string({
       char: 'l',
       description:
         'log-levels - for multiple levels just use levels with space separated (e.g. -l Info Warn)',
@@ -56,7 +56,7 @@ export default class Logs extends Command {
    */
   public async run(): Promise<void> {
     try {
-      const { flags: inputFlags } = this.parse(Logs);
+      const { flags: inputFlags } = await this.parse(Logs);
       const [lambdaFunction] = parseInput(Logs.flags, this.argv);
       await LogsController.getLogs({ lambdaFunction, inputFlags });
     } catch (error) {

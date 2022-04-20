@@ -1,4 +1,4 @@
-import { PrettyPrintableError } from '@oclif/errors';
+import { PrettyPrintableError } from '@oclif/core/lib/interfaces';
 import { LogMessage, ErrorMessage, chalk as chalkDefault } from './printer';
 
 interface IAddViewConfig {

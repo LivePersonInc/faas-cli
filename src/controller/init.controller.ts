@@ -1,7 +1,7 @@
 // tslint:disable:no-shadowed-variable
 import { execSync as ExecDefault } from 'child_process';
 import { join } from 'path';
-import { PrettyPrintableError } from '@oclif/errors';
+import { PrettyPrintableError } from '@oclif/core/lib/interfaces';
 import { CLIErrorCodes } from '../shared/errorCodes';
 import { FileService } from '../service/file.service';
 import { InitView as InitViewDefault } from '../view/init.view';
@@ -76,7 +76,7 @@ export class InitController {
   }
 
   private determinePackageManager(): PackageManager {
-    const versionRegex = new RegExp(/(?:\d{1,2}.){2}\d{1,2}/);
+    const versionRegex = /(?:\d{1,2}.){2}\d{1,2}/;
     try {
       if (versionRegex.test(this.exec('npm -v', { encoding: 'utf8' }))) {
         return 'npm';

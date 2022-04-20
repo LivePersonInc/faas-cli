@@ -1,20 +1,20 @@
-import { Command, flags } from '@oclif/command';
+import { Command, Flags } from '@oclif/core';
 import { LoginController } from '../controller/login.controller';
 
 export class Login extends Command {
   public static description = 'Performs the login with LiveEngage Credentials';
 
   public static flags = {
-    help: flags.help({ char: 'h', description: 'Shows help for the login' }),
-    password: flags.string({ char: 'p', description: 'Password' }),
-    username: flags.string({ char: 'u', description: 'Username' }),
-    accountId: flags.string({ char: 'a', description: 'AccountId' }),
-    token: flags.string({
+    help: Flags.help({ char: 'h', description: 'Shows help for the login' }),
+    password: Flags.string({ char: 'p', description: 'Password' }),
+    username: Flags.string({ char: 'u', description: 'Username' }),
+    accountId: Flags.string({ char: 'a', description: 'AccountId' }),
+    token: Flags.string({
       char: 't',
       description: 'Token for the SSO flow',
       hidden: true,
     }),
-    userId: flags.string({
+    userId: Flags.string({
       char: 'i',
       description: 'UserId for the SSO flow',
       hidden: true,
@@ -36,7 +36,7 @@ export class Login extends Command {
    */
   public async run(): Promise<void> {
     try {
-      const { flags: inputFlags } = this.parse(Login);
+      const { flags: inputFlags } = await this.parse(Login);
       await this.loginController.loginByCommand({ inputFlags });
     } catch (error) {
       this.exit(1);

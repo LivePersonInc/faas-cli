@@ -1,4 +1,4 @@
-import { Command, flags } from '@oclif/command';
+import { Command, Flags } from '@oclif/core';
 import { PullController } from '../controller/pull.controller';
 import { parseInput } from '../shared/utils';
 
@@ -7,17 +7,17 @@ export default class Pull extends Command {
     'Pull a function or multiple from the LivePerson Functions platform to the local machine';
 
   public static flags = {
-    help: flags.help({ char: 'h' }),
-    yes: flags.boolean({
+    help: Flags.help({ char: 'h' }),
+    yes: Flags.boolean({
       char: 'y',
       description:
         'Agrees to the approval of the pull command and prevents the confirmation dialog.',
     }),
-    'no-watch': flags.boolean({
+    'no-watch': Flags.boolean({
       char: 'w',
       description: "Don't watch pull process",
     }),
-    all: flags.boolean({
+    all: Flags.boolean({
       char: 'a',
       description: 'Pulls all functions from the platform',
     }),
@@ -42,7 +42,7 @@ export default class Pull extends Command {
    */
   public async run(): Promise<void> {
     try {
-      const { flags: inputFlags } = this.parse(Pull);
+      const { flags: inputFlags } = await this.parse(Pull);
       const lambdaFunctions = parseInput(Pull.flags, this.argv);
       await this.pullController.pull({ lambdaFunctions, inputFlags });
     } catch (error) {

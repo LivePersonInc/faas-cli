@@ -1,4 +1,4 @@
-import { PrettyPrintableError } from '@oclif/errors';
+import { PrettyPrintableError } from '@oclif/core/lib/interfaces';
 // tslint:disable:no-shadowed-variable
 import { AddView as AddViewDefault } from '../view/add.view';
 import { LoginController } from './login.controller';
