@@ -58,6 +58,12 @@
         "value": "TestValue"
       }
     ],
+    "dependencies": [
+      {
+        "key": "TestDependency",
+        "value": "TestValue"
+      }
+    ],
     "event": "bot_connectors_error_hook"
   },
   {

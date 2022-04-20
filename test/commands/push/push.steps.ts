@@ -118,6 +118,7 @@ defineFeature(feature, (test) => {
 
     then('I expect nothing to happen', () => {});
   });
+
   test('Pushing a single function successfully', ({
     given,
     when,
@@ -354,6 +355,7 @@ defineFeature(feature, (test) => {
       );
     });
   });
+
   test('Pushing multiple lambdas with one failing', ({
     given,
     when,
@@ -422,6 +424,7 @@ defineFeature(feature, (test) => {
       );
     });
   });
+
   test('Pushing all lambdas successfully', ({ given, when, then, and }) => {
     given('I am authorized', async () => {
       await fileService.writeTempFile({

@@ -99,6 +99,59 @@ defineFeature(feature, async (test) => {
     );
   });
 
+  test('Run the deploy command with an alternatively defined lambda', async ({
+    given,
+    when,
+    then,
+    and,
+  }) => {
+    let deployView: DeployView;
+
+    given('I have a valid token', async () => {
+      await fileService.writeTempFile({
+        '123456789': {
+          token: '454545478787',
+          userId: 'userId_123456789',
+          username: 'testUser@liveperson.com',
+          active: true,
+        },
+      });
+    });
+
+    given(
+      'I have a function available on the LivePerson Functions platform',
+      () => {},
+    );
+
+    when(
+      'I run the deploy command and pass a functions folder name',
+      async () => {
+        const prompt = new Prompt();
+        prompt.run = jest.fn(() => ({ TestFunction2: true })) as any;
+        deployView = new DeployView({ prompt });
+        const deployController = new DeployController({ deployView });
+        await deployController.deploy({ lambdaFunctions: ['TestFunction2'] });
+      },
+    );
+
+    then(
+      'I will be asked if I want to approve the deployment and I approve it',
+      () => {},
+    );
+
+    and(
+      "The deployment process will start and will indicate if it's finished",
+      async () => {
+        expect(consoleSpy).toBeCalledWith(
+          expect.stringMatching(/Deploying following functions/),
+        );
+        expect(JSON.stringify(stdoutSpy.mock.calls)).toContain(
+          'Deploying TestFunction2',
+        );
+      },
+    );
+  });
+
   test("Run the deploy command (with passed function names), don't want to watch the process and approve all with the yes flag", async ({
     given,
     when,
