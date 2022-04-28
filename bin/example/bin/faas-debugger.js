@@ -31,7 +31,8 @@ function throwInvalidProjectFolderError() {
 function didIncorrectErrorFormat(result) {
     return result.some((e) => {
         var _a, _b;
-        return ((_a = e.extras[0]) === null || _a === void 0 ? void 0 : _a.originalFailure) && ((_b = e.message) === null || _b === void 0 ? void 0 : _b.errorMsg.includes('incorrect format')) &&
+        return ((_a = e.extras[0]) === null || _a === void 0 ? void 0 : _a.originalFailure) &&
+            ((_b = e.message) === null || _b === void 0 ? void 0 : _b.errorMsg.includes('incorrect format')) &&
             e.level === 'Warn';
     });
 }
@@ -65,7 +66,7 @@ class FaasDebugger {
         };
         this.cwd = cwd;
         this.lambdaToInvoke = lambdaToInvoke;
-        this.functionPath = path_1.join(cwd, 'functions', process.env.DEBUG_FUNCTION || process.argv[2]);
+        this.functionPath = (0, path_1.join)(cwd, 'functions', process.env.DEBUG_FUNCTION || process.argv[2]);
         this.port = process.env.DEBUG_PORT
             ? Number.parseInt(process.env.DEBUG_PORT, 10)
             : null;
@@ -76,7 +77,7 @@ class FaasDebugger {
             this.setEnvironmentVariables(true);
             await this.createChildProcessForInvokeLocal();
         }
-        catch (_a) {
+        catch {
             throwInvalidProjectFolderError();
         }
     }
@@ -86,13 +87,13 @@ class FaasDebugger {
             this.setEnvironmentVariables();
             await this.createChildProcessForDebugging();
         }
-        catch (_a) {
+        catch {
             throwInvalidProjectFolderError();
         }
     }
     createChildProcessForInvokeLocal() {
         return new Promise((resolve) => {
-            const childFork = child_process_1.fork(this.indexPath, [], {
+            const childFork = (0, child_process_1.fork)(this.indexPath, [], {
                 env: process.env,
                 detached: true,
             });
@@ -111,14 +112,16 @@ class FaasDebugger {
                 if (didIncorrectErrorFormat(result)) {
                     const error = result.filter((e) => {
                         var _a, _b;
-                        return ((_a = e.extras[0]) === null || _a === void 0 ? void 0 : _a.originalFailure) && ((_b = e.message) === null || _b === void 0 ? void 0 : _b.errorMsg.includes('incorrect format')) &&
+                        return ((_a = e.extras[0]) === null || _a === void 0 ? void 0 : _a.originalFailure) &&
+                            ((_b = e.message) === null || _b === void 0 ? void 0 : _b.errorMsg.includes('incorrect format')) &&
                             e.level === 'Warn';
                     })[0];
                     this.errorLogs.errorCode = error.message.errorCode;
                     this.errorLogs.errorMsg = error.extras[0].originalFailure;
                     result[result.findIndex((e) => {
                         var _a;
-                        return e.level === 'Warn' && ((_a = e.message) === null || _a === void 0 ? void 0 : _a.errorMsg.includes('incorrect format'));
+                        return e.level === 'Warn' &&
+                            ((_a = e.message) === null || _a === void 0 ? void 0 : _a.errorMsg.includes('incorrect format'));
                     })].message = error.message.errorMsg;
                     this.errorLogs.errorLogs = result;
                     console.log(JSON.stringify(this.errorLogs, null, 4));
@@ -169,9 +172,9 @@ class FaasDebugger {
         this.udpatePortForFiles();
         const args = [
             `--inspect-brk=${this.port}`,
-            path_1.join(this.functionPath, 'index.js'),
+            (0, path_1.join)(this.functionPath, 'index.js'),
         ];
-        const child = child_process_1.spawn('node', args, {
+        const child = (0, child_process_1.spawn)('node', args, {
             detached: false,
             stdio: 'pipe',
             serialization: 'advanced',
@@ -202,7 +205,9 @@ class FaasDebugger {
         });
     }
     setEnvironmentVariables(invoke = false) {
-        const { environmentVariables } = JSON.parse(fs_1.readFileSync(invoke ? this.configPath : path_1.join(this.functionPath, 'config.json'), 'utf8'));
+        const { environmentVariables } = JSON.parse((0, fs_1.readFileSync)(invoke ? this.configPath : (0, path_1.join)(this.functionPath, 'config.json'), 'utf8'));
+        // better readable than forEach
+        // eslint-disable-next-line no-restricted-syntax
         for (const env of environmentVariables) {
             if (!Object.prototype.hasOwnProperty.call(env, 'key') ||
                 !Object.prototype.hasOwnProperty.call(env, 'value')) {
@@ -217,7 +222,7 @@ class FaasDebugger {
         }
     }
     updateLambdaFunctionForInvoke() {
-        let file = fs_1.readFileSync(this.indexPath, 'utf8');
+        let file = (0, fs_1.readFileSync)(this.indexPath, 'utf8');
         file = `require("module").prototype.require = require('../../bin/rewire').proxy; // Rewire require
 
 ${file}
@@ -237,10 +242,10 @@ ${file}
   }
 })();`;
         file = mapExternalPackagesToToolbelt(file);
-        fs_1.writeFileSync(this.indexPath, file);
+        (0, fs_1.writeFileSync)(this.indexPath, file);
     }
     updateLambdaFunctionForDebugging() {
-        const originalCode = fs_1.readFileSync(path_1.join(this.functionPath, 'index.js'), 'utf8');
+        const originalCode = (0, fs_1.readFileSync)((0, path_1.join)(this.functionPath, 'index.js'), 'utf8');
         let updatedCode = `require("module").prototype.require = require('../../bin/rewire').proxy; // Rewire require
 
 ${originalCode}
@@ -259,10 +264,10 @@ ${originalCode}
   }
 })();`;
         updatedCode = mapExternalPackagesToToolbelt(updatedCode);
-        fs_1.writeFileSync(path_1.join(this.functionPath, 'index.js'), updatedCode);
+        (0, fs_1.writeFileSync)((0, path_1.join)(this.functionPath, 'index.js'), updatedCode);
     }
     revertLambdaFunction(invoke = false) {
-        let updatedCode = fs_1.readFileSync(invoke ? this.indexPath : path_1.join(this.functionPath, 'index.js'), 'utf8');
+        let updatedCode = (0, fs_1.readFileSync)(invoke ? this.indexPath : (0, path_1.join)(this.functionPath, 'index.js'), 'utf8');
         updatedCode = mapExternalPackagesToToolbelt(updatedCode);
         /* istanbul ignore else */
         if (updatedCode.includes('This is an auto generated code')) {
@@ -274,23 +279,23 @@ ${originalCode}
             const [originalCode2] = originalCode1.split(`
 
 // This is an auto`);
-            fs_1.writeFileSync(invoke ? this.indexPath : path_1.join(this.functionPath, 'index.js'), originalCode2);
+            (0, fs_1.writeFileSync)(invoke ? this.indexPath : (0, path_1.join)(this.functionPath, 'index.js'), originalCode2);
         }
     }
     updatePort(filePath) {
-        let content = fs_1.readFileSync(filePath, 'utf8');
-        const oldPort = content.match(new RegExp(/\d{4,5}/g));
+        let content = (0, fs_1.readFileSync)(filePath, 'utf8');
+        const oldPort = content.match(/\d{4,5}/g);
         oldPort.forEach((e) => (content = content.replace(e, `${this.port}`)));
-        fs_1.writeFileSync(filePath, content);
+        (0, fs_1.writeFileSync)(filePath, content);
     }
     udpatePortForFiles() {
         /* istanbul ignore else */
-        if (fs_1.existsSync(path_1.join(this.cwd, '.vscode', 'launch.json'))) {
-            this.updatePort(path_1.join(this.cwd, '.vscode', 'launch.json'));
+        if ((0, fs_1.existsSync)((0, path_1.join)(this.cwd, '.vscode', 'launch.json'))) {
+            this.updatePort((0, path_1.join)(this.cwd, '.vscode', 'launch.json'));
         }
         /* istanbul ignore else */
-        if (fs_1.existsSync(path_1.join(this.cwd, '.idea', 'runConfigurations', 'Attach_FaaS_Debugger.xml'))) {
-            this.updatePort(path_1.join(this.cwd, '.idea', 'runConfigurations', 'Attach_FaaS_Debugger.xml'));
+        if ((0, fs_1.existsSync)((0, path_1.join)(this.cwd, '.idea', 'runConfigurations', 'Attach_FaaS_Debugger.xml'))) {
+            this.updatePort((0, path_1.join)(this.cwd, '.idea', 'runConfigurations', 'Attach_FaaS_Debugger.xml'));
         }
     }
 }
