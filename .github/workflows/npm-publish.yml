@@ -43,12 +43,13 @@ jobs:
         uses: JS-DevTools/npm-publish@v1
         with:
           token: ${{ secrets.NPM_PUBLISH }}
-          
+          dry-run: true
+
       - name: Create PR
         uses: peter-evans/create-pull-request@v4.0.2
         with:
           commit-message: Updated repository to ${{ steps.publish.outputs.version }}
           title: Bump version to ${{ steps.publish.outputs.version }}
           body: New release build
-          branch: renovate/${{ steps.publish.outputs.version }}
+          branch: release/${{ steps.publish.outputs.version }}
           base: master
