@@ -175,7 +175,7 @@ ${chalk.bold(
     this.log.print('');
     this.log.print('For further informations please have a look at');
     this.log.print(
-      'https://developers.liveperson.com/liveperson-functions-development-events-templates.html',
+      'https://developers.liveperson.com/liveperson-functions-event-sources-overview.html',
     );
     this.log.print('');
   }
