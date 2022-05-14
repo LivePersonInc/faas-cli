@@ -79,7 +79,7 @@
     "jest-cucumber": "3.0.1",
     "oclif": "^3.0.1",
     "prettier": "2.6.2",
-    "prettier-eslint": "13.0.0",
+    "prettier-eslint": "14.1.0",
     "ts-jest": "^26",
     "ts-node": "10.7.0",
     "tslib": "2.3.1",
