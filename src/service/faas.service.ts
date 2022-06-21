@@ -302,6 +302,44 @@ export class FaasService implements IFaaSService {
     });
   }
 
+  getAccountInvocationMetrics({
+    startTimestamp,
+    endTimestamp,
+    bucketSize,
+  }: {
+    startTimestamp: number;
+    endTimestamp: number;
+    bucketSize: any;
+  }) {
+    const url = `/reports/invocations`;
+    const additionalParams = `&startTimestamp=${startTimestamp}&endTimestamp=${endTimestamp}&bucketSize=${bucketSize}&invocationStates=UNKOWN&invocationStates=SUCCEEDED&invocationStates=CODING_FAILURE&invocationStates=PLATFORM_FAILURE&invocationStates=TIMEOUT`;
+    return this.doFetch({
+      urlPart: url,
+      additionalParams,
+      method: 'GET',
+    });
+  }
+
+  getLambdaInvocationMetrics({
+    uuid,
+    startTimestamp,
+    endTimestamp,
+    bucketSize,
+  }: {
+    uuid: string;
+    startTimestamp: number;
+    endTimestamp: number;
+    bucketSize: any;
+  }) {
+    const url = `/reports/invocations/${uuid}`;
+    const additionalParams = `&startTimestamp=${startTimestamp}&endTimestamp=${endTimestamp}&bucketSize=${bucketSize}&invocationStates=UNKOWN&invocationStates=SUCCEEDED&invocationStates=CODING_FAILURE&invocationStates=PLATFORM_FAILURE&invocationStates=TIMEOUT`;
+    return this.doFetch({
+      urlPart: url,
+      additionalParams,
+      method: 'GET',
+    });
+  }
+
   public async getAccountStatistic(): Promise<any> {
     const limitCountsUrl = '/reports/limitCounts';
     const lambdaCountsUrl = '/reports/lambdaCounts';
