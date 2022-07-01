@@ -1,21 +1,27 @@
-import { PrettyPrintableError } from '@oclif/core/lib/interfaces';
-import { LogMessage, ErrorMessage, chalk as chalkDefault } from './printer';
+import { LogMessage, ErrorMessage, cliUX } from './printer';
+
+import { INVOCATION_STATE_LABELS } from '../shared/constants';
+import { formatDate, transformToCSV } from '../shared/utils';
 
 export class MetricsView {
   private log: LogMessage;
 
   private error: ErrorMessage;
 
-  private chalk: any;
+  private readonly cliUx: any;
 
   constructor({
     log = new LogMessage(),
     error = new ErrorMessage(),
-    chalk = chalkDefault,
-  }: { log?: LogMessage; error?: ErrorMessage; chalk?: any } = {}) {
+    cliUx = cliUX,
+  }: {
+    log?: LogMessage;
+    error?: ErrorMessage;
+    cliUx?: any;
+  } = {}) {
     this.log = log;
     this.error = error;
-    this.chalk = chalk;
+    this.cliUx = cliUx;
   }
 
   /**
@@ -24,16 +30,60 @@ export class MetricsView {
    * @returns {void}
    * @memberof MetricsView
    */
-  public printConsoleLogs(message: any): void {
-    this.log.print(JSON.stringify(message, null, 4));
+  public printMetricsTable(metrics: any): void {
+    this.log.print('');
+    this.cliUx.table(metrics, {
+      from: {
+        header: 'From',
+        get: (row: any) => (row.from ? formatDate(row.from) : '-'),
+      },
+      to: {
+        header: 'To',
+        get: (row: any) => (row.to ? formatDate(row.to) : '-'),
+      },
+      SUCCEEDED: {
+        header: INVOCATION_STATE_LABELS.SUCCEEDED,
+      },
+      UNKOWN: {
+        header: INVOCATION_STATE_LABELS.UNKOWN,
+      },
+      CODING_FAILURE: {
+        header: INVOCATION_STATE_LABELS.CODING_FAILURE,
+      },
+      PLATFORM_FAILURE: {
+        header: INVOCATION_STATE_LABELS.PLATFORM_FAILURE,
+      },
+      TIMEOUT: {
+        header: INVOCATION_STATE_LABELS.TIMEOUT,
+      },
+    });
+    this.log.print('');
   }
 
-  /**
-   * Shows an error message
-   * @param {string|PrettyPrintableError} message - message
-   * @memberof MetricsView
-   */
-  public showErrorMessage(message: string | PrettyPrintableError): void {
-    this.error.print(message);
+  public printMetricsTableAsCSV(metrics: any): void {
+    this.log.print(
+      transformToCSV(metrics, {
+        from: 'From',
+        to: 'To',
+        ...INVOCATION_STATE_LABELS,
+      }),
+    );
+  }
+
+  public printMetricsTableAsJSON(metrics: any): void {
+    this.log.print(MetricsView.transformMetricData(metrics));
+  }
+
+  private static transformMetricData(metrics) {
+    const transformedMetrics = metrics.map((metric) => {
+      return Object.entries(metric).reduce((entries, entry) => {
+        const newLabel = INVOCATION_STATE_LABELS[entry[0]] || entry[0];
+        return {
+          ...entries,
+          [newLabel]: entry[1],
+        };
+      }, {});
+    });
+    return transformedMetrics;
   }
 }

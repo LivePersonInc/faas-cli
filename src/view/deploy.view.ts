@@ -2,12 +2,12 @@
 /* eslint-disable no-shadow */
 import { PrettyPrintableError } from '@oclif/core/lib/interfaces';
 import { Answers } from 'inquirer';
-import * as moment from 'moment-timezone';
 import {
   clearIntervalAsync,
   setIntervalAsync,
 } from 'set-interval-async/dynamic';
 import { factory } from '../service/faasFactory.service';
+import { formatDate } from '../shared/utils';
 import { ILambda } from '../types';
 import {
   chalk as chalkDefault,
@@ -17,20 +17,12 @@ import {
 } from './printer';
 import { Prompt } from './printer/prompt';
 
-const DEFAULT_FORMAT_DATETIME_WITH_SECONDS = 'DD.MM.YYYY - HH:mm:ss z';
-
 interface IDeployViewConfig {
   prompt?: Prompt;
   log?: LogMessage;
   error?: ErrorMessage;
   tasklist?: TaskList;
   chalk?: any;
-}
-
-function formatDate(date: string) {
-  return moment(String(date))
-    .tz(moment.tz.guess())
-    .format(DEFAULT_FORMAT_DATETIME_WITH_SECONDS);
 }
 
 export class DeployView {

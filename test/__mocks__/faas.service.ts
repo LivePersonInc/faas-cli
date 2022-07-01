@@ -249,6 +249,29 @@ export class FaasService {
     else process.stdout.write(JSON.stringify(options));
   }
 
+  public async getLambdaInvocationMetrics(options: {
+    uuid: string;
+    startTimestamp: number;
+    endTimestamp: number;
+    bucketSize: any;
+  }): Promise<any> {
+    process.stdout.write(JSON.stringify(options));
+    return {
+      uuid: '7c44ffea-71e9-429f-bdad-1fade90329c4',
+      invocationStatistics: [
+        {
+          from: 1656420000000,
+          to: 1656420300000,
+          UNKOWN: 12,
+          SUCCEEDED: 15,
+          CODING_FAILURE: 34,
+          PLATFORM_FAILURE: 84,
+          TIMEOUT: 33,
+        },
+      ],
+    };
+  }
+
   // eslint-disable-next-line complexity
   private async doFetch({
     urlPart,

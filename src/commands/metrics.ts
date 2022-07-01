@@ -11,49 +11,49 @@ export default class Metrics extends Command {
     start: Flags.string({
       char: 's',
       description: 'start timestamp',
-      required: true,
+      exclusive: ['last'],
     }),
     end: Flags.string({
       char: 'e',
-      description: 'end timestamp (default current timestamp)',
+      description: 'end timestamp (defaults to current timestamp)',
     }),
     last: Flags.string({
       char: 'l',
       description:
-        'metrics for the last x hours|days, alternative to start/end flags, options: xh, xd; eg. 12h, 7d',
+        'An alternative to start flag, metrics for the period of the last x hours|days, options: xh, xd; eg. last 12h, 7d',
+      exclusive: ['start'],
     }),
-    bucketSize: Flags.string({
-      char: 'b',
-      description:
-        'bucket size to which the metrics will aggregate to, options: 5m, 1h, 1d (default 1d)',
+    output: Flags.string({
+      char: 'o',
+      description: 'Optional: output formatting for file saving purposes',
+      options: ['csv', 'json'],
     }),
   };
 
   static args = [
     {
       name: 'function-name',
-      required: false,
-      description: 'name of lambda (optional)',
+      required: true,
+      description: 'name of lambda',
       default: null,
     },
   ];
 
   public static examples = [
-    '> <%= config.bin %> metrics --start=1626156400000',
-    '> <%= config.bin %> metrics exampleFunction --start=1626156400000 --buckerSize=1d',
+    '> <%= config.bin %> metrics exampleFunction --last=7d',
+    '> <%= config.bin %> metrics exampleFunction --start=1626156400000',
+    '> <%= config.bin %> metrics exampleFunction --end=1626156400000 --last=7d',
     '> <%= config.bin %> metrics exampleFunction --start=1626156400000 --end=1626157400000',
-    '> <%= config.bin %> metrics --start=1626156400000 --end=1626157400000 --buckerSize=7d',
-    '',
-    'If no function name is given it is implied that you will download metrics for the entire account',
+    '> <%= config.bin %> metrics exampleFunction --start=1626156400000 --end=1626157400000',
     '',
     'For redirecting metrics to a file:',
-    'metrics exampleFunction --start=1626156400000 > exampleFunction.log',
+    'lpf metrics exampleFunction --start=1626156400000 --output="csv" >> exampleFunction.csv',
     '',
     "The metrics are aggregated into buckets. These buckets' sizes can be chosen as 5m, 1h, 1d",
     '',
-    'Fetching metrics via cronjob every 10 minutes (delayed by 1 minute to be sure no logs are missed) and write it to a file:',
+    'Fetching metrics via cronjob every 24 hours and write it to a file:',
     'MacOS:',
-    '1/10 * * * * <%= config.bin %> metrics exampleFunction --start=$(date -v0S -v-11M +%s000) --end=$(date -v0S -v-1M +%s000) -b=1d >> exampleFunction.log',
+    '0 0 * * * <%= config.bin %> lpf metrics exampleFunction  -l=1d >> exampleFunction.csv',
   ];
 
   private errorMessage = new ErrorMessage();

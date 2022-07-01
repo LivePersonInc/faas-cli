@@ -5,7 +5,6 @@ import {
   BUCKET_SIZES as predefinedBucketSizes,
   THIRTY_DAYS,
   FIFTEEN_MINUTES,
-  BUCKET_SIZES,
 } from '../shared/constants';
 import { MetricsView } from '../view/metrics.view';
 
@@ -13,7 +12,7 @@ interface IInputFlags {
   start?: string | number;
   end?: string | number;
   last?: string;
-  bucketSize?: string;
+  output?: string;
 }
 
 interface IMetricsConfig {
@@ -24,13 +23,7 @@ interface IMetricsConfig {
 export class MetricsController {
   private metricsView: MetricsView;
 
-  private bucketSizes;
-
-  constructor({
-    bucketSizes = predefinedBucketSizes,
-    metricsView = new MetricsView(),
-  } = {}) {
-    this.bucketSizes = bucketSizes;
+  constructor({ metricsView = new MetricsView() } = {}) {
     this.metricsView = metricsView;
   }
 
@@ -44,66 +37,97 @@ export class MetricsController {
     lambdaFunction,
     inputFlags,
   }: IMetricsConfig): Promise<void> {
-    const { start, end = Date.now(), last, bucketSize } = inputFlags;
+    const { start, end = Date.now(), last, output = '' } = inputFlags;
 
-    const startTimestamp = MetricsController.calculateStartTimestamp({
-      start,
-      end,
-      last,
-    });
+    let startTimestamp: number;
+    const endTimestamp = Number(end);
 
-    const bucketSizeInSeconds = bucketSize
-      ? this.getBucketSizeInMs(bucketSize)
-      : BUCKET_SIZES['1h'];
-
-    const faasService = await factory.get();
-    let res;
-    if (lambdaFunction) {
-      const uuid = await MetricsController.getLambdaUUID(lambdaFunction);
-      res = await faasService.getLambdaInvocationMetrics({
-        uuid,
-        startTimestamp,
-        endTimestamp: Number(end),
-        bucketSize: bucketSizeInSeconds,
-      });
-    } else {
-      res = await faasService.getAccountInvocationMetrics({
-        startTimestamp,
-        endTimestamp: Number(end),
-        bucketSize: bucketSizeInSeconds,
-      });
-    }
-    this.metricsView.printConsoleLogs(res);
-  }
-
-  private static calculateStartTimestamp(inputFlags: IInputFlags) {
-    const { start, end = Date.now(), last } = inputFlags;
     if (!start && !last) {
       throw new Error(
-        'Please define either start and end timestamp or define the period for the last 5m, 1h, 1d since now',
+        'Please define either start and end timestamp or define the period for the last 5m, 1h, 7d,... since now',
       );
     }
 
-    let startTimestamp = Number(start);
-
-    if (last) {
-      startTimestamp =
-        Number(end) - MetricsController.periodStringToTimestamp(last);
+    if (start && !last) {
+      startTimestamp = Number(start);
+    } else {
+      startTimestamp = MetricsController.calculateStartTimestamp({
+        end,
+        last,
+      });
     }
 
-    if (startTimestamp > end) {
+    if (Number.isNaN(startTimestamp) || Number.isNaN(endTimestamp)) {
+      throw new Error('Given timestamps are not valid');
+    }
+
+    if (startTimestamp > endTimestamp) {
       throw new Error('Start timestamp has to be before end timestamp.');
     }
 
-    if (Number(end) - Number(startTimestamp) > THIRTY_DAYS) {
+    if (endTimestamp - startTimestamp > THIRTY_DAYS) {
       throw new Error('Time period cannot exceed 30 days.');
     }
 
-    if (Number(end) - Number(startTimestamp) < FIFTEEN_MINUTES) {
+    if (endTimestamp - Number(startTimestamp) < FIFTEEN_MINUTES) {
       throw new Error('Time period cannot be shorter than 15 minutes.');
     }
 
-    return startTimestamp;
+    const bucketSizeInMS = MetricsController.getAppropriateBucketSize({
+      startTimestamp,
+      endTimestamp,
+    });
+
+    const faasService = await factory.get();
+
+    const uuid = await MetricsController.getLambdaUUID(lambdaFunction);
+
+    const res = await faasService.getLambdaInvocationMetrics({
+      uuid,
+      startTimestamp,
+      endTimestamp,
+      bucketSize: bucketSizeInMS,
+    });
+
+    if (!output) {
+      this.metricsView.printMetricsTable(res.invocationStatistics);
+    }
+
+    if (output.toLowerCase() === 'csv') {
+      this.metricsView.printMetricsTableAsCSV(res.invocationStatistics);
+    }
+
+    if (output.toLowerCase() === 'json') {
+      this.metricsView.printMetricsTableAsJSON(res.invocationStatistics);
+    }
+  }
+
+  /**
+   * Returns bucket size 5m, 1h, 1d in ms depending on the size of the time period (1h, 7d, >7d)
+   * @param period contains start and end timestamp
+   * @returns the bucket size in ms
+   */
+  private static getAppropriateBucketSize({
+    startTimestamp,
+    endTimestamp,
+  }): number {
+    const period = endTimestamp - startTimestamp;
+    const ONE_HOUR = 1000 * 60 * 60;
+    const SEVEN_DAYS = 1000 * 60 * 60 * 24 * 7;
+
+    if (period <= ONE_HOUR) {
+      return predefinedBucketSizes['5m'];
+    }
+
+    if (period <= SEVEN_DAYS) {
+      return predefinedBucketSizes['1h'];
+    }
+
+    return predefinedBucketSizes['1d'];
+  }
+
+  private static calculateStartTimestamp({ end, last }): number {
+    return end - this.periodStringToTimestamp(last);
   }
 
   private static async getLambdaUUID(lambdaFunction: string): Promise<string> {
@@ -129,24 +153,9 @@ export class MetricsController {
     return currentLambda.uuid;
   }
 
-  private getBucketSizeInMs(bucketSize: string): number {
-    if (!this.bucketSizes[bucketSize]) {
-      throw new Error(
-        `Invalid bucket size ${bucketSize}. Use 5m, 1h, 1d instead`,
-      );
-    }
-
-    return this.bucketSizes[bucketSize];
-  }
-
   private static periodStringToTimestamp(periodString: string): number {
     const regex = /(\d{1,2})([dhm])/;
-    const [amount, unit] = periodString.match(regex) || [];
-    if (!amount || !unit) {
-      throw new Error(
-        '"Last" flag must follow the schema (1-99)(m|h|d) e.g. 33m, 12h or 7d ',
-      );
-    }
+    const [, amount, unit] = periodString.match(regex) || [];
     switch (unit) {
       case 'm':
         return Number(amount) * 60 * 1000;
