@@ -69,7 +69,7 @@ export class MetricsController {
       throw new Error('Time period cannot exceed 30 days.');
     }
 
-    if (endTimestamp - Number(startTimestamp) < FIFTEEN_MINUTES) {
+    if (endTimestamp - startTimestamp < FIFTEEN_MINUTES) {
       throw new Error('Time period cannot be shorter than 15 minutes.');
     }
 

@@ -444,6 +444,37 @@ describe('faas service', () => {
     }
   });
 
+  it('should get metrics of lambda', async () => {
+    const csdsClient = new CsdsClient();
+    csdsClient.getUri = jest.fn().mockReturnValue('faasUI');
+    const result = {
+      name: '345678ertzui',
+      uuid: '7c44ffea-71e9-429f-bdad-1fade90329c4',
+      invocationStatistics: {
+        CODING_FAILURE: 0,
+        PLATFORM_FAILURE: 0,
+        SUCCEEDED: 0,
+        TIMEOUT: 0,
+        UNKOWN: 0,
+        from: 1656680700000,
+        to: 1656681000000,
+      },
+    };
+    const gotDefault = jest.fn(() => {
+      return {
+        body: result,
+      };
+    }) as any;
+    const faasService = new FaasService({ gotDefault, csdsClient });
+    const response = await faasService.getLambdaInvocationMetrics({
+      uuid: '123-123-123',
+      startTimestamp: 1626254040000,
+      endTimestamp: 1626254040000,
+      bucketSize: 1000 * 60 * 5,
+    });
+    expect(response).toEqual(result);
+  });
+
   it('should throw an 401 error if received a 401 error on getStream', async () => {
     const csdsClient = new CsdsClient();
     csdsClient.getUri = jest.fn().mockReturnValue('faasUI');

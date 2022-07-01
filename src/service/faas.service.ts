@@ -302,24 +302,6 @@ export class FaasService implements IFaaSService {
     });
   }
 
-  // getAccountInvocationMetrics({
-  //   startTimestamp,
-  //   endTimestamp,
-  //   bucketSize,
-  // }: {
-  //   startTimestamp: number;
-  //   endTimestamp: number;
-  //   bucketSize: any;
-  // }) {
-  //   const url = `/reports/invocations`;
-  //   const additionalParams = `&startTimestamp=${startTimestamp}&endTimestamp=${endTimestamp}&bucketSize=${bucketSize}&invocationStates=UNKOWN&invocationStates=SUCCEEDED&invocationStates=CODING_FAILURE&invocationStates=PLATFORM_FAILURE&invocationStates=TIMEOUT`;
-  //   return this.doFetch({
-  //     urlPart: url,
-  //     additionalParams,
-  //     method: 'GET',
-  //   });
-  // }
-
   getLambdaInvocationMetrics({
     uuid,
     startTimestamp,
