@@ -35,11 +35,11 @@ export class MetricsView {
     this.cliUx.table(metrics, {
       from: {
         header: 'From',
-        get: (row: any) => (row.from ? formatDate(row.from) : '-'),
+        get: (row: any) => formatDate(row.from),
       },
       to: {
         header: 'To',
-        get: (row: any) => (row.to ? formatDate(row.to) : '-'),
+        get: (row: any) => formatDate(row.to),
       },
       SUCCEEDED: {
         header: INVOCATION_STATE_LABELS.SUCCEEDED,
@@ -60,7 +60,7 @@ export class MetricsView {
     this.log.print('');
   }
 
-  public printMetricsTableAsCSV(metrics: any): void {
+  public printMetricsTableAsCSV(metrics: any[]): void {
     this.log.print(
       transformToCSV(metrics, {
         from: 'From',

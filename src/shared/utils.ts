@@ -24,7 +24,7 @@ export function validateFunctionDescription(description) {
   return 'Description cannot be empty!';
 }
 
-export function transformToCSV(metrics, headerLabels) {
+export function transformToCSV(metrics, headerLabels?) {
   const replacer = (_: any, value: null) => (value === null ? '' : value);
   const headers = Object.keys(metrics[0]);
   const csv = [
@@ -40,7 +40,7 @@ export function transformToCSV(metrics, headerLabels) {
   return csv;
 }
 
-export function formatDate(date: string): string {
+export function formatDate(date: any): string {
   const timezone = moment.tz.guess(true);
   return moment(date).tz(timezone).format(DEFAULT_FORMAT_DATETIME_WITH_SECONDS);
 }
