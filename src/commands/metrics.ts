@@ -44,7 +44,6 @@ export default class Metrics extends Command {
     '> <%= config.bin %> metrics exampleFunction --start=1626156400000',
     '> <%= config.bin %> metrics exampleFunction --end=1626156400000 --last=7d',
     '> <%= config.bin %> metrics exampleFunction --start=1626156400000 --end=1626157400000',
-    '> <%= config.bin %> metrics exampleFunction --start=1626156400000 --end=1626157400000',
     '',
     'For redirecting metrics to a file:',
     'lpf metrics exampleFunction --start=1626156400000 --output="csv" >> exampleFunction.csv',
@@ -53,7 +52,7 @@ export default class Metrics extends Command {
     '',
     'Fetching metrics via cronjob every 24 hours and write it to a file:',
     'MacOS:',
-    '0 0 * * * <%= config.bin %> lpf metrics exampleFunction  -l=1d >> exampleFunction.csv',
+    '0 0 * * * <%= config.bin %> lpf metrics exampleFunction  -l=1d -o=csv >> exampleFunction.csv',
   ];
 
   private errorMessage = new ErrorMessage();

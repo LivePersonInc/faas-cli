@@ -26,6 +26,7 @@ For more information about LivePerson Functions see [developers.liveperson.com](
   - [Debug](#debug)
   - [Get](#get)
   - [Logs](#logs)
+  - [Metrics](#metrics)
   - [Help](#help)
   - [Autocomplete](#autocomplete)
   - [Version and Update](#version-and-update)
@@ -639,6 +640,55 @@ Get logs from function.
 Fetching logs via cronjob every 10 minutes (delayed by 1 minute to be sure no logs are missed) and write it to a file::
 MacOS:
 1/10 * * * * lpf logs exampleFunction --start=$(date -v0S -v-11M +%s000) --end=$(date -v0S -v-1M +%s000) >> exampleFunction.log
+```
+</details>
+
+### Metrics
+
+Get invocation metrics of a function. Optionally export them as json or CSV for additional processing. The cli will automatically aggregate invocations into buckets appropriate to the queried time span.
+
+<details>
+<summary>Usage</summary>
+
+```
+> lpf metrics [parameter] [--flag]
+```
+</details>
+
+<details>
+<summary>Options</summary>
+
+| Parameter | Description                             |
+| --------- | --------------------------------------- |
+| function  | function name to fetch logs from        |
+
+| Flag                         | Description                                                                               |
+| ---------------------------- | ----------------------------------------------------------------------------------------- |
+| -h --help                    | Show help for the get command                                                             |
+| -s, --start=start            | Start timestamp                                                                           |
+| -e, --end=end                | End timestamp (Default: Current Timestamp)                                                |
+| -l, --last=Xh|Xd|Xm          | Alternative to start flag, metrics for the period of the last x hours eg. last 12h, 7d    |
+| -o, --output=json|csv        | Outputs the metrics data as json or csv rather than displaying a table                    |
+</details>
+
+<details>
+<summary>Example</summary>
+
+```
+> lpf metrics exampleFunction --last=7d
+
+> lpf metrics exampleFunction --start=1626156400000
+
+> lpf metrics exampleFunction --end=1626156400000 --last=7d
+
+> lpf metrics exampleFunction --start=1626156400000 --end=1626157400000',
+
+> lpf metrics exampleFunction --last=7d --output=csv',
+
+
+Fetching metrics via cronjob every 24 hours and write it to a file:
+MacOS:
+0 0 * * * lpf metrics exampleFunction -l=1d -o=csv >> exampleFunction.csv
 ```
 </details>
 
