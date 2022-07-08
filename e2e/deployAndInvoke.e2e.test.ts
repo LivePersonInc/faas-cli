@@ -20,25 +20,25 @@ describe('Full flow e2e test', () => {
     await exec(`rm -rf ${filesToDelete}`);
 
     const loginCmd = await exec(
-      `node ../bin/run login -a ${accountId} -u ${username} -p ${password}`,
+      `node ../bin/dev login -a ${accountId} -u ${username} -p ${password}`,
     );
     expect(loginCmd.stdout).toContain('Welcome to');
 
     const fnName = 'exampleFunction';
 
-    const initCmd = await exec(`node ../bin/run init`);
+    const initCmd = await exec(`node ../bin/dev init`);
     expect(initCmd.stdout).toContain('Initializing structure [completed]');
 
-    const pullCmd = await exec(`node ../bin/run pull ${fnName} --yes`);
+    const pullCmd = await exec(`node ../bin/dev pull ${fnName} --yes`);
     expect(pullCmd.stdout).toContain('Pulling exampleFunction [completed]');
 
-    const deployCmd = await exec(`node ../bin/run deploy ${fnName} --yes`);
+    const deployCmd = await exec(`node ../bin/dev deploy ${fnName} --yes`);
     expect(deployCmd.stdout).toContain('Deploying exampleFunction [completed]');
 
-    const invokeCmd = await exec(`node ../bin/run invoke ${fnName}`);
+    const invokeCmd = await exec(`node ../bin/dev invoke ${fnName}`);
     expect(invokeCmd.stdout).toContain('Hello World');
 
-    const undeployCmd = await exec(`node ../bin/run undeploy  ${fnName} --yes`);
+    const undeployCmd = await exec(`node ../bin/dev undeploy  ${fnName} --yes`);
     expect(undeployCmd.stdout).toContain(
       'Undeploying exampleFunction [completed]',
     );
