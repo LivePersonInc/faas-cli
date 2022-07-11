@@ -1,22 +1,14 @@
-import * as moment from 'moment-timezone';
 import { PrettyPrintableError } from '@oclif/core/lib/interfaces';
 import { LogMessage, ErrorMessage, cliUX, chalk } from './printer';
 import { ILambda } from '../types';
+import { formatDate } from '../shared/utils';
 
 require('events').EventEmitter.defaultMaxListeners = 15;
-
-const DEFAULT_FORMAT_DATETIME_WITH_SECONDS = 'DD.MM.YYYY - HH:mm:ss z';
 
 interface IDeployViewConfig {
   error?: ErrorMessage;
   log?: LogMessage;
   cliUx?: any;
-}
-
-function formatDate(date: string) {
-  return moment(String(date))
-    .tz(moment.tz.guess())
-    .format(DEFAULT_FORMAT_DATETIME_WITH_SECONDS);
 }
 
 export class GetView {
