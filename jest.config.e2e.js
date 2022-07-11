@@ -2,10 +2,10 @@ module.exports = {
   testEnvironment: 'node',
   roots: ['<rootDir>', '<rootDir>/src'],
   testMatch: [
-    '**/*.steps.[jt]s?(x)',
-    '**/__tests__/**/*.[jt]s?(x)',
-    '**/?(*.)+(spec|test).[jt]s?(x)',
-    '!**/e2e/**',
+    '!**/*.steps.[jt]s?(x)',
+    '!**/__tests__/**/*.[jt]s?(x)',
+    '!**/?(*.)+(spec|test).[jt]s?(x)',
+    '**/e2e/**',
   ],
   transform: {
     '^.+\\.jsx?$': require.resolve('babel-jest'),
