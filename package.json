@@ -108,14 +108,6 @@
   "license": "MIT",
   "main": "lib/index.js",
   "oclif": {
-    "topics": {
-      "create": {
-        "description": "Allows you to create functions"
-      },
-      "add": {
-        "description": "Allows you to add domains"
-      }
-    },
     "commands": "./lib/commands",
     "bin": "lpf",
     "plugins": [
@@ -149,7 +141,7 @@
     "pretest": "eslint test/ src/ --ext .ts --config .eslintrc.js --fix",
     "fix": "eslint test/ src/ --fix --ext .ts  --config .eslintrc.js",
     "test": "jest --coverage --verbose --runInBand",
-    "testSingleFile": "jest test/commands/deploy/deploy.steps.ts  --coverage --verbose --runInBand",
+    "testSingleFile": "jest test/service/faas.service.test.ts  --coverage --verbose --runInBand",
     "version": "oclif readme && git add README.md && npm run bumpToolbeltVersion && git add bin/example/bin/lp-faas-toolbelt/package.json",
     "cleanup": "rm -rf lib && rm -rf tmp && rm -rf dist",
     "build:mac": "npm run cleanup && npm run compile && npm run bumpToolbeltVersion && oclif pack:macos",

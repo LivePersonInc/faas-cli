@@ -371,5 +371,40 @@
         },
         "userId": "userId_logs_error",
         "attempts": 0
+    },
+    {
+        "uuid": "f791e5ca-3e78-4990-a066-59b82cdfd6a0",
+        "version": 1,
+        "name": "exampleFunction",
+        "description": "Description exampleFunction",
+        "samplePayload": {
+            "headers": [],
+            "payload": {}
+        },
+        "state": "Productive",
+        "runtime": {
+            "uuid": "f791e5ca-3e78-4990-a066-59b82cdfd6a0",
+            "name": "Node.js 10",
+            "baseImageName": "lp-building-block_release/lp-openfaas-lambda-node-base-image:latest"
+        },
+        "createdBy": "testUser@gmail.com",
+        "updatedBy": "testUser@gmail.com",
+        "createdAt": "2020-01-27T09:59:43.000Z",
+        "updatedAt": "2020-01-27T09:59:43.000Z",
+        "lastDeployment": {
+            "deployedAt": "2020-02-05T14:47:42.000Z"
+        },
+        "implementation": {
+            "code": "function lambda(input, callback) {\n    callback(null, `Hello World`);\n}",
+            "dependencies": [],
+            "environmentVariables": [
+                {
+                    "key": "",
+                    "value": ""
+                }
+            ]
+        },
+        "userId": "userId_metrics",
+        "attempts": 0
     }
 ]
