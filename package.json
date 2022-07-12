@@ -141,7 +141,7 @@
     "pretest": "eslint test/ src/ --ext .ts --config .eslintrc.js --fix",
     "fix": "eslint test/ src/ --fix --ext .ts  --config .eslintrc.js",
     "test": "jest --coverage --verbose --runInBand",
-    "e2e": "jest --config jest.config.e2e.js --testTimeout=30000",
+    "e2e": "jest --config jest.config.e2e.js --testTimeout=120000",
     "testSingleFile": "jest test/service/faas.service.test.ts  --coverage --verbose --runInBand",
     "version": "oclif readme && git add README.md && npm run bumpToolbeltVersion && git add bin/example/bin/lp-faas-toolbelt/package.json",
     "cleanup": "rm -rf lib && rm -rf tmp && rm -rf dist",
