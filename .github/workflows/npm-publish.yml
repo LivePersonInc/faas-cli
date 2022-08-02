@@ -52,7 +52,7 @@ jobs:
           token: ${{ secrets.NPM_PUBLISH }}
 
       - name: Create PR
-        uses: peter-evans/create-pull-request@v4.0.2
+        uses: peter-evans/create-pull-request@v4.0.4
         with:
           commit-message: Updated repository to ${{ steps.publish.outputs.version }}
           title: Bump version to ${{ steps.publish.outputs.version }}
