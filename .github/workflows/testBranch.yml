@@ -15,7 +15,8 @@ jobs:
 
     strategy:
       matrix:
-        node-version: [ 14.x, 15.x, 16.x ]
+        # run on all supported LTS versions and the latest/current version
+        node-version: [14, 16, 18, latest]
 
     steps:
     - uses: actions/checkout@v3
