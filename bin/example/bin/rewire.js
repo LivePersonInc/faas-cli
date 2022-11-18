@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 /* eslint-disable global-require */
 const { join } = require('path');
-const externalLibs = ['oauth-1.0a', 'luxon', 'jsforce', 'lodash']
+const externalLibs = ['oauth-1.0a', 'luxon', 'jsforce', 'jsonwebtoken', 'lodash'];
 /**
  * Is used for rewiring the require, so the lambda code will stay the same
  * Uses the proxy to overwrite the module.require.

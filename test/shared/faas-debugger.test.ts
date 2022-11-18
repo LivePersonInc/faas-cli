@@ -224,6 +224,7 @@ const Toolbelt = require('lp-faas-toolbelt');
 const OAuth = require('oauth-1.0a');
 const luxon = require('luxon');
 const jsforce = require('jsforce');
+const jsonwebtoken = require('jsonwebtoken');
 const lodash = require('lodash');
 callback(null, 'Hello World');
 }
@@ -246,6 +247,7 @@ callback(null, 'Hello World');
     expect(indexFile).toContain("require('lp-faas-toolbelt')");
     expect(indexFile).toContain("require('../bin/lp-faas-toolbelt/luxon')");
     expect(indexFile).toContain("require('../bin/lp-faas-toolbelt/jsforce')");
+    expect(indexFile).toContain("require('../bin/lp-faas-toolbelt/jsonwebtoken')");
     expect(indexFile).toContain(
       "require('../bin/lp-faas-toolbelt/oauth-1.0a')",
     );
