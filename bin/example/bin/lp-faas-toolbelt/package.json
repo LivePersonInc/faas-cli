@@ -14,7 +14,7 @@
     "get-port": "5.1.1",
     "jsforce": "1.11.0",
     "jsonwebtoken": "9.0.0",
-    "luxon": "1.28.0",
+    "luxon": "1.28.1",
     "lodash": "4.17.21",
     "oauth-1.0a": "2.2.6",
     "request": "2.88.2",
