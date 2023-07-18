@@ -71,13 +71,13 @@ function isLoggableError(error) {
 
 class Logger {
   constructor(debug) {
-    this.debug = debug;
+    this.isDebugMode = debug;
     this.history = [];
   }
 
   writeLogs(level, message, ...optionalParams) {
-    // if (!this.isDebugMode && level === LogLevels.Debug) return;
-    if (this.debug) {
+
+    if (this.isDebugMode) {
       if (Object.hasOwnProperty.call(message, 'errorMsg')) {
         stdout.log(`[${level}] - ${message.errorMsg}`, ...optionalParams);
       } else if (hasOptionals(optionalParams)) {
