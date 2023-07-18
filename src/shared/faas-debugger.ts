@@ -247,7 +247,7 @@ export class FaasDebugger {
       /* eslint-enable */
       this.port = await getPort({ port: getPort.makeRange(30500, 31000) });
     }
-    this.udpatePortForFiles();
+    this.updatePortForFiles();
     const args = [
       `--inspect-brk=${this.port}`,
       join(this.functionPath, 'index.js'),
@@ -392,7 +392,7 @@ ${originalCode}
     writeFileSync(filePath, content);
   }
 
-  private udpatePortForFiles() {
+  private updatePortForFiles() {
     /* istanbul ignore else */
     if (existsSync(join(this.cwd, '.vscode', 'launch.json'))) {
       this.updatePort(join(this.cwd, '.vscode', 'launch.json'));
