@@ -80,19 +80,18 @@ export class CsdsClient {
   }
 
   private getUrl(): string {
-    return `http://${this.getCsdsDomain()}/api/account/${
+    return `https://${this.getCsdsDomain()}/api/account/${
       this.accountId
     }/service/baseURI.json?version=1.0`;
   }
 
   private getCsdsDomain(): string {
-    if (this.accountId.startsWith('le') || this.accountId.startsWith('qa')) {
-      return 'hc1n.dev.lprnd.net';
+    if (this.accountId?.startsWith('le') || this.accountId?.startsWith('qa')) {
+      return 'lp-csds-qa.dev.lprnd.net';
     }
-    if (this.accountId.startsWith('fr')) {
+    if (this.accountId?.startsWith('fr')) {
       return 'adminlogin-z0-intg.liveperson.net';
     }
-    // alpha/production
-    return 'adminlogin.liveperson.net';
+    return 'api.liveperson.net';
   }
 }

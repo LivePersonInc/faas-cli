@@ -83,18 +83,12 @@ export class CsdsClient implements ICsdsClient {
   }
 
   private getUrl(): string {
-    return `http://${this.getCsdsDomain()}/api/account/${
+    return `https://${this.getCsdsDomain()}/api/account/${
       this.accountId
     }/service/baseURI.json?version=1.0`;
   }
 
   private getCsdsDomain(): string {
-    return process.env.CSDS_DOMAIN
-      ? process.env.CSDS_DOMAIN
-      : this.deriveCsdsDomainFromAccountId();
-  }
-
-  private deriveCsdsDomainFromAccountId(): string {
     if (this.accountId?.startsWith('le') || this.accountId?.startsWith('qa')) {
       return 'lp-csds-qa.dev.lprnd.net';
     }
@@ -103,6 +97,7 @@ export class CsdsClient implements ICsdsClient {
     }
     return 'api.liveperson.net';
   }
+
 }
 
 async function getAccountId() {
@@ -124,7 +119,7 @@ async function getAccountId() {
   }
 }
 
-async function getCrpytoConfig(): Promise<{
+async function getCryptoConfig(): Promise<{
   algorithm: string;
   key: Buffer;
   iv: string;
@@ -145,7 +140,7 @@ async function getCrpytoConfig(): Promise<{
 }
 
 async function decrypt(data: any) {
-  const { algorithm, key, iv } = await getCrpytoConfig();
+  const { algorithm, key, iv } = await getCryptoConfig();
   const decipher = crypto.createDecipheriv(algorithm, key, iv);
   let decrypted = decipher.update(data, 'hex', 'utf8');
   decrypted += decipher.final('utf8');
