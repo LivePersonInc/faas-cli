@@ -7,7 +7,13 @@ const child_process_1 = require("child_process");
 const path_1 = require("path");
 const perf_hooks_1 = require("perf_hooks");
 const EXECUTION_EXCEED_TIMEOUT = 60000;
-const EXTERNAL_PACKAGE_MAPPING = ['oauth-1.0a', 'luxon', 'jsforce', 'jsonwebtoken', 'lodash'];
+const EXTERNAL_PACKAGE_MAPPING = [
+    'oauth-1.0a',
+    'luxon',
+    'jsforce',
+    'jsonwebtoken',
+    'lodash',
+];
 function isLogLevel(input) {
     return Object.keys({
         Debug: 'Debug',
@@ -169,7 +175,7 @@ class FaasDebugger {
             /* eslint-enable */
             this.port = await getPort({ port: getPort.makeRange(30500, 31000) });
         }
-        this.udpatePortForFiles();
+        this.updatePortForFiles();
         const args = [
             `--inspect-brk=${this.port}`,
             (0, path_1.join)(this.functionPath, 'index.js'),
@@ -288,7 +294,7 @@ ${originalCode}
         oldPort.forEach((e) => (content = content.replace(e, `${this.port}`)));
         (0, fs_1.writeFileSync)(filePath, content);
     }
-    udpatePortForFiles() {
+    updatePortForFiles() {
         /* istanbul ignore else */
         if ((0, fs_1.existsSync)((0, path_1.join)(this.cwd, '.vscode', 'launch.json'))) {
             this.updatePort((0, path_1.join)(this.cwd, '.vscode', 'launch.json'));
