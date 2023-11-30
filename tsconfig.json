@@ -5,7 +5,7 @@
     "module": "commonjs",
     "outDir": "lib",
     "rootDir": "src",
-    "strict": true,
+    "strict": false,
     "target": "es2019",
     "moduleResolution": "node",
     "sourceMap": true,

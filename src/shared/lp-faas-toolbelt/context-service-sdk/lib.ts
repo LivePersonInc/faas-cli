@@ -169,8 +169,8 @@ export class ContextServiceClient implements IContextServiceClient {
             if (isBuiltInNamespace(namespace)) {
                 throw new SDKError(ErrorCodes.Parameter.Incorrect, 'Can not create a built-in namespace');
             }
-
-            if (options?.ttl || 0 <= 0) {
+           
+            if (options?.ttl <= 0) {
                 throw new SDKError(ErrorCodes.Parameter.Incorrect, 'TTL needs to be a positive integer above 0');
             }
 
