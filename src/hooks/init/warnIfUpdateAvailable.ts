@@ -6,7 +6,7 @@ import * as path from 'path';
 import * as semver from 'semver';
 import latestVersion from 'latest-version';
 
-import template = require('lodash.template');
+const _ = require('lodash');
 
 /**
  * Parses the border so it will fit for longer or shorter version numbers
@@ -60,7 +60,7 @@ export async function warnIfUpdateAvailable({
       distTags.latest &&
       semver.gt(distTags.latest.split('-')[0], config.version.split('-')[0])
     ) {
-      const parsedTemplate = template(message)({
+      const parsedTemplate = _.template(message)({
         chalk,
         config,
         ...distTags,
