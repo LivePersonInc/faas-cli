@@ -8,7 +8,7 @@ import {
 } from 'set-interval-async/dynamic';
 import { factory } from '../service/faasFactory.service';
 import { formatDate } from '../shared/utils';
-import { ILambda } from '../types';
+import { IFunction } from '../types';
 import {
   chalk as chalkDefault,
   ErrorMessage,
@@ -71,7 +71,7 @@ export class DeployView {
   /**
    * Runs a tasklist with all functions to deploy.
    * Checks every 3sec if the deployment is finished.
-   * @param {ILambda[]} confirmedFunctionsToDeploy - Functions to deploy
+   * @param {IFunction[]} confirmedFunctionsToDeploy - Functions to deploy
    * @param {boolean} [noWatch] - Changes the renderer of the tasklist, so no rendering is displayed in the console
    * @returns
    * @memberof DeployView
@@ -80,7 +80,7 @@ export class DeployView {
     confirmedFunctionsToDeploy,
     noWatch = false,
   }: {
-    confirmedFunctionsToDeploy: ILambda[];
+    confirmedFunctionsToDeploy: IFunction[];
     noWatch?: boolean;
   }): Promise<void> {
     if (noWatch) {
@@ -102,9 +102,8 @@ export class DeployView {
             return new Promise<void>(async (resolve) => {
               function checkIfLambdaIsDeployed(): Promise<boolean> {
                 return new Promise(async (resolve) => {
-                  const lambdaInformation = (await faasService.getLambdaByUUID(
-                    entry.uuid,
-                  )) as any;
+                  const lambdaInformation =
+                    (await faasService.getFunctionByUuid(entry.uuid)) as any;
                   if (
                     lambdaInformation.state === 'Productive' &&
                     lambdaInformation.lastDeployment.deployedAt

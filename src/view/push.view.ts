@@ -1,7 +1,7 @@
 import { Answers } from 'inquirer';
 import { PrettyPrintableError } from '@oclif/core/lib/interfaces';
 import { factory } from '../service/faasFactory.service';
-import { ILambda } from '../types';
+import { IFunction } from '../types';
 import {
   chalk as chalkDefault,
   ErrorMessage,
@@ -63,16 +63,16 @@ export class PushView {
 
   /**
    * Prompts the user to confirm all of the lambdas he wants to push
-   * @param {ILambda[]} lambdas Lambdas the user wants to push
+   * @param {IFunction[]} lambdas Lambdas the user wants to push
    * @param {string} [accountId] The account ID to display in the prompt
    * @returns {Promise<Answers>}
    * @memberof PushView
    */
   public async askForConfirmation(
-    lambdas: ILambda[],
+    lambdas: IFunction[],
     accountId?: string,
   ): Promise<Answers> {
-    lambdas.forEach((lambda: ILambda) => {
+    lambdas.forEach((lambda: IFunction) => {
       this.prompt.addQuestion({
         name: `${lambda.name}`,
         type: 'confirm',
@@ -87,14 +87,14 @@ export class PushView {
    * Creates and runs a Listr Task List. It creates one task for each request body
    * which triggers the push request for it. Depending on the noWatch param the
    * pushing is displayed or hidden in the console.
-   * @param {{ pushRequestBodies: ILambda[]; noWatch?: boolean }} { pushRequestBodies, noWatch = false }
+   * @param {{ pushRequestBodies: IFunction[]; noWatch?: boolean }} { pushRequestBodies, noWatch = false }
    * @memberof PushView
    */
   public async showPushProcess({
     pushRequestBodies,
     noWatch = false,
   }: {
-    pushRequestBodies: ILambda[];
+    pushRequestBodies: IFunction[];
     noWatch?: boolean;
   }) {
     if (noWatch) {
@@ -118,11 +118,17 @@ export class PushView {
           // tslint:disable-next-line:no-shadowed-variable
           const faasService = await factory.get();
           const isNewLambda = entry.version === -1;
+          if (isNewLambda) {
+            await faasService.pushNewFunction({
+              body: entry,
+            });
+            return task.skip(`Push Successful: new function added to account`);
+          }
           const wasModified = await faasService.push({
-            method: isNewLambda ? 'POST' : 'PUT',
             body: entry,
             ...(!isNewLambda && { uuid: entry.uuid }),
           });
+
           if (!wasModified) {
             return task.skip(
               `Push Skipped: The update contained no changes compared to the server version.`,
@@ -164,14 +170,9 @@ ${
   Name:                   ${pushBody.name}
   Description:            ${pushBody.description}
   Event:                  ${event}
-  Dependencies:           ${
-    pushBody.implementation.dependencies.length > 0
-      ? JSON.stringify(pushBody.implementation.dependencies)
-      : '-'
-  }
   Environment variables:  ${
-    pushBody.implementation.environmentVariables.length > 0
-      ? JSON.stringify(pushBody.implementation.environmentVariables)
+    pushBody.manifest.environment.length > 0
+      ? JSON.stringify(pushBody.manifest.environment)
       : '-'
   }
 

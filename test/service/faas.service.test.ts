@@ -5,7 +5,7 @@ import { Readable } from 'stream';
 import { FaasService } from '../../src/service/faas.service';
 import { LoginController } from '../../src/controller/login.controller';
 import { CsdsClient } from '../../src/service/csds.service';
-import { ILambda } from '../../src/types';
+import { IFunction } from '../../src/types';
 
 describe('faas service', () => {
   jest.spyOn(os, 'tmpdir').mockReturnValue(__dirname);
@@ -161,7 +161,7 @@ describe('faas service', () => {
       };
     }) as any;
     const faasService = new FaasService({ gotDefault, csdsClient });
-    const response = await faasService.getLambdaByUUID('123-123-123');
+    const response = await faasService.getFunctionByUuid('123-123-123');
     expect(response).toEqual({ name: 'lambda1', uuid: '123-123-123' });
   });
 
@@ -181,7 +181,7 @@ describe('faas service', () => {
 
     const faasService = new FaasService({ gotDefault, csdsClient });
     try {
-      await faasService.getLambdaByUUID('123-123-123');
+      await faasService.getFunctionByUuid('123-123-123');
     } catch (error) {
       expect(error.errorMsg).toBe('Error during getting lambda by uuid');
     }
@@ -196,7 +196,7 @@ describe('faas service', () => {
     const faasService = new FaasService({ gotDefault, csdsClient });
     await faasService.push({
       method: 'POST',
-      body: {} as ILambda,
+      body: {} as IFunction,
       uuid: 'uuid',
     });
     expect(gotDefault).toHaveBeenCalledWith(
@@ -226,7 +226,7 @@ describe('faas service', () => {
     try {
       await faasService.push({
         method: 'POST',
-        body: {} as ILambda,
+        body: {} as IFunction,
         uuid: 'uuid',
       });
     } catch (error) {
@@ -248,7 +248,7 @@ describe('faas service', () => {
     try {
       await faasService.push({
         method: 'POST',
-        body: { name: 'FunctionName' } as ILambda,
+        body: { name: 'FunctionName' } as IFunction,
         uuid: 'uuid',
       });
     } catch (error) {
@@ -575,20 +575,6 @@ describe('faas service', () => {
     expect(response).toEqual(result);
   });
 
-  it('should add a domain', async () => {
-    const csdsClient = new CsdsClient();
-    csdsClient.getUri = jest.fn().mockReturnValue('faasUI');
-    const result = 'test.com';
-    const gotDefault = jest.fn(() => {
-      return {
-        body: result,
-      };
-    }) as any;
-    const faasService = new FaasService({ gotDefault, csdsClient });
-    const response = await faasService.addDomain('test.com');
-    expect(response).toEqual(result);
-  });
-
   it('should get lambdas by names', async () => {
     const csdsClient = new CsdsClient();
     csdsClient.getUri = jest.fn().mockReturnValue('faasUI');
@@ -678,7 +664,6 @@ describe('faas service', () => {
       };
     }) as any;
     const faasService = new FaasService({ gotDefault, csdsClient });
-    const response = await faasService.getRuntime();
 
     expect(response).toEqual({
       name: 'Node.js',

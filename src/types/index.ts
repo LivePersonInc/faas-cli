@@ -1,6 +1,5 @@
-import { ILambda, IRuntime } from './ILambda';
-import { ILambdaConfig } from './ILambdaConfig';
-import { ISchedule } from './ISchedule';
-import { IDomain } from './IDomain';
+import { IFunction } from './IFunction';
+import { IFunctionConfig } from './IFunctionConfig';
+import { LPSchedule } from './ISchedule';
 
-export { ILambda, ILambdaConfig, IRuntime, ISchedule, IDomain };
+export { IFunction, IFunctionConfig, LPSchedule };

@@ -13,7 +13,7 @@ import {
   push,
 } from './faasEndpoint';
 import { FileService } from '../../src/service/file.service';
-import { ILambda, IRuntime } from '../../src/types';
+import { IFunction, IRuntime } from '../../src/types';
 import { HttpMethods } from '../../src/service/faas.service';
 
 export class FaasService {
@@ -178,7 +178,7 @@ export class FaasService {
     uuid,
   }: {
     method: HttpMethods;
-    body: ILambda;
+    body: IFunction;
     uuid?: string;
   }): Promise<boolean> {
     try {
@@ -286,7 +286,7 @@ export class FaasService {
   }) {
     try {
       const domain = await this.getCsdsEntry('faasUI');
-      const url = `https://${domain}/api/account/${this.accountId}${urlPart}?userId=${this.userId}&v=1${additionalParams}`;
+      const url = `https://${domain}/api/account/${this.accountId}${urlPart}?userId=${this.userId}${additionalParams}`;
       let response: any;
       if (method === 'POST' && urlPart.includes('invoke')) {
         response = invoke(url);

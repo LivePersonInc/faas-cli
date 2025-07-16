@@ -8,7 +8,7 @@ import {
 } from 'set-interval-async/dynamic';
 import { PrettyPrintableError } from '@oclif/core/lib/interfaces';
 import { factory } from '../service/faasFactory.service';
-import { ILambda } from '../types';
+import { IFunction } from '../types';
 import {
   chalk as chalkDefault,
   ErrorMessage,
@@ -71,7 +71,7 @@ export class UndeployView {
   /**
    * Runs a tasklist with all functions to undeploy.
    * Checks every 3sec if the undeployment is finished.
-   * @param {ILambda[]} confirmedFunctionsToUndeploy - Functions to undeploy
+   * @param {IFunction[]} confirmedFunctionsToUndeploy - Functions to undeploy
    * @param {boolean} [noWatch] - Changes the renderer of the tasklist, so no rendering is displayed in the console
    * @returns
    * @memberof UndeployView
@@ -80,7 +80,7 @@ export class UndeployView {
     confirmedFunctionsToUndeploy,
     noWatch = false,
   }: {
-    confirmedFunctionsToUndeploy: ILambda[];
+    confirmedFunctionsToUndeploy: IFunction[];
     noWatch?: boolean;
   }) {
     if (noWatch) {
@@ -102,7 +102,7 @@ export class UndeployView {
             return new Promise<void>(async (resolve) => {
               function waitUntilLambdaIsUndeployed(): Promise<boolean> {
                 return new Promise(async (resolve) => {
-                  const lambdaInformation = await faasService.getLambdaByUUID(
+                  const lambdaInformation = await faasService.getFunctionByUuid(
                     entry.uuid,
                   );
                   if (lambdaInformation.state === 'Draft') {

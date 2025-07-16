@@ -62,7 +62,7 @@ export class GetController {
     const faasService = await factory.get();
 
     try {
-      const allLambdas = await faasService.getAllLambdas();
+      const allLambdas = await faasService.getAllFunctionMetas();
 
       /* istanbul ignore else */
       if (allLambdas.length === 0) {
@@ -82,25 +82,36 @@ export class GetController {
         return func;
       });
 
-      /* istanbul ignore else */
       if (domains.includes('functions')) {
         this.getView.printFunctions(updatedLambdas);
       }
 
-      /* istanbul ignore else */
       if (domains.includes('deployments')) {
-        const productiveLambdas = updatedLambdas
+        const allDeployments = await faasService.getAllDeployments();
+        const deployedLambdas = updatedLambdas
           .filter(
             (lambda) =>
               lambda.state === 'Productive' || lambda.state === 'Modified',
           )
-          .map((lambda) => ({
-            ...lambda.lastDeployment,
-            name: lambda.name,
-            state:
-              lambda.state === 'Productive' ? 'Up to date' : lambda.updatedAt,
-          }));
-        this.getView.printDeployments(productiveLambdas);
+          .map((fn) => {
+            const relatedDeployment = allDeployments.find(
+              ({ functionUuid }) => functionUuid === fn.uuid,
+            );
+            if (relatedDeployment)
+              return {
+                name: fn.name,
+                state:
+                  relatedDeployment.deploymentState === 'successful'
+                    ? fn.state
+                    : 'failed',
+                deployedAt:
+                  relatedDeployment.updatedAt || relatedDeployment.createdAt,
+                deployedBy:
+                  relatedDeployment.updatedBy || relatedDeployment.createdBy,
+              };
+          });
+
+        this.getView.printDeployments(deployedLambdas);
       }
     } catch (error) {
       this.getView.showErrorMessage(error);

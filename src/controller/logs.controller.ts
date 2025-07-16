@@ -34,7 +34,7 @@ export class LogsController {
         suggestions: [
           'Use "lpf push exampleFunction" to push and "lpf deploy exampleFunction" to deploy a function',
         ],
-        ref: 'https://github.com/LivePersonInc/faas-cli#invoke',
+        ref: 'https://github.com/LivePersonInc/faas-cli#logs',
         code: CLIErrorCodes.NoLambdasFound,
       };
       throw prettyError;

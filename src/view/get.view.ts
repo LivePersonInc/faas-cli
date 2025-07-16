@@ -1,7 +1,9 @@
 import { PrettyPrintableError } from '@oclif/core/lib/interfaces';
+import * as Table from 'tty-table';
 import { LogMessage, ErrorMessage, cliUX, chalk } from './printer';
-import { ILambda } from '../types';
+import { IFunction } from '../types';
 import { formatDate } from '../shared/utils';
+import { AccountStatistics } from '../service/faas.service';
 
 require('events').EventEmitter.defaultMaxListeners = 15;
 
@@ -39,34 +41,49 @@ export class GetView {
 
   /**
    * Prints all functions (domain) as a table
-   * @param {ILambda[]} functions - functions
+   * @param {IFunction[]} functions - functions
    * @returns {void}
    * @memberof GetView
    */
-  public printFunctions(functions: ILambda[]): void {
+  public printFunctions(functions: IFunction[]): void {
     this.log.print('');
-    this.cliUx.table(functions, {
-      name: {
-        minWidth: 30,
-      },
-      state: {
-        minWidth: 15,
-      },
-      updatedAt: {
-        minWidth: 40,
-        header: 'Last changed at',
-        get: (row: any) => (row.updatedAt ? formatDate(row.updatedAt) : '-'),
-      },
-      updatedBy: {
-        minWidth: 40,
-        header: 'Last changed by',
-        get: (row: any) => row.updatedBy || '-',
-      },
-      eventId: {
-        minWidth: 40,
-        header: 'Event',
-      },
-    });
+    const table = Table(
+      [
+        {
+          value: 'name',
+          alias: 'Name',
+        },
+        {
+          value: 'createdAt',
+          alias: 'Created at',
+          formatter: (updatedAt) => (updatedAt ? formatDate(updatedAt) : '-'),
+        },
+        {
+          value: 'createdBy',
+          alias: 'Created by',
+        },
+        {
+          value: 'state',
+          alias: 'State',
+        },
+        {
+          value: 'updatedAt',
+          alias: 'Last changed at',
+          formatter: (updatedAt) => (updatedAt ? formatDate(updatedAt) : '-'),
+        },
+        {
+          value: 'updatedBy',
+          alias: 'Last changed by',
+        },
+        {
+          value: 'eventId',
+          alias: 'Event',
+        },
+      ],
+      functions,
+      { defaultValue: '-' },
+    ).render();
+    this.log.print(table);
     this.log.print('');
   }
 
@@ -76,34 +93,33 @@ export class GetView {
    * @returns {void}
    * @memberof GetView
    */
-  public printDeployments(functions: any): void {
+  public printDeployments(deployments: any): void {
     this.log.print('');
-    this.cliUx.table(functions, {
-      name: {
-        minWidth: 30,
-      },
-      state: {
-        minWidth: 30,
-        header: 'Undeployed changes from',
-        get: (row: any) =>
-          row.state === 'Up to date' ? 'Up to date' : formatDate(row.state),
-      },
-      deployedAt: {
-        minWidth: 30,
-        header: 'Last successful deployment',
-        get: (row: any) =>
-          row.deployedAt ? formatDate(row.deployedAt) : 'pending ...',
-      },
-      createdBy: {
-        minWidth: 30,
-        header: 'Deployed by',
-      },
-      deploymentState: {
-        minWidth: 30,
-        header: 'Deployment state',
-        get: (row: any) => row.deploymentState || '-',
-      },
-    });
+    const table = Table(
+      [
+        {
+          value: 'name',
+          alias: 'Name',
+        },
+        {
+          value: 'state',
+          alias: 'Deployment state',
+        },
+        {
+          value: 'deployedAt',
+          alias: 'Last successful deployment',
+          formatter: (deployedAt) =>
+            deployedAt ? formatDate(deployedAt) : 'pending ...',
+        },
+        {
+          value: 'deployedBy',
+          alias: 'Deployed By',
+        },
+      ],
+      deployments,
+      { defaultValue: '-' },
+    ).render();
+    this.log.print(table);
     this.log.print('');
   }
 
@@ -113,37 +129,11 @@ export class GetView {
    * @returns {void}
    * @memberof GetView
    */
-  public printAccountInformation(accountInfo: any): void {
-    const totalInvocations =
-      accountInfo.successfulInvocations + accountInfo.unsuccessfulInvocations;
-    const fairUseQuotaPercentage = Math.ceil(
-      (totalInvocations * 100) / accountInfo.invocationLimitPerMonth,
-    );
-
-    const date = new Date();
-    const firstDayOfMonth = new Date(date.getFullYear(), date.getMonth(), 1, 1);
-    const invocationDate = firstDayOfMonth.toLocaleDateString('en-US', {
-      month: 'short',
-      day: 'numeric',
-      year: 'numeric',
-    });
-
+  public printAccountInformation(accountInfo: AccountStatistics): void {
     this.log.print(`
-${chalk.bold('Total Functions:')}      ${accountInfo.total} / ${
-      accountInfo.limitTotalLambdas
-    }
-${chalk.bold('Deployed Functions:')}   ${accountInfo.deployed} / ${
-      accountInfo.limitDeployedLambdas
-    }
-${chalk.bold('Total Invocations:')}    ${totalInvocations}
-
-${chalk.bold(
-  'Fair Use Quota:',
-)}       ${fairUseQuotaPercentage}% (Invocations since ${invocationDate})
-                      ${totalInvocations} / ${
-      accountInfo.invocationLimitPerMonth
-    }
-    `);
+    ${chalk.bold('Total Functions:')}      ${accountInfo.numberOfFunctions}
+    ${chalk.bold('Deployed Functions:')}   ${accountInfo.numberOfDeployments}
+    ${chalk.bold('Total Invocations:')}    ${accountInfo.numberOfInvocations}`);
   }
 
   /**
@@ -154,16 +144,21 @@ ${chalk.bold(
    */
   public printEvents(events: any): void {
     this.log.print('');
-    this.cliUx.table(events, {
-      eventName: {
-        header: 'Event name',
-        minWidth: 40,
-      },
-      eventId: {
-        header: 'EventId',
-        minWidth: 40,
-      },
-    });
+    const table = Table(
+      [
+        {
+          value: 'eventId',
+          alias: 'Event Id',
+        },
+        {
+          value: 'eventName',
+          alias: 'Event name',
+        },
+      ],
+      events,
+      { defaultValue: '-' },
+    ).render();
+    this.log.print(table);
     this.log.print('');
     this.log.print('For further informations please have a look at');
     this.log.print(

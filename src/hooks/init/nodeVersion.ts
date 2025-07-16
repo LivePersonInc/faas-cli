@@ -16,12 +16,9 @@ export async function nodeVersion(
   /* istanbul ignore else */
   if (opts.id === 'invoke') {
     try {
-      const faasService = await factory.get();
-      const runtime = await faasService.getRuntime();
       const userNodeVersion = semver.major(semver.clean(version) as string);
-
-      const remoteVersion = runtime.name.replace('Node.js ', '');
-
+      // TODO get proper version of runtime
+      const remoteVersion = '22.0.0';
       /* istanbul ignore else */
       if (userNodeVersion > Number.parseInt(remoteVersion, 10)) {
         // eslint-disable-next-line no-console

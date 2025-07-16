@@ -4,7 +4,7 @@ import { system } from 'systeminformation';
 import * as os from 'os';
 import { join } from 'path';
 import * as semver from 'semver';
-import { ILambdaConfig } from '../types';
+import { IFunctionConfig } from '../types';
 
 interface IFileServiceConstructorConfig {
   cwd?: string;
@@ -235,19 +235,19 @@ export class FileService {
    * @returns {*} - config
    * @memberof FileService
    */
-  public getFunctionConfig(functionName: string): ILambdaConfig {
+  public getFunctionConfig(functionName: string): IFunctionConfig {
     return this.read(this.getPathToFunction(functionName, 'config.json'));
   }
 
   /**
    * Returns config files for multiple passed functions.
    * @param {string[]} [lambdaFunctions] - lambda functions
-   * @returns {ILambdaConfig[]} - Lambda configs
+   * @returns {IFunctionConfig[]} - Lambda configs
    * @memberof FileService
    */
   public collectLocalLambdaInformation(
     lambdaFunctions?: string[],
-  ): ILambdaConfig[] {
+  ): IFunctionConfig[] {
     /* istanbul ignore else */
     if (lambdaFunctions?.length) {
       return lambdaFunctions.map((lambdaFunction: string) =>

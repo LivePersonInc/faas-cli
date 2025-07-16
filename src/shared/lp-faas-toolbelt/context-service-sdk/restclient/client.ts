@@ -1,6 +1,5 @@
 /* eslint-disable @typescript-eslint/require-await */
 import * as bent from 'bent';
-import { v4 as GenerateUUID } from 'uuid';
 
 import { Namespace, NamespaceOptions } from '../types/namespace';
 import { Entity } from '../types/entity';
@@ -443,7 +442,7 @@ export class RestClient implements IRestClient {
       // eslint-disable-next-line @typescript-eslint/naming-convention
       Accept: 'application/json',
       // eslint-disable-next-line @typescript-eslint/naming-convention
-      'X-REQUEST-ID': GenerateUUID(),
+      'X-REQUEST-ID': crypto.randomUUID(),
       // eslint-disable-next-line @typescript-eslint/naming-convention
       'User-Agent': `${name} v${version}`,
     };

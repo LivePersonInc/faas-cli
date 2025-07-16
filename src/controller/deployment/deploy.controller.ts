@@ -1,6 +1,6 @@
 import { Answers } from 'inquirer';
 import { PrettyPrintableError } from '@oclif/core/lib/interfaces';
-import { ILambda } from '../../types';
+import { IFunction } from '../../types';
 import { DeployView } from '../../view/deploy.view';
 import { DeploymentController } from './deployment.controller';
 import { FileService } from '../../service/file.service';
@@ -38,10 +38,10 @@ export class DeployController extends DeploymentController {
     inputFlags,
   }: IDeployConfig): Promise<void> {
     try {
-      const functionsToDeploy: ILambda[] =
+      const functionsToDeploy: IFunction[] =
         await this.collectLambdaInformationForAllLambdas(lambdaFunctions);
 
-      let confirmedFunctionsToDeploy: ILambda[] = [];
+      let confirmedFunctionsToDeploy: IFunction[] = [];
       if (inputFlags?.yes) {
         confirmedFunctionsToDeploy = functionsToDeploy;
       } else {
@@ -49,7 +49,7 @@ export class DeployController extends DeploymentController {
           functionsToDeploy,
         );
         confirmedFunctionsToDeploy = functionsToDeploy.filter(
-          (entry: ILambda) => answer[entry.name],
+          (entry: IFunction) => answer[entry.name],
         );
 
         /* istanbul ignore else */

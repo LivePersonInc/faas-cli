@@ -1,8 +1,9 @@
 import { Answers } from 'inquirer';
 import { factory } from '../service/faasFactory.service';
 import { FileService } from '../service/file.service';
-import { ILambda } from '../types';
+import { IFunction } from '../types';
 import { PushView } from '../view/push.view';
+import { LPFnManifest, LPFnMeta } from '../types/IFunction';
 
 interface IPushConfig {
   lambdaFunctions?: string[];
@@ -56,11 +57,14 @@ export class PushController {
         localLambdaNames,
         true,
       );
-      const allLambdaBodies: ILambda[] = await Promise.all(
+      const allLambdaBodies: IFunction[] = await Promise.all(
         allLambdas.map(async (lambda) => {
           const lambdaConfig = this.fileService.getFunctionConfig(lambda.name);
           if (Object.prototype.hasOwnProperty.call(lambda, 'uuid')) {
-            return this.createUpdateLambdaBody(lambda as ILambda, lambdaConfig);
+            return this.createUpdateLambdaBody(
+              lambda as IFunction,
+              lambdaConfig,
+            );
           }
           return this.createNewLambdaBody(lambdaConfig);
         }),
@@ -77,7 +81,7 @@ export class PushController {
           faasService.accountId,
         );
         const confirmedLambdaBodies = allLambdaBodies.filter(
-          (entry: ILambda) => answers[entry.name],
+          (entry: IFunction) => answers[entry.name],
         );
         if (confirmedLambdaBodies.length === 0) {
           return;
@@ -96,7 +100,6 @@ export class PushController {
   }
 
   private async createNewLambdaBody(lambdaConfig: any): Promise<any> {
-    const faasService = await factory.get();
     return {
       ...(lambdaConfig.event &&
         lambdaConfig.event !== 'No Event' && { eventId: lambdaConfig.event }),
@@ -105,44 +108,46 @@ export class PushController {
       name: lambdaConfig.name,
       description: lambdaConfig.description,
       state: 'Draft',
-      runtime: await faasService.getRuntime(),
       implementation: {
         code: this.fileService.read(
           this.fileService.getPathToFunction(lambdaConfig.name, 'index.js'),
           false,
         ),
-        dependencies: lambdaConfig.dependencies || [],
         environmentVariables:
           lambdaConfig.environmentVariables[0].key === ''
-            ? []
+            ? {}
             : lambdaConfig.environmentVariables,
       },
     };
   }
 
-  private createUpdateLambdaBody(lambda: ILambda, lambdaConfig: any): any {
+  private createUpdateLambdaBody(
+    lambda: IFunction,
+    lambdaConfig: any,
+  ): Partial<LPFnMeta> & {
+    manifest: Partial<LPFnManifest>;
+  } {
+    const hasCustomEnvars = (envars) =>
+      envars && envars.length > 0 && Object.keys(envars[0])[0] !== 'key';
     return {
       uuid: lambda.uuid,
-      version: lambda.version,
       state: lambda.state === 'Draft' ? 'Draft' : 'Modified',
       name: lambda.name,
       eventId: lambda.eventId,
       description: lambdaConfig.description,
-      runtime: lambda.runtime,
       createdBy: lambda.createdBy,
       updatedBy: lambda.updatedBy,
       createdAt: lambda.createdAt,
       updatedAt: lambda.updatedAt,
-      implementation: {
+      manifest: {
         code: this.fileService.read(
           this.fileService.getPathToFunction(lambda.name, 'index.js'),
           false,
         ),
-        dependencies: lambdaConfig.dependencies || [],
-        environmentVariables:
-          lambdaConfig.environmentVariables[0].key === ''
-            ? []
-            : lambdaConfig.environmentVariables,
+        version: lambdaConfig.version,
+        environment: hasCustomEnvars(lambdaConfig.environmentVariables)
+          ? {}
+          : lambdaConfig.environmentVariables,
       },
     };
   }

@@ -141,7 +141,9 @@ export class FaasDebugger {
       this.updateLambdaFunctionForInvoke();
       this.setEnvironmentVariables(true);
       await this.createChildProcessForInvokeLocal();
+      console.info('qewqwe');
     } catch {
+      console.info('qewqwe2');
       throwInvalidProjectFolderError();
     }
   }
@@ -289,23 +291,12 @@ export class FaasDebugger {
         'utf8',
       ),
     );
-    // better readable than forEach
+
     // eslint-disable-next-line no-restricted-syntax
-    for (const env of environmentVariables) {
-      if (
-        !Object.prototype.hasOwnProperty.call(env, 'key') ||
-        !Object.prototype.hasOwnProperty.call(env, 'value')
-      ) {
-        // eslint-disable-next-line no-console
-        console.log(
-          'Invalid environment variables! Please make sure to have key-value pairs as variables',
-        );
-        return;
+    for (const key of Object.keys(environmentVariables)) {
+      if (key !== 'key' && environmentVariables[key] !== 'value') {
+        process.env[key] = environmentVariables[key];
       }
-      if (env.key === '') {
-        return;
-      }
-      process.env[env.key] = env.value;
     }
   }
 

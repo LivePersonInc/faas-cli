@@ -4,7 +4,7 @@ interface IEnvironmentVariable {
   key: string;
   value: string;
 }
-export interface ILambdaConfig {
+export interface IFunctionConfig {
   environmentVariables: IEnvironmentVariable[] | [];
   name: string;
   description: string;

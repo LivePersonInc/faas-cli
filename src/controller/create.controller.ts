@@ -130,7 +130,7 @@ export class CreateController {
 
       const faasService = await factory.get();
       const res = await faasService.createSchedule(scheduleConfig);
-      this.createView.showScheduleIsCreated(res.nextExecution);
+      this.createView.showScheduleIsCreated(String(res.nextExecution));
     } catch (error) {
       const prettyError: PrettyPrintableError = {
         message: error.message || error.errorMsg,
@@ -157,7 +157,7 @@ export class CreateController {
     }
 
     const faasService = await factory.get();
-    const deployedLambdas = (await faasService.getAllLambdas()).filter(
+    const deployedLambdas = (await faasService.getAllFunctionMetas()).filter(
       ({ state }) => ['Productive', 'Modified'].includes(state),
     );
     scheduleConfig.lambdaUUID = deployedLambdas.find(

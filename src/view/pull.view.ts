@@ -7,9 +7,10 @@ import {
   Prompt,
   chalk as chalkDefault,
 } from './printer';
-import { ILambda } from '../types';
+import { IFunction } from '../types';
 import { DefaultStructureService } from '../service/defaultStructure.service';
 import { FileService } from '../service/file.service';
+import { LPFunction } from '../types/IFunction';
 
 interface IPullViewConfig {
   prompt?: Prompt;
@@ -57,16 +58,16 @@ export class PullView {
 
   /**
    * Ask for confirmation the passed functions
-   * @param {ILambda[]} lambdas - lambdas
+   * @param {IFunction[]} lambdas - lambdas
    * @param {string} accountId - accountId
    * @returns {Promise<Answers>}
    * @memberof PullView
    */
   public async askForConfirmation(
-    lambdas: ILambda[],
+    lambdas: IFunction[],
     accountId: string,
   ): Promise<Answers> {
-    lambdas.forEach((lambda: ILambda) => {
+    lambdas.forEach((lambda: IFunction) => {
       this.prompt.addQuestion({
         name: `${lambda.name}`,
         type: 'confirm',
@@ -97,7 +98,7 @@ export class PullView {
       this.log.print('\nPulling following functions:\n');
     }
 
-    confirmedLambdasToPull.forEach((lambda: ILambda) => {
+    confirmedLambdasToPull.forEach((lambda: LPFunction) => {
       this.tasklist.addTask({
         title: `Pulling ${lambda.name}`,
         task: async () => {
@@ -110,24 +111,20 @@ export class PullView {
               name: lambda.name,
               event: lambda.eventId || 'No Event',
               description: lambda.description,
-              input: lambda.samplePayload || {
+              input: {
                 headers: [],
                 payload: {},
               },
+              version: lambda.manifest.version,
               environmentVariables:
-                lambda.implementation.environmentVariables.length > 0
-                  ? lambda.implementation.environmentVariables
-                  : [
-                      {
-                        key: '',
-                        value: '',
-                      },
-                    ],
+                Object.keys(lambda.manifest.environment).length > 0
+                  ? lambda.manifest.environment
+                  : { key: 'value' },
             },
           );
           this.fileService.write(
             `${this.fileService.getRoot()}/functions/${lambda.name}/index.js`,
-            lambda.implementation.code,
+            lambda.manifest.code,
             false,
           );
         },

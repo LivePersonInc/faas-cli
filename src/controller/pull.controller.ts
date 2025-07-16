@@ -2,8 +2,9 @@ import { PrettyPrintableError } from '@oclif/core/lib/interfaces';
 import { CLIErrorCodes } from '../shared/errorCodes';
 import { PullView } from '../view/pull.view';
 import { factory } from '../service/faasFactory.service';
-import { ILambda } from '../types';
+import { IFunction } from '../types';
 import { FileService } from '../service/file.service';
+import { LPFunction } from '../types/IFunction';
 
 interface IPullControllerConfig {
   pullView?: PullView;
@@ -37,21 +38,20 @@ export class PullController {
    * @memberof PullController
    */
   public async pull({
-    lambdaFunctions,
+    lambdaFunctions: functionNames,
     inputFlags,
   }: IPullConfig): Promise<void> {
     try {
       const faasService = await factory.get();
 
-      if (lambdaFunctions.length === 0 && !inputFlags?.all) {
-        lambdaFunctions = [this.fileService.getFunctionFolderName()];
+      if (functionNames.length === 0 && !inputFlags?.all) {
+        functionNames = [this.fileService.getFunctionFolderName()];
       }
 
       const lambdasToPull = inputFlags?.all
-        ? await faasService.getAllLambdas()
-        : ((await faasService.getLambdasByNames(lambdaFunctions)) as ILambda[]);
-
-      let confirmedLambdasToPull: ILambda[] = [];
+        ? await faasService.getAllFunctions()
+        : await faasService.getLambdasByNames(functionNames);
+      let confirmedLambdasToPull: LPFunction[] = [];
       if (inputFlags?.yes) {
         confirmedLambdasToPull = lambdasToPull;
       } else {
@@ -60,7 +60,7 @@ export class PullController {
           faasService.accountId as string,
         );
         confirmedLambdasToPull = lambdasToPull.filter(
-          (entry: ILambda) => answer[entry.name],
+          (entry: IFunction) => answer[entry.name],
         );
 
         /* istanbul ignore else */
