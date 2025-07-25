@@ -66,7 +66,7 @@ function didIncorrectErrorFormat(result: any[]) {
 
 function mapExternalPackagesToToolbelt(file: string): string {
   const isReverse = EXTERNAL_PACKAGE_MAPPING.some((pkg) =>
-    file.includes(`require('../bin/lp-faas-toolbelt/${pkg}')`),
+    file.includes(`require('../bin/core-functions-toolbelt/${pkg}')`),
   );
   const needsMapping =
     isReverse ||
@@ -76,12 +76,12 @@ function mapExternalPackagesToToolbelt(file: string): string {
       /* istanbul ignore next */
       file = isReverse
         ? file.replace(
-            `require('../bin/lp-faas-toolbelt/${pkg}')`,
+            `require('../bin/core-functions-toolbelt/${pkg}')`,
             `require('${pkg}')`,
           )
         : file.replace(
             `require('${pkg}')`,
-            `require('../bin/lp-faas-toolbelt/${pkg}')`,
+            `require('../bin/core-functions-toolbelt/${pkg}')`,
           );
     });
   }
@@ -141,9 +141,7 @@ export class FaasDebugger {
       this.updateLambdaFunctionForInvoke();
       this.setEnvironmentVariables(true);
       await this.createChildProcessForInvokeLocal();
-      console.info('qewqwe');
     } catch {
-      console.info('qewqwe2');
       throwInvalidProjectFolderError();
     }
   }
@@ -245,7 +243,7 @@ export class FaasDebugger {
     /* istanbul ignore next */
     if (!this.port) {
       /* eslint-disable */
-      const getPort = require('./lp-faas-toolbelt/node_modules/get-port');
+      const getPort = require('./core-functions-toolbelt/node_modules/get-port');
       /* eslint-enable */
       this.port = await getPort({ port: getPort.makeRange(30500, 31000) });
     }

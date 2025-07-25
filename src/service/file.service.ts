@@ -322,7 +322,7 @@ export class FileService {
       );
       const cliVersion = cliPackage?.version;
       const toolbeltPackage = this.read(
-        join(this.getRoot(), 'bin', 'lp-faas-toolbelt', 'package.json'),
+        join(this.getRoot(), 'bin', 'core-functions-toolbelt', 'package.json'),
       );
       const toolbeltVersion = toolbeltPackage?.version;
       return semver.gt(cliVersion, toolbeltVersion);

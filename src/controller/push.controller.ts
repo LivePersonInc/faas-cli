@@ -1,9 +1,9 @@
 import { Answers } from 'inquirer';
+import { isEqual } from 'lodash';
 import { factory } from '../service/faasFactory.service';
 import { FileService } from '../service/file.service';
-import { IFunction } from '../types';
 import { PushView } from '../view/push.view';
-import { LPFnManifest, LPFnMeta } from '../types/IFunction';
+import { LPFnManifest, LPFnMeta, LPFunction } from '../types/IFunction';
 
 interface IPushConfig {
   lambdaFunctions?: string[];
@@ -50,25 +50,31 @@ export class PushController {
 
       const localLambdaInformation =
         this.fileService.collectLocalLambdaInformation(lambdaFunctions);
+
       const localLambdaNames = localLambdaInformation.map((e) => e.name);
       const faasService = await factory.get();
 
-      const allLambdas = await faasService.getLambdasByNames(
+      const allRemoteLambdas = await faasService.getLambdasByNames(
         localLambdaNames,
-        true,
       );
-      const allLambdaBodies: IFunction[] = await Promise.all(
-        allLambdas.map(async (lambda) => {
-          const lambdaConfig = this.fileService.getFunctionConfig(lambda.name);
-          if (Object.prototype.hasOwnProperty.call(lambda, 'uuid')) {
-            return this.createUpdateLambdaBody(
-              lambda as IFunction,
-              lambdaConfig,
-            );
-          }
-          return this.createNewLambdaBody(lambdaConfig);
-        }),
-      );
+
+      const allLambdaBodies = localLambdaNames.map((name) => {
+        if (
+          allRemoteLambdas
+            .map(({ name: remoteName }) => remoteName)
+            .includes(name)
+        ) {
+          return this.createUpdateLambdaBody(
+            allRemoteLambdas.find(
+              ({ name: remoteName }) => remoteName === name,
+            ),
+            this.fileService.getFunctionConfig(name),
+          );
+        }
+        return this.createNewLambdaBody(
+          this.fileService.getFunctionConfig(name),
+        );
+      });
 
       if (inputFlags?.yes) {
         await this.pushView.showPushProcess({
@@ -81,7 +87,7 @@ export class PushController {
           faasService.accountId,
         );
         const confirmedLambdaBodies = allLambdaBodies.filter(
-          (entry: IFunction) => answers[entry.name],
+          (entry) => answers[entry.name],
         );
         if (confirmedLambdaBodies.length === 0) {
           return;
@@ -99,36 +105,43 @@ export class PushController {
     }
   }
 
-  private async createNewLambdaBody(lambdaConfig: any): Promise<any> {
+  private createNewLambdaBody(lambdaConfig: any): Partial<LPFnMeta> & {
+    manifest: Partial<LPFnManifest>;
+  } {
+    const hasCustomEnvars = (envars) =>
+      envars &&
+      Object.keys(envars).length > 0 &&
+      Object.keys(envars)[0] !== 'key';
     return {
       ...(lambdaConfig.event &&
         lambdaConfig.event !== 'No Event' && { eventId: lambdaConfig.event }),
       uuid: '',
-      version: -1,
       name: lambdaConfig.name,
       description: lambdaConfig.description,
       state: 'Draft',
-      implementation: {
+      manifest: {
         code: this.fileService.read(
           this.fileService.getPathToFunction(lambdaConfig.name, 'index.js'),
           false,
         ),
-        environmentVariables:
-          lambdaConfig.environmentVariables[0].key === ''
-            ? {}
-            : lambdaConfig.environmentVariables,
+        version: -1,
+        environment: hasCustomEnvars(lambdaConfig.environmentVariables)
+          ? lambdaConfig.environmentVariables
+          : {},
       },
     };
   }
 
   private createUpdateLambdaBody(
-    lambda: IFunction,
+    lambda: LPFunction,
     lambdaConfig: any,
   ): Partial<LPFnMeta> & {
     manifest: Partial<LPFnManifest>;
   } {
     const hasCustomEnvars = (envars) =>
-      envars && envars.length > 0 && Object.keys(envars[0])[0] !== 'key';
+      envars &&
+      Object.keys(envars).length > 0 &&
+      Object.keys(envars)[0] !== 'key';
     return {
       uuid: lambda.uuid,
       state: lambda.state === 'Draft' ? 'Draft' : 'Modified',
@@ -144,10 +157,16 @@ export class PushController {
           this.fileService.getPathToFunction(lambda.name, 'index.js'),
           false,
         ),
-        version: lambdaConfig.version,
+        ...(!isEqual(
+          lambda.manifest.environment,
+          lambdaConfig.environmentVariables,
+        ) && {
+          environment: lambdaConfig.environmentVariables,
+        }),
+        version: lambda.manifest.version,
         environment: hasCustomEnvars(lambdaConfig.environmentVariables)
-          ? {}
-          : lambdaConfig.environmentVariables,
+          ? lambdaConfig.environmentVariables
+          : {},
       },
     };
   }

@@ -44,8 +44,8 @@ export class MetricsView {
       SUCCEEDED: {
         header: INVOCATION_STATE_LABELS.SUCCEEDED,
       },
-      UNKOWN: {
-        header: INVOCATION_STATE_LABELS.UNKOWN,
+      UNKNOWN: {
+        header: INVOCATION_STATE_LABELS.UNKNOWN,
       },
       CODING_FAILURE: {
         header: INVOCATION_STATE_LABELS.CODING_FAILURE,

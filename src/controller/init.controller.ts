@@ -101,17 +101,17 @@ export class InitController {
       this.update ||
       (packageManager === 'npm' &&
         !this.fileService.directoryOrFileExists(
-          join(this.cwd, 'bin', 'lp-faas-toolbelt', 'package-lock.json'),
+          join(this.cwd, 'bin', 'core-functions-toolbelt', 'package-lock.json'),
         ) &&
         !this.fileService.directoryOrFileExists(
-          join(this.cwd, 'bin', 'lp-faas-toolbelt', 'node_modules'),
+          join(this.cwd, 'bin', 'core-functions-toolbelt', 'node_modules'),
         )) ||
       (packageManager === 'yarn' &&
         !this.fileService.directoryOrFileExists(
-          join(this.cwd, 'bin', 'lp-faas-toolbelt', 'yarn.lock'),
+          join(this.cwd, 'bin', 'core-functions-toolbelt', 'yarn.lock'),
         ) &&
         !this.fileService.directoryOrFileExists(
-          join(this.cwd, 'bin', 'lp-faas-toolbelt', 'node_modules'),
+          join(this.cwd, 'bin', 'core-functions-toolbelt', 'node_modules'),
         ))
     );
   }

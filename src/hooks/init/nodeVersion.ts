@@ -1,7 +1,6 @@
 import { Hook } from '@oclif/core';
 import * as semver from 'semver';
 import chalk = require('chalk');
-import { factory } from '../../service/faasFactory.service';
 
 /**
  * Hook which will run if the invoke command was triggered.

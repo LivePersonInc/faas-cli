@@ -10,6 +10,7 @@ import {
   TaskList,
 } from './printer';
 import { FileService } from '../service/file.service';
+import { LPFunction } from '../types/IFunction';
 
 interface IPushViewConfig {
   emoji?: any;
@@ -69,7 +70,7 @@ export class PushView {
    * @memberof PushView
    */
   public async askForConfirmation(
-    lambdas: IFunction[],
+    lambdas: Partial<IFunction>[],
     accountId?: string,
   ): Promise<Answers> {
     lambdas.forEach((lambda: IFunction) => {
@@ -94,7 +95,7 @@ export class PushView {
     pushRequestBodies,
     noWatch = false,
   }: {
-    pushRequestBodies: IFunction[];
+    pushRequestBodies: Partial<IFunction>[];
     noWatch?: boolean;
   }) {
     if (noWatch) {
@@ -106,7 +107,8 @@ export class PushView {
     } else {
       this.log.print('\nPushing following functions:\n');
     }
-    pushRequestBodies.forEach((entry: any) => {
+
+    pushRequestBodies.forEach((entry: LPFunction) => {
       this.tasklist.addTask({
         title: `Pushing ${entry.name}`,
         task: async (_, task) => {
@@ -115,9 +117,8 @@ export class PushView {
               'Push Error: Lambda description can not be null. Please add a description in the config.json',
             );
           }
-          // tslint:disable-next-line:no-shadowed-variable
           const faasService = await factory.get();
-          const isNewLambda = entry.version === -1;
+          const isNewLambda = entry.manifest.version === -1;
           if (isNewLambda) {
             await faasService.pushNewFunction({
               body: entry,

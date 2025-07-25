@@ -10,7 +10,7 @@ export const FIFTEEN_MINUTES = 15 * 60 * 1000;
 export const DEFAULT_FORMAT_DATETIME_WITH_SECONDS = 'DD.MM.YYYY - HH:mm:ss z';
 
 export const INVOCATION_STATE_LABELS = {
-  UNKOWN: 'Unknown Errors',
+  UNKNOWN: 'Unknown Errors',
   SUCCEEDED: 'Successful Invocations',
   CODING_FAILURE: 'Code-based Errors',
   PLATFORM_FAILURE: 'Platform Failures',

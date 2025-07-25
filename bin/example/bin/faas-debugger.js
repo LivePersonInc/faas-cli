@@ -7,12 +7,11 @@ const path_1 = require('path');
 const perf_hooks_1 = require('perf_hooks');
 
 const EXECUTION_EXCEED_TIMEOUT = 60000;
-const EXTERNAL_PACKAGE_MAPPING = [
-  'oauth-1.0a',
+export const EXTERNAL_PACKAGE_MAPPING = [
   'luxon',
   'jsforce',
   'jsonwebtoken',
-  'lodash',
+  'es-toolkit',
 ];
 function isLogLevel(input) {
   return Object.keys({
@@ -60,7 +59,7 @@ function didIncorrectErrorFormat(result) {
 }
 function mapExternalPackagesToToolbelt(file) {
   const isReverse = EXTERNAL_PACKAGE_MAPPING.some((pkg) =>
-    file.includes(`require('../bin/lp-faas-toolbelt/${pkg}')`),
+    file.includes(`require('../bin/core-functions-toolbelt/${pkg}')`),
   );
   const needsMapping =
     isReverse ||
@@ -70,12 +69,12 @@ function mapExternalPackagesToToolbelt(file) {
       /* istanbul ignore next */
       file = isReverse
         ? file.replace(
-            `require('../bin/lp-faas-toolbelt/${pkg}')`,
+            `require('../bin/core-functions-toolbelt/${pkg}')`,
             `require('${pkg}')`,
           )
         : file.replace(
             `require('${pkg}')`,
-            `require('../bin/lp-faas-toolbelt/${pkg}')`,
+            `require('../bin/core-functions-toolbelt/${pkg}')`,
           );
     });
   }
@@ -115,26 +114,20 @@ class FaasDebugger {
 
   async runLocalInvocation() {
     try {
-      console.info('hier');
       this.updateLambdaFunctionForInvoke();
       this.setEnvironmentVariables(true);
       await this.createChildProcessForInvokeLocal();
     } catch (error) {
-      console.info('da');
-      console.info(error);
       throwInvalidProjectFolderError();
     }
   }
 
   async runDebugging() {
     try {
-      console.info('hier');
       this.updateLambdaFunctionForDebugging();
       this.setEnvironmentVariables();
       await this.createChildProcessForDebugging();
     } catch {
-      console.info('da');
-
       throwInvalidProjectFolderError();
     }
   }
@@ -246,7 +239,7 @@ class FaasDebugger {
     /* istanbul ignore next */
     if (!this.port) {
       /* eslint-disable */
-      const getPort = require('./lp-faas-toolbelt/node_modules/get-port');
+      const getPort = require('./core-functions-toolbelt/node_modules/get-port');
       /* eslint-enable */
       this.port = await getPort({ port: getPort.makeRange(30500, 31000) });
     }

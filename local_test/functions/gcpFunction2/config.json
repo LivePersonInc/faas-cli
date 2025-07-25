@@ -1,0 +1,12 @@
+{
+    "name": "gcpFunction2",
+    "event": null,
+    "description": "gcpFunction2 description",
+    "input": {
+        "headers": [],
+        "payload": {}
+    },
+    "environmentVariables": {
+        "key": "value"
+    }
+}

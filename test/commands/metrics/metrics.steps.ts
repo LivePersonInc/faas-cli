@@ -73,7 +73,7 @@ defineFeature(feature, (test) => {
         defaultStructureService.create = jest.fn(() => {
           fs.copySync(
             join(testDir, 'package.json'),
-            join(testDir, 'bin', 'lp-faas-toolbelt', 'package.json'),
+            join(testDir, 'bin', 'core-functions-toolbelt', 'package.json'),
           );
         });
         const controller = new MetricsController({ metricsView });
@@ -103,7 +103,7 @@ defineFeature(feature, (test) => {
       expect(JSON.stringify(cliUx.table.mock.calls[0])).toContain(
         'CODING_FAILURE',
       );
-      expect(JSON.stringify(cliUx.table.mock.calls[0])).toContain('UNKOWN');
+      expect(JSON.stringify(cliUx.table.mock.calls[0])).toContain('UKNOWN');
     });
   });
 
@@ -136,7 +136,7 @@ defineFeature(feature, (test) => {
         defaultStructureService.create = jest.fn(() => {
           fs.copySync(
             join(testDir, 'package.json'),
-            join(testDir, 'bin', 'lp-faas-toolbelt', 'package.json'),
+            join(testDir, 'bin', 'core-functions-toolbelt', 'package.json'),
           );
         });
         const controller = new MetricsController({ metricsView });
@@ -188,7 +188,7 @@ defineFeature(feature, (test) => {
         defaultStructureService.create = jest.fn(() => {
           fs.copySync(
             join(testDir, 'package.json'),
-            join(testDir, 'bin', 'lp-faas-toolbelt', 'package.json'),
+            join(testDir, 'bin', 'core-functions-toolbelt', 'package.json'),
           );
         });
         const controller = new MetricsController({ metricsView });
@@ -255,7 +255,7 @@ defineFeature(feature, (test) => {
         defaultStructureService.create = jest.fn(() => {
           fs.copySync(
             join(testDir, 'package.json'),
-            join(testDir, 'bin', 'lp-faas-toolbelt', 'package.json'),
+            join(testDir, 'bin', 'core-functions-toolbelt', 'package.json'),
           );
         });
         const controller = new MetricsController({ metricsView });
@@ -309,7 +309,7 @@ defineFeature(feature, (test) => {
         defaultStructureService.create = jest.fn(() => {
           fs.copySync(
             join(testDir, 'package.json'),
-            join(testDir, 'bin', 'lp-faas-toolbelt', 'package.json'),
+            join(testDir, 'bin', 'core-functions-toolbelt', 'package.json'),
           );
         });
         const controller = new MetricsController({ metricsView });
@@ -366,7 +366,7 @@ defineFeature(feature, (test) => {
         defaultStructureService.create = jest.fn(() => {
           fs.copySync(
             join(testDir, 'package.json'),
-            join(testDir, 'bin', 'lp-faas-toolbelt', 'package.json'),
+            join(testDir, 'bin', 'core-functions-toolbelt', 'package.json'),
           );
         });
         const controller = new MetricsController({ metricsView });
@@ -421,7 +421,7 @@ defineFeature(feature, (test) => {
         defaultStructureService.create = jest.fn(() => {
           fs.copySync(
             join(testDir, 'package.json'),
-            join(testDir, 'bin', 'lp-faas-toolbelt', 'package.json'),
+            join(testDir, 'bin', 'core-functions-toolbelt', 'package.json'),
           );
         });
         const controller = new MetricsController({ metricsView });
@@ -473,7 +473,7 @@ defineFeature(feature, (test) => {
         defaultStructureService.create = jest.fn(() => {
           fs.copySync(
             join(testDir, 'package.json'),
-            join(testDir, 'bin', 'lp-faas-toolbelt', 'package.json'),
+            join(testDir, 'bin', 'core-functions-toolbelt', 'package.json'),
           );
         });
         const controller = new MetricsController({ metricsView });
@@ -524,7 +524,7 @@ defineFeature(feature, (test) => {
         defaultStructureService.create = jest.fn(() => {
           fs.copySync(
             join(testDir, 'package.json'),
-            join(testDir, 'bin', 'lp-faas-toolbelt', 'package.json'),
+            join(testDir, 'bin', 'core-functions-toolbelt', 'package.json'),
           );
         });
         const controller = new MetricsController({ metricsView });
@@ -577,7 +577,7 @@ defineFeature(feature, (test) => {
         defaultStructureService.create = jest.fn(() => {
           fs.copySync(
             join(testDir, 'package.json'),
-            join(testDir, 'bin', 'lp-faas-toolbelt', 'package.json'),
+            join(testDir, 'bin', 'core-functions-toolbelt', 'package.json'),
           );
         });
         const controller = new MetricsController({ metricsView });

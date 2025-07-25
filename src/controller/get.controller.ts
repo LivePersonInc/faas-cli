@@ -97,8 +97,8 @@ export class GetController {
             const relatedDeployment = allDeployments.find(
               ({ functionUuid }) => functionUuid === fn.uuid,
             );
-            if (relatedDeployment)
-              return {
+            return (
+              relatedDeployment && {
                 name: fn.name,
                 state:
                   relatedDeployment.deploymentState === 'successful'
@@ -108,7 +108,8 @@ export class GetController {
                   relatedDeployment.updatedAt || relatedDeployment.createdAt,
                 deployedBy:
                   relatedDeployment.updatedBy || relatedDeployment.createdBy,
-              };
+              }
+            );
           });
 
         this.getView.printDeployments(deployedLambdas);

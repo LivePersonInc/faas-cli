@@ -10,7 +10,7 @@ node_modules
 /coverage
 /.idea
 /test/**/*.yaml
-/bin/example/bin/lp-faas-toolbelt/*
-!/bin/example/bin/lp-faas-toolbelt/package.json
+/bin/example/bin/core-functions-toolbelt/*
+!/bin/example/bin/core-functions-toolbelt/package.json
 /functions
 .DS_Store

@@ -163,7 +163,7 @@ export class DeployView {
         ? formatDate(lambda.lastDeployment?.createdAt)
         : '-'
     }
-    Runtime:                ${lambda.runtime.name}
+    Runtime:                ${lambda.manifest.runtime}
 
     `;
     return message;

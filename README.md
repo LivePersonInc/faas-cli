@@ -1,4 +1,5 @@
 <!-- omit in toc -->
+
 # LivePerson Functions CLI
 
 [LivePerson Functions](https://faas.liveperson.net/) is a Function as a Service (FaaS) platform which enables brands to develop custom behaviors within LivePerson’s conversational platform, to better tailor the system to their specific needs. By offering these capabilities, Functions enables developers to write a simple function, deploy it to LivePerson's infrastructure and make it available to their LivePerson account in minutes. This allows you to create custom logic inside our conversational platform.
@@ -129,15 +130,15 @@ For the `event` field please use `lpf get events` to get the related event and p
 
 Following files will be created:
 
-* README: Contains information about the usage of the CLI
-* .gitignore: Specifies intentionally untracked files to ignore ([Link](https://git-scm.com/docs/gitignore))
-* .vscode: VS code settings and tasks for the local debugger (do not change these files!)
-* bin: Local toolbelt, rewire requirements and debugger (do not change these files!)
-* functions: Contains the different functions folder
-* settings: Contains the secrets and whitelisting.
-* functions folder:
-  * index.js: Contains the function
-  * config.json: Contains the function name and event and the related input and environment variables.
+- README: Contains information about the usage of the CLI
+- .gitignore: Specifies intentionally untracked files to ignore ([Link](https://git-scm.com/docs/gitignore))
+- .vscode: VS code settings and tasks for the local debugger (do not change these files!)
+- bin: Local toolbelt, rewire requirements and debugger (do not change these files!)
+- functions: Contains the different functions folder
+- settings: Contains the secrets and whitelisting.
+- functions folder:
+  - index.js: Contains the function
+  - config.json: Contains the function name and event and the related input and environment variables.
 
 <details>
 <summary>Folder structure</summary>
@@ -149,7 +150,7 @@ README.md
   ├── launch.json
   └── task.json
 bin/
-  ├── lp-faas-toolbelt/
+  ├── core-functions-toolbelt/
       ├── //Toolbelt functions
       └── package.json
   ├── rewire.js
@@ -163,6 +164,7 @@ functions/
         ├── index.js
         └── config.json
 ```
+
 </details>
 
 <details>
@@ -171,18 +173,20 @@ functions/
 ```
 > lpf init [parameter]
 ```
+
 </details>
 
 <details>
 <summary>Options </summary>
 
-| Parameter    | Description                                              |
-| ------------ | -------------------------------------------------------- |
+| Parameter     | Description                                              |
+| ------------- | -------------------------------------------------------- |
 | function name | Adds a function with the passed name (multiple possible) |
 
 | Flag      | Description                    |
 | --------- | ------------------------------ |
 | -h --help | Show help for the init command |
+
 </details>
 
 <details>
@@ -193,6 +197,7 @@ functions/
 
 > lpf init <function name> <function name>
 ```
+
 </details>
 
 ### Login
@@ -213,6 +218,7 @@ If you want to add a new account just run the login command and select `other`.
 ```
 > lpf login [--flag]
 ```
+
 </details>
 
 <details>
@@ -224,6 +230,7 @@ If you want to add a new account just run the login command and select `other`.
 | -a --accountId | AccountId                       |
 | -u --username  | Username                        |
 | -p --password  | Password                        |
+
 </details>
 
 <details>
@@ -236,6 +243,7 @@ If you want to add a new account just run the login command and select `other`.
 
 > lpf login -a 123456789 -u user@liveperson.com -p p4ssw0rd
 ```
+
 </details>
 
 #### SSO-Support
@@ -251,9 +259,10 @@ To get the token and the userId do following steps:
 3. Go to the tab 'Application'.
 4. Open the session storage with the key 'houston.<accountId>'.
 5. Copy token and userId.
+
    - Token: 'glob'
    - UserId: 'config.userId'
-<img src="faas-cli-fetch-token.png" class="fancyimage" width="100%" alt="LivePerson Functions CLI token">
+     <img src="faas-cli-fetch-token.png" class="fancyimage" width="100%" alt="LivePerson Functions CLI token">
 
 6. Run the login command as follows: `lpf login --token <bearer> --accountId <accountId> --userId <userId>`
 
@@ -273,6 +282,7 @@ Futhermore it's possible to provide a delete flag, then the account will be dele
 ```
 > lpf logout [--flag]
 ```
+
 </details>
 
 <details>
@@ -283,6 +293,7 @@ Futhermore it's possible to provide a delete flag, then the account will be dele
 | -h --help      | Show help for the login command                        |
 | -a --accountId | Account which will be logged out                       |
 | -d --delete    | Deletes the account credentials from the local machine |
+
 </details>
 
 <details>
@@ -297,6 +308,7 @@ Futhermore it's possible to provide a delete flag, then the account will be dele
 
 > lpf logout -a 123456789 -d
 ```
+
 </details>
 
 ### Pull
@@ -315,21 +327,23 @@ You can pass the --all flag, if you want to pull all functions from the platform
 ```
 > lpf pull [parameter] [--flag]
 ```
+
 </details>
 
 <details>
 <summary>Options</summary>
 
-| Parameter    | Description                                    |
-| ------------ | ---------------------------------------------- |
+| Parameter     | Description                                    |
+| ------------- | ---------------------------------------------- |
 | function name | Pass the function for pull (multiple possible) |
 
 | Flag          | Description                                                             |
 | ------------- | ----------------------------------------------------------------------- |
 | -h --help     | Show help for the pull command                                          |
 | -y --yes      | Agrees to the approval of the pull and prevents the confirmation dialog |
-| -w --no-watch | Hide information about the pull process                                |
+| -w --no-watch | Hide information about the pull process                                 |
 | -a --all      | Pulls all functions from the platform                                   |
+
 </details>
 
 <details>
@@ -342,6 +356,7 @@ You can pass the --all flag, if you want to pull all functions from the platform
 
 > lpf pull exampleFunction1 exampleFunction2 -y -w
 ```
+
 </details>
 
 ### Push
@@ -362,23 +377,24 @@ You can pass the --all flag, if you want to push all local functions to the plat
 ```
 > lpf push [parameter] [--flag]
 ```
+
 </details>
 
 <details>
 <summary>Options</summary>
 
-| Parameter    | Description                                    |
-| ------------ | ---------------------------------------------- |
+| Parameter     | Description                                    |
+| ------------- | ---------------------------------------------- |
 | function name | Pass the function for push (multiple possible) |
 
 | Flag          | Description                                                             |
 | ------------- | ----------------------------------------------------------------------- |
 | -h --help     | Show help for the push command                                          |
 | -y --yes      | Agrees to the approval of the push and prevents the confirmation dialog |
-| -w --no-watch | Hide information about the push process                                |
+| -w --no-watch | Hide information about the push process                                 |
 | -a --all      | Pushes all local functions                                              |
-</details>
 
+</details>
 
 <details>
 <summary>Example</summary>
@@ -390,6 +406,7 @@ You can pass the --all flag, if you want to push all local functions to the plat
 
 > lpf push exampleFunction1 exampleFunction2 -y -w
 ```
+
 </details>
 
 ### Deploy
@@ -408,20 +425,22 @@ The command can be run from the root directory or functions folder, then it's ne
 ```
 > lpf deploy [parameter] [--flag]
 ```
+
 </details>
 
 <details>
 <summary>Options</summary>
 
-| Parameter    | Description                                          |
-| ------------ | ---------------------------------------------------- |
+| Parameter     | Description                                          |
+| ------------- | ---------------------------------------------------- |
 | function name | Pass the function for deployment (multiple possible) |
 
 | Flag          | Description                                                                   |
 | ------------- | ----------------------------------------------------------------------------- |
 | -h --help     | Show help for the deploy command                                              |
 | -y --yes      | Agrees to the approval of the deployment and prevents the confirmation dialog |
-| -w --no-watch | Hide information about the deployment process                                |
+| -w --no-watch | Hide information about the deployment process                                 |
+
 </details>
 
 <details>
@@ -434,6 +453,7 @@ The command can be run from the root directory or functions folder, then it's ne
 
 > lpf deploy exampleFunction1 exampleFunction2 -y -w
 ```
+
 </details>
 
 ### Undeploy
@@ -444,27 +464,28 @@ To undeploy a function it has to exist on the LivePerson functions platform. You
 
 The command can be run from the root directory or functions folder, then it's necessary to pass a function name. If the user runs the command inside a functions folder, it's not necessary and the command will take the function of the current directory.
 
-
 <details>
 <summary>Usage</summary>
 
 ```
 > lpf undeploy [parameter] [--flag]
 ```
+
 </details>
 
 <details>
 <summary>Options</summary>
 
-| Parameter    | Description                                            |
-| ------------ | ------------------------------------------------------ |
+| Parameter     | Description                                            |
+| ------------- | ------------------------------------------------------ |
 | function name | Pass the function for undeployment (multiple possible) |
 
 | Flag          | Description                                                                     |
 | ------------- | ------------------------------------------------------------------------------- |
 | -h --help     | Show help for the deploy command                                                |
 | -y --yes      | Agrees to the approval of the undeployment and prevents the confirmation dialog |
-| -w --no-watch | Hide information about the undeployment process                                |
+| -w --no-watch | Hide information about the undeployment process                                 |
+
 </details>
 
 <details>
@@ -477,6 +498,7 @@ The command can be run from the root directory or functions folder, then it's ne
 
 > lpf undeploy exampleFunction1 exampleFunction2 -y -w
 ```
+
 </details>
 
 ### Invoke
@@ -495,19 +517,21 @@ For both cases it will use the input from the related function config.json.
 ```
 > lpf invoke [parameter] [--flag]
 ```
+
 </details>
 
 <details>
 <summary>Options</summary>
 
-| Parameter    | Description                 |
-| ------------ | --------------------------- |
+| Parameter     | Description                 |
+| ------------- | --------------------------- |
 | function name | Pass the function to invoke |
 
 | Flag       | Description                               |
 | ---------- | ----------------------------------------- |
 | -h --help  | Show help for the invoke command          |
 | -l --local | Invokes the function on the local machine |
+
 </details>
 
 <details>
@@ -520,6 +544,7 @@ For both cases it will use the input from the related function config.json.
 
 > lpf invoke exampleFunction1 -l
 ```
+
 </details>
 
 ### Debug
@@ -532,18 +557,20 @@ Starts a debug port in the range of 30500 - 31000 for a passed function.
 ```
 > lpf debug [parameter] [--flag]
 ```
+
 </details>
 
 <details>
 <summary>Options</summary>
 
-| Parameter    | Description                |
-| ------------ | -------------------------- |
+| Parameter     | Description                |
+| ------------- | -------------------------- |
 | function name | Pass the function to debug |
 
 | Flag      | Description                     |
 | --------- | ------------------------------- |
 | -h --help | Show help for the debug command |
+
 </details>
 
 <details>
@@ -552,6 +579,7 @@ Starts a debug port in the range of 30500 - 31000 for a passed function.
 ```
 > lpf debug exampleFunction
 ```
+
 </details>
 
 ### Get
@@ -560,10 +588,10 @@ Get information about the passed domain. Possible domains are deployments, funct
 
 The following information will be displayed:
 
-* Deployment: Name, Undeployed changes from, Last successful deployment, deployed by, deployment state
-* Function: Name, Status, last changed at, last changed by, Event
-* Account: Offers insights that are currently generated by the welcome page
-* Events: Event name and eventId
+- Deployment: Name, Undeployed changes from, Last successful deployment, deployed by, deployment state
+- Function: Name, Status, last changed at, last changed by, Event
+- Account: Offers insights that are currently generated by the welcome page
+- Events: Event name and eventId
 
 <details>
 <summary>Usage</summary>
@@ -571,6 +599,7 @@ The following information will be displayed:
 ```
 > lpf get [parameter] [--flag]
 ```
+
 </details>
 
 <details>
@@ -583,6 +612,7 @@ The following information will be displayed:
 | Flag      | Description                   |
 | --------- | ----------------------------- |
 | -h --help | Show help for the get command |
+
 </details>
 
 <details>
@@ -597,6 +627,7 @@ The following information will be displayed:
 
 > lpf get functions deployments account events
 ```
+
 </details>
 
 ### Logs
@@ -609,22 +640,24 @@ Get logs from function.
 ```
 > lpf logs [parameter] [--flag]
 ```
+
 </details>
 
 <details>
 <summary>Options</summary>
 
-| Parameter | Description                             |
-| --------- | --------------------------------------- |
-| function  | function name to fetch logs from        |
+| Parameter | Description                      |
+| --------- | -------------------------------- |
+| function  | function name to fetch logs from |
 
-| Flag                         | Description                                                                               |
-| ---------------------------- | ----------------------------------------------------------------------------------------- |
-| -h --help                    | Show help for the get command                                                             |
-| -s, --start=start            | (required) start timestamp                                                                |
-| -e, --end=end                | end timestamp                                                                             |
-| -l, --levels=Info|Warn|Error | log-levels - for multiple levels just use levels with space separated (e.g. -l Info Warn) |
-| -r, --removeHeader           | Removes the header of the logs                                                            |
+| Flag               | Description                    |
+| ------------------ | ------------------------------ | ----- | ----------------------------------------------------------------------------------------- |
+| -h --help          | Show help for the get command  |
+| -s, --start=start  | (required) start timestamp     |
+| -e, --end=end      | end timestamp                  |
+| -l, --levels=Info  | Warn                           | Error | log-levels - for multiple levels just use levels with space separated (e.g. -l Info Warn) |
+| -r, --removeHeader | Removes the header of the logs |
+
 </details>
 
 <details>
@@ -641,6 +674,7 @@ Fetching logs via cronjob every 10 minutes (delayed by 1 minute to be sure no lo
 MacOS:
 1/10 * * * * lpf logs exampleFunction --start=$(date -v0S -v-11M +%s000) --end=$(date -v0S -v-1M +%s000) >> exampleFunction.log
 ```
+
 </details>
 
 ### Metrics
@@ -653,22 +687,24 @@ Get invocation metrics of a function. Optionally export them as json or CSV for 
 ```
 > lpf metrics [parameter] [--flag]
 ```
+
 </details>
 
 <details>
 <summary>Options</summary>
 
-| Parameter | Description                             |
-| --------- | --------------------------------------- |
-| function  | function name to fetch logs from        |
+| Parameter | Description                      |
+| --------- | -------------------------------- |
+| function  | function name to fetch logs from |
 
-| Flag                         | Description                                                                               |
-| ---------------------------- | ----------------------------------------------------------------------------------------- |
-| -h --help                    | Show help for the get command                                                             |
-| -s, --start=start            | Start timestamp                                                                           |
-| -e, --end=end                | End timestamp (Default: Current Timestamp)                                                |
-| -l, --last=Xh|Xd|Xm          | Alternative to start flag, metrics for the period of the last x hours eg. last 12h, 7d    |
-| -o, --output=json|csv        | Outputs the metrics data as json or csv rather than displaying a table                    |
+| Flag              | Description                                |
+| ----------------- | ------------------------------------------ | ---------------------------------------------------------------------- | -------------------------------------------------------------------------------------- |
+| -h --help         | Show help for the get command              |
+| -s, --start=start | Start timestamp                            |
+| -e, --end=end     | End timestamp (Default: Current Timestamp) |
+| -l, --last=Xh     | Xd                                         | Xm                                                                     | Alternative to start flag, metrics for the period of the last x hours eg. last 12h, 7d |
+| -o, --output=json | csv                                        | Outputs the metrics data as json or csv rather than displaying a table |
+
 </details>
 
 <details>
@@ -690,11 +726,13 @@ Fetching metrics via cronjob every 24 hours and write it to a file:
 MacOS:
 0 0 * * * lpf metrics exampleFunction -l=1d -o=csv >> exampleFunction.csv
 ```
+
 </details>
 
 ### Help
 
 If you ever need help while using lpf, there are three equivalent ways to get the comprehensive manual page (manpage) help for any of the lpf commands:
+
 ```
 > lpf help
 
@@ -719,6 +757,7 @@ Displays autocomplete instructions (only supports zsh and bash)
 ```
 > lpf autocomplete [--flag]
 ```
+
 </details>
 
 <details>
@@ -728,6 +767,7 @@ Displays autocomplete instructions (only supports zsh and bash)
 | ------------ | ----------------------------------------------- |
 | -h --help    | Show help for the login command                 |
 | -r --refresh | Refresh cache (ignores displaying instructions) |
+
 </details>
 
 <details>
@@ -742,6 +782,7 @@ Displays autocomplete instructions (only supports zsh and bash)
 
 > lpf autocomplete --refresh-cache
 ```
+
 </details>
 
 ### Version and Update
@@ -761,6 +802,7 @@ The update notification will appear one time and then it's muted for two days.
 
 > lpf --version
 ```
+
 </details>
 
 ## Local development and debugging
@@ -779,26 +821,25 @@ We include a number of snippets (vscode) and Live-Templates (IntelliJ IDEA) for 
 
 Once setup you can use the following snippets/Live-Templates:
 
-* HTTP Snippet
-* Read/Update Secret Snippets
-* Create/Read/Update/Delete Context Session Store Snippet
-* Conversation Util Snippet
-* GDPR Util Snippet
-* SDE Util Snippet
-* Salesforce Snippet
-
+- HTTP Snippet
+- Read/Update Secret Snippets
+- Create/Read/Update/Delete Context Session Store Snippet
+- Conversation Util Snippet
+- GDPR Util Snippet
+- SDE Util Snippet
+- Salesforce Snippet
 
 ### Preparation for Debugging
 
 It's necessary to run the `lpf init` command to initialize the project structure and to install all required packages for the local faas-toolbelt.
 
 To get started with the local development and debugging some preparation is needed:
-* Local secrets and whitelisting can be stored in the settings.json
-* Local environment variables and input can be stored in the config.json in the functions folder
-* The Debugger will use a mocked `faas-toolbelt`
-* To have access to the LivePerson services it's necessary to be logged in or set an environment variable called `BRAND_ID` with your `accountId`
-  * Example with BRAND_ID and debug command: `BRAND_ID=123456789 lpf debug TestFunction`
 
+- Local secrets and whitelisting can be stored in the settings.json
+- Local environment variables and input can be stored in the config.json in the functions folder
+- The Debugger will use a mocked `faas-toolbelt`
+- To have access to the LivePerson services it's necessary to be logged in or set an environment variable called `BRAND_ID` with your `accountId`
+  - Example with BRAND_ID and debug command: `BRAND_ID=123456789 lpf debug TestFunction`
 
 ### Debugging with VSC
 

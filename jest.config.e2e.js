@@ -16,9 +16,9 @@ module.exports = {
     '<rootDir>/src/**/*.[jt]s?(x)',
     '!<rootDir>/src/commands/**',
     '!<rootDir>/src/index.ts',
-    '!<rootDir>/src/shared/lp-faas-toolbelt/**/*.[jt]s?(x)',
-    '<rootDir>/src/shared/lp-faas-toolbelt/http-client/**/*.[jt]s?(x)',
-    '<rootDir>/src/shared/lp-faas-toolbelt/secret-storage/**/*.[jt]s?(x)',
-    '<rootDir>/src/shared/lp-faas-toolbelt/context-service-client/**/*.[jt]s?(x)',
+    '!<rootDir>/src/shared/core-functions-toolbelt/**/*.[jt]s?(x)',
+    '<rootDir>/src/shared/core-functions-toolbelt/http-client/**/*.[jt]s?(x)',
+    '<rootDir>/src/shared/core-functions-toolbelt/secret-storage/**/*.[jt]s?(x)',
+    '<rootDir>/src/shared/core-functions-toolbelt/context-service-client/**/*.[jt]s?(x)',
   ],
 };

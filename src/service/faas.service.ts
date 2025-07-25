@@ -11,9 +11,10 @@ import { CsdsClient } from './csds.service';
 import { LogsTransform } from '../transform/LogsTransform';
 import {
   IFunction,
-  LPFnManifest,
   LPFnMeta,
+  LPFnMetaUpdateParams,
   LPFunction,
+  LPManifestUpdateParams,
 } from '../types/IFunction';
 import { LPSchedule, LPScheduleCreateParams } from '../types/ISchedule';
 
@@ -83,103 +84,27 @@ export interface IDeploymentResponse {
 }
 
 export interface IFaaSService {
-  /**
-   * Runs the initial setup for the faas service.
-   * Checks if a valid temp file is available and will use this for authentication.
-   * If not, the user will have to enter his accountId, username and password.
-   * Have to be called before all other functions.
-   * @returns {Promise<FaasService>}
-   * @memberof IFaaSService
-   */
   // eslint-disable-next-line no-use-before-define
   setup(): Promise<FaasService>;
 
-  /**
-   * Undeploys a function on the LivePerson functions platform. Setup before is necessary.
-   * The correct LivePerson url will be fetched by the accountId.
-   * @param {string} uuid - lambda uuid
-   * @returns {Promise<void>}
-   * @memberof IFaaSService
-   */
   undeploy(uuid: string): Promise<IDeploymentResponse>;
 
-  /**
-   * Deploys a function on the LivePerson functions platform. Setup before is necessary.
-   * The correct LivePerson url will be fetched by the accountId.
-   * @param {string} uuid - lambda uuid
-   * @returns {Promise<void>}
-   * @memberof IFaaSService
-   */
   deploy(uuid: string): Promise<IDeploymentResponse>;
 
-  /**
-   * Gather all information from the LivePerson functions platform by lambda names. Setup before is necessary.
-   * The correct LivePerson url will be fetched by the accountId.
-   * @param {string[]} lambdaNames - lambda names which should be collected
-   * @returns {Promise<IFunction[]>}
-   * @memberof IFaaSService
-   */
   getLambdasByNames(
     lambdaNames: string[],
   ): Promise<(LPFunction | { name: string })[]>;
 
-  /**
-   * Gather all information from the LivePerson functions platform. Setup before is necessary.
-   * The correct LivePerson url will be fetched by the accountId.
-   * @returns {Promise<IFunction[]>}
-   * @memberof IFaaSService
-   */
   getAllFunctionMetas(): Promise<IFunction[]>;
 
-  /**
-   * Gather the information from one lambda by uuid. Setup before is necessary.
-   * The correct LivePerson url will be fetched by the accountId.
-   * @param {string} uuid - lambda uuid
-   * @returns {Promise<IFunction>}
-   * @memberof IFaaSService
-   */
   getFunctionByUuid(uuid: string): Promise<IFunction>;
 
-  /**
-   * Push a local lambda to the LP-Functions platform. Either creates
-   * a new lambda or overwrites an existing one.
-   * @param {Object} input - Object containing all the other inputs
-   * @param {HttpMethods} input.method - The HTTP Method that will be used for the push request.
-   * @param {LPFunction} input.body - The HTTP body that will be used for the push request.
-   * @param {string} input.uuid - Uuid that identifies a lambda to overwrite on the LP-Functions platform.
-   * Only needed if the function already exists.
-   * @returns {Promise<void>}
-   * @memberof IFaaSService
-   */
   push(input: { method: HttpMethods; body: LPFunction; uuid?: string }): void;
 
-  /**
-   * Invokes a function on the LivePerson functions platform with a provided payload
-   * The correct LivePerson url will be fetched by the accountId.
-   * @param {string} uuid
-   * @param {IPayload} payload
-   * @returns {Promise<unknown>}
-   * @memberof IFaaSService
-   */
   invoke(uuid: string, payload: IPayload): Promise<unknown>;
 
-  /**
-   * Creates a schedule in an account based on a cron expression and the lambda uuid. Every function can only be scheduled once and must be deployed.
-   * @param uuid uuid of lambda for which a schedule will be created
-   * @param cronExpression string which is in the cron expression format
-   */
   createSchedule(schedule: LPScheduleCreateParams): Promise<LPSchedule>;
 
-  /**
-   * Get logs from the LivePerson functions platform by lambda names. Setup before is necessary.
-   * The correct LivePerson url will be fetched by the accountId.
-   * @param {string} uuid uuid of lambda for which logs should be fetched
-   * @param {number} start  start timestamp for logs
-   * @param {number} end  end timestamp for logs
-   * @param {string[]} levels  which is in the cron expression format
-   * @returns {Promise<void>}
-   * @memberof IFaaSService
-   */
   getLogs(options: {
     uuid: string;
     start?: string;
@@ -187,9 +112,36 @@ export interface IFaaSService {
     levels?: string[];
     removeHeader?: boolean;
   }): Promise<void>;
+
+  // ✅ Newly added signatures:
+  getAllFunctions(): Promise<LPFunction[]>;
+
+  getAllDeployments(): Promise<IDeployment[]>;
+
+  getLambdaInvocationMetrics(options: {
+    uuid: string;
+    startTimestamp: number;
+    endTimestamp: number;
+    bucketSize: any;
+  }): Promise<any>;
+
+  getAccountStatistic(): Promise<AccountStatistics>;
+
+  pushNewFunction(input: { body: LPFunction }): Promise<boolean>;
+
+  pushNewMeta(meta: LPFnMeta): Promise<LPFunction>;
+
+  pushFunctionMeta(uuid: string, meta: LPFnMetaUpdateParams): Promise<boolean>;
+
+  pushFunctionManifest(
+    uuid: string,
+    manifest: LPManifestUpdateParams,
+  ): Promise<boolean>;
+
+  getEvents(): Promise<any[]>;
 }
 
-interface IFaasServiceConfig {
+export interface IFaasServiceConfig {
   username?: string;
   loginController?: LoginController;
   csdsClient?: CsdsClient;
@@ -253,22 +205,15 @@ export class FaasService implements IFaaSService {
     }
   }
 
-  public async getLambdasByNames(
-    lambdaNames: string[],
-    collectNonExistingLambas?: boolean,
-  ): Promise<LPFunction[]> {
+  public async getLambdasByNames(lambdaNames: string[]): Promise<LPFunction[]> {
     const allFnMetas = await this.getAllFunctionMetas();
+    const existingFunctions = allFnMetas.filter(({ name }) =>
+      lambdaNames.includes(name),
+    );
     return Promise.all(
-      lambdaNames.map(async (name) => {
-        const foundFnMeta = allFnMetas.find((e: LPFnMeta) => e.name === name);
-        if (!foundFnMeta && !collectNonExistingLambas) {
-          throw new Error(
-            `Function ${name} were not found on the platform. Please make sure the function with the name ${name} was pushed to the LivePerson Functions platform`,
-          );
-        }
-
+      existingFunctions.map(async (existingFunction) => {
         const fn = await this.doFetch({
-          urlPart: `/functions/${foundFnMeta.uuid}`,
+          urlPart: `/functions/${existingFunction.uuid}`,
           method: 'GET',
         });
         if (fn && fn.versions) {
@@ -320,7 +265,7 @@ export class FaasService implements IFaaSService {
     bucketSize: any;
   }) {
     const url = `/reports/invocations/${uuid}`;
-    const additionalParams = `&startTimestamp=${startTimestamp}&endTimestamp=${endTimestamp}&bucketSize=${bucketSize}&invocationStates=UNKOWN&invocationStates=SUCCEEDED&invocationStates=CODING_FAILURE&invocationStates=PLATFORM_FAILURE&invocationStates=TIMEOUT`;
+    const additionalParams = `&startTimestamp=${startTimestamp}&endTimestamp=${endTimestamp}&bucketSize=${bucketSize}&invocationStates=UNKNOWN&invocationStates=SUCCEEDED&invocationStates=CODING_FAILURE&invocationStates=PLATFORM_FAILURE&invocationStates=TIMEOUT`;
     return this.doFetch({
       urlPart: url,
       additionalParams,
@@ -373,16 +318,16 @@ export class FaasService implements IFaaSService {
     uuid?: string;
   }): Promise<boolean> {
     try {
-      const manifestUpdate = await this.pushFunctionManifest(
-        uuid,
-        body.manifest,
-      );
-      const metaUpdate = this.pushFunctionMeta(uuid, {
+      const metaUpdate = await this.pushFunctionMeta(uuid, {
         description: body.description,
         skills: body.skills,
       });
-      const updates = await Promise.all([manifestUpdate, metaUpdate]);
-      return updates.some((u) => !!u);
+
+      const manifestUpdate = await this.pushFunctionManifest(uuid, {
+        uuid: body.uuid,
+        ...body.manifest,
+      });
+      return metaUpdate || manifestUpdate;
     } catch (error) {
       if (error.errorCode?.includes('contract-error')) {
         throw new Error(
@@ -401,9 +346,13 @@ export class FaasService implements IFaaSService {
     try {
       const { manifest: newManifest, ...newMeta } = body;
       const newFunction = await this.pushNewMeta(newMeta);
+
       const updateManifestResponse = await this.pushFunctionManifest(
         newFunction.uuid,
-        newManifest,
+        {
+          uuid: newFunction.uuid,
+          ...newManifest,
+        },
       );
       return updateManifestResponse;
     } catch (error) {
@@ -428,30 +377,48 @@ export class FaasService implements IFaaSService {
 
   public async pushFunctionMeta(
     uuid: string,
-    meta: Pick<LPFnMeta, 'description' | 'skills'>,
+    meta: LPFnMetaUpdateParams,
   ): Promise<boolean> {
-    const response = await this.doFetch({
-      urlPart: `/functions/${uuid}`,
-      method: 'PUT',
-      body: meta,
-      resolveBody: false,
-    });
-    // TODO THIS IS NOT SENDING 304s on FAILURE
-    return response.statusCode !== 304;
+    try {
+      await this.doFetch({
+        urlPart: `/functions/${uuid}`,
+        method: 'PUT',
+        body: meta,
+        resolveBody: false,
+      });
+      return true;
+    } catch (error) {
+      if (
+        error.errorCode &&
+        error.errorCode === 'com.liveperson.faas.function.unchanged'
+      ) {
+        return false;
+      }
+      throw error;
+    }
   }
 
   public async pushFunctionManifest(
     uuid: string,
-    manifest: LPFnManifest,
+    manifest: LPManifestUpdateParams,
   ): Promise<boolean> {
-    const response = await this.doFetch({
-      urlPart: `/functions/${uuid}/manifest`,
-      method: 'PUT',
-      body: { versoion: 123, ...manifest },
-      resolveBody: false,
-    });
-    // TODO THIS IS NOT SENDING 304s on FAILURE
-    return response.statusCode !== 304;
+    try {
+      await this.doFetch({
+        urlPart: `/functions/${uuid}/manifest`,
+        method: 'PUT',
+        body: { version: -1, ...manifest },
+        resolveBody: false,
+      });
+      return true;
+    } catch (error) {
+      if (
+        error.errorCode &&
+        error.errorCode === 'com.liveperson.faas.function.unchanged'
+      ) {
+        return false;
+      }
+      throw error;
+    }
   }
 
   public async getFunctionByUuid(uuid: string): Promise<IFunction> {
@@ -625,21 +592,21 @@ export class FaasService implements IFaaSService {
       return resolveBody ? response.body : response;
     } catch (error) {
       /* eslint-disable no-throw-literal */
-      if (error.message?.includes('401')) {
+      if (error.response.statusCode === 401) {
         throw {
           errorCode: '401',
           errorMsg:
             'You are not authorized to perform this action, please check your permissions',
         };
       }
+
       throw {
-        errorCode: error.response.body.errorCode,
-        errorMsg: error.response.body.errorMsg,
+        errorCode: error.response.body.code,
+        errorMsg: error.response.body.message,
         ...(error.response.body.errorLogs && {
           errorLogs: error.response.body.errorLogs,
         }),
       };
-      /* eslint-enable no-throw-literal */
     }
   }
 }

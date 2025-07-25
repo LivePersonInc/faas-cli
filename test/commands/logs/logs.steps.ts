@@ -71,7 +71,7 @@ defineFeature(feature, (test) => {
         defaultStructureService.create = jest.fn(() => {
           fs.copySync(
             join(testDir, 'package.json'),
-            join(testDir, 'bin', 'lp-faas-toolbelt', 'package.json'),
+            join(testDir, 'bin', 'core-functions-toolbelt', 'package.json'),
           );
         });
         await LogsController.getLogs({

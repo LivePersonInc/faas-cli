@@ -13,10 +13,14 @@ import {
   push,
 } from './faasEndpoint';
 import { FileService } from '../../src/service/file.service';
-import { IFunction, IRuntime } from '../../src/types';
-import { HttpMethods } from '../../src/service/faas.service';
+import { IFunction } from '../../src/types';
+import {
+  HttpMethods,
+  IFaaSService,
+  IFaasServiceConfig,
+} from '../../src/service/faas.service';
 
-export class FaasService {
+export class FaasService implements IFaaSService {
   public username: string;
 
   public accountId: string | undefined;
@@ -27,15 +31,12 @@ export class FaasService {
 
   public fileService: FileService;
 
-  constructor({
-    username,
-    fileService = new FileService(),
-  }: { username?: string; fileService?: FileService } = {}) {
+  constructor({ username }: Partial<IFaasServiceConfig> = {}) {
     this.username = username || 'cliUser';
     this.accountId = undefined;
     this.token = undefined;
     this.userId = undefined;
-    this.fileService = fileService;
+    this.fileService = new FileService();
   }
 
   public pull(): void {
@@ -107,6 +108,15 @@ export class FaasService {
   }
 
   public async getAllLambdas() {
+    const urlPart = `/lambdas`;
+    try {
+      return await this.doFetch({ urlPart, method: 'GET' });
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  public async getAllFunctionMetas() {
     const urlPart = `/lambdas`;
     try {
       return await this.doFetch({ urlPart, method: 'GET' });
@@ -262,7 +272,7 @@ export class FaasService {
         {
           from: 1656420000000,
           to: 1656420300000,
-          UNKOWN: 12,
+          UNKNOWN: 12,
           SUCCEEDED: 15,
           CODING_FAILURE: 34,
           PLATFORM_FAILURE: 84,

@@ -1,0 +1,13 @@
+{
+    "name": "memoryCaptureHourly",
+    "event": "No Event",
+    "description": "qweqweqwe123123",
+    "input": {
+        "headers": [],
+        "payload": {}
+    },
+    "version": 3,
+    "environmentVariables": {
+        "key": "value"
+    }
+}

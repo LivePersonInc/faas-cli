@@ -46,5 +46,7 @@ module.exports = {
     'valid-jsdoc': 0,
     'import/prefer-default-export': 0,
     'new-cap': 0,
+🚧    'default-param-last': 0,
+    'no-useless-constructor': 'off',
   },
 };

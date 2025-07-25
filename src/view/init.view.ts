@@ -83,7 +83,7 @@ export class InitView {
       this.tasklist.addTask({
         title: 'Install packages',
         task: async (ctx, task) => {
-          const command = `cd bin/lp-faas-toolbelt && ${
+          const command = `cd bin/core-functions-toolbelt && ${
             ctx.packageManager === 'npm' ? 'npm i' : 'yarn -i'
           }`;
           /* istanbul ignore next */

@@ -70,9 +70,9 @@ defineFeature(feature, (test) => {
         version: '1.0.0',
       }),
     );
-    fs.ensureDirSync(join(testDir, 'bin', 'lp-faas-toolbelt'));
+    fs.ensureDirSync(join(testDir, 'bin', 'core-functions-toolbelt'));
     fs.writeFileSync(
-      join(testDir, 'bin', 'lp-faas-toolbelt', 'package.json'),
+      join(testDir, 'bin', 'core-functions-toolbelt', 'package.json'),
       JSON.stringify({
         version: '0.0.9',
       }),
@@ -87,7 +87,7 @@ defineFeature(feature, (test) => {
       defaultStructureService.create = jest.fn(() => {
         fs.copySync(
           join(testDir, 'package.json'),
-          join(testDir, 'bin', 'lp-faas-toolbelt', 'package.json'),
+          join(testDir, 'bin', 'core-functions-toolbelt', 'package.json'),
         );
       });
       const initView = new InitView({ defaultStructureService });
@@ -102,7 +102,7 @@ defineFeature(feature, (test) => {
     then('Bin folder gets updated', async () => {
       const toolbeltPackage = JSON.parse(
         await fs.readFile(
-          join(testDir, 'bin', 'lp-faas-toolbelt', 'package.json'),
+          join(testDir, 'bin', 'core-functions-toolbelt', 'package.json'),
           'utf8',
         ),
       );
