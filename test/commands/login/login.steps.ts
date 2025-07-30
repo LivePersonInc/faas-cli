@@ -23,7 +23,6 @@ const feature = loadFeature('test/commands/login/login.feature');
 defineFeature(feature, (test) => {
   fs.removeSync(join(__dirname, 'faas-tmp.json'));
   const consoleSpy = jest.spyOn(global.console, 'log');
-  const stdoutSpy = jest.spyOn(process.stdout, 'write').mockImplementation();
   jest.spyOn(process, 'cwd').mockReturnValue(__dirname);
   jest.spyOn(os, 'tmpdir').mockReturnValue(__dirname);
   const fileService = new FileService({ cwd: __dirname });
@@ -467,8 +466,6 @@ defineFeature(feature, (test) => {
     and(
       'I run any desired command and it will perform the normal action',
       async () => {
-        stdoutSpy.mockReset();
-
         const response = await loginController.getLoginInformation();
         expect(response).toEqual({
           accountId: '123456789',
@@ -479,9 +476,8 @@ defineFeature(feature, (test) => {
 
         const getController = new GetController();
         await getController.get({ domains: ['functions'] });
-
-        expect(JSON.stringify(stdoutSpy.mock.calls)).toContain(
-          'Name                          State          Last changed at                         Last changed by                         Event                                   ',
+        expect(consoleSpy).toBeCalledWith(
+          expect.stringMatching(/Name.*State.*Event/),
         );
       },
     );

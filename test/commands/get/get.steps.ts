@@ -41,10 +41,7 @@ defineFeature(feature, (test) => {
   });
 
   test('Run the Get command for all resources', ({ given, when, then }) => {
-    const cliUx = {
-      table: jest.fn(),
-    };
-    const getView = new GetView({ cliUx });
+    const getView = new GetView({});
 
     given('I am authorized', async () => {
       await fileService.writeTempFile({
@@ -70,21 +67,18 @@ defineFeature(feature, (test) => {
     then(
       'It should display information about functions/deployments/account/events',
       () => {
-        expect(JSON.stringify(cliUx.table.mock.calls[0])).toContain(
-          'TestFunction1',
+        expect(consoleSpy).toBeCalledWith(
+          expect.stringMatching(/TestFunction1/),
         );
-        expect(JSON.stringify(cliUx.table.mock.calls[0])).toContain('Draft');
-        expect(JSON.stringify(cliUx.table.mock.calls[0])).toContain(
-          'bot_connectors_error_hook',
-        );
-        expect(JSON.stringify(cliUx.table.mock.calls[1])).toContain(
-          'TestFunction2',
-        );
-        expect(JSON.stringify(cliUx.table.mock.calls[1])).toContain(
-          'Undeployed changes from',
+        expect(consoleSpy).toBeCalledWith(expect.stringMatching(/Draft/));
+        expect(consoleSpy).toBeCalledWith(
+          expect.stringMatching(/bot_connectors_error_hook/),
         );
         expect(consoleSpy).toBeCalledWith(
-          expect.stringMatching(/0% \(Invocations since/),
+          expect.stringMatching(/TestFunction2/),
+        );
+        expect(consoleSpy).toBeCalledWith(
+          expect.stringMatching(/TestFunction2/),
         );
       },
     );

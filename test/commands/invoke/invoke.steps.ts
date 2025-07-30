@@ -179,12 +179,9 @@ defineFeature(feature, (test) => {
             headers: [],
             payload: {},
           },
-          environmentVariables: [
-            {
-              key: 'TestKey',
-              value: 'TestValue',
-            },
-          ],
+          environmentVariables: {
+            TestKey: 'TestValue',
+          },
         }),
       );
       fs.writeFileSync(
@@ -273,12 +270,9 @@ defineFeature(feature, (test) => {
             headers: [],
             payload: {},
           },
-          environmentVariables: [
-            {
-              key: 'TestKey',
-              value: 'TestValue',
-            },
-          ],
+          environmentVariables: {
+            TestKey: 'TestValue',
+          },
         }),
       );
       fs.writeFileSync(
@@ -350,7 +344,7 @@ defineFeature(feature, (test) => {
           'utf8',
         ),
       );
-      expect(toolbeltPackage.version).toBe('1.31.2');
+      expect(toolbeltPackage.version).toBe('1.31.3');
     });
 
     then(

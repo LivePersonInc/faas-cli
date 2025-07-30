@@ -1,6 +1,6 @@
 import { PrettyPrintableError } from '@oclif/core/lib/interfaces';
 import * as Table from 'tty-table';
-import { LogMessage, ErrorMessage, cliUX, chalk } from './printer';
+import { LogMessage, ErrorMessage, chalk } from './printer';
 import { IFunction } from '../types';
 import { formatDate } from '../shared/utils';
 import { AccountStatistics } from '../service/faas.service';
@@ -18,16 +18,12 @@ export class GetView {
 
   private readonly error: ErrorMessage;
 
-  private readonly cliUx: any;
-
   constructor({
     log = new LogMessage(),
     error = new ErrorMessage(),
-    cliUx = cliUX,
   }: IDeployViewConfig = {}) {
     this.log = log;
     this.error = error;
-    this.cliUx = cliUx;
   }
 
   /**

@@ -2,10 +2,6 @@
 /* eslint-disable no-shadow */
 import { PrettyPrintableError } from '@oclif/core/lib/interfaces';
 import { Answers } from 'inquirer';
-import {
-  clearIntervalAsync,
-  setIntervalAsync,
-} from 'set-interval-async/dynamic';
 import { factory } from '../service/faasFactory.service';
 import { formatDate } from '../shared/utils';
 import { IFunction } from '../types';
@@ -88,56 +84,81 @@ export class DeployView {
     } else {
       this.log.print('\nDeploying following functions:\n');
     }
-    confirmedFunctionsToDeploy.forEach((entry: any) => {
+
+    confirmedFunctionsToDeploy.forEach((entry: IFunction) => {
       this.tasklist.addTask({
         title: `Deploying ${entry.name}`,
-        // eslint-disable-next-line consistent-return
         task: async (_, task) => {
           const faasService = await factory.get();
           const response = await faasService.deploy(entry.uuid);
+
           if (response.uuid) {
             return task.skip(`${response.message} (${entry.uuid})`);
           }
+
           if (!noWatch) {
-            return new Promise<void>(async (resolve) => {
-              function checkIfLambdaIsDeployed(): Promise<boolean> {
-                return new Promise(async (resolve) => {
-                  const lambdaInformation =
-                    (await faasService.getFunctionByUuid(entry.uuid)) as any;
-                  if (
-                    lambdaInformation.state === 'Productive' &&
-                    lambdaInformation.lastDeployment.deployedAt
-                  ) {
-                    resolve(true);
-                  } else {
-                    resolve(false);
-                  }
-                });
-              }
-
-              function watchDeployment(): Promise<any> {
-                let deployed = false;
-                return new Promise<void>((resolve) => {
-                  const timer = setIntervalAsync(async () => {
-                    deployed = await checkIfLambdaIsDeployed();
-                    /* istanbul ignore else */
-                    if (deployed) {
-                      // with the update to v2 the await clearIntervalAsync(timer) requires to be wrapped inside an immediately-invoke function expression or remove the await so that it resolves the timeout it causes because of not finishing the process
-                      clearIntervalAsync(timer);
-                      resolve();
-                    }
-                  }, 3000);
-                });
-              }
-
-              watchDeployment().then(() => resolve());
-            });
+            return this.waitForDeployment(faasService, entry.uuid);
           }
+          return task.skip('Unexpected end of deploying');
         },
       });
     });
 
     return this.tasklist.run();
+  }
+
+  private async checkIfLambdaIsDeployed(
+    faasService: any,
+    uuid: string,
+  ): Promise<boolean> {
+    try {
+      const lambdaInformation = await faasService.getFunctionByUuid(uuid);
+      return lambdaInformation?.state === 'Productive';
+    } catch (error) {
+      // Log error if needed, but don't throw to allow retry
+      return false;
+    }
+  }
+
+  private async waitForDeployment(
+    faasService: any,
+    uuid: string,
+    timeoutMs = 2000000,
+    intervalMs = 3000,
+  ): Promise<void> {
+    const startTime = Date.now();
+
+    return new Promise<void>((resolve, reject) => {
+      const poll = async () => {
+        try {
+          const isDeployed = await this.checkIfLambdaIsDeployed(
+            faasService,
+            uuid,
+          );
+
+          if (isDeployed) {
+            resolve();
+            return;
+          }
+
+          const elapsed = Date.now() - startTime;
+          if (elapsed >= timeoutMs) {
+            reject(
+              new Error(
+                `Deployment timeout after ${timeoutMs}ms for function ${uuid}`,
+              ),
+            );
+            return;
+          }
+
+          setTimeout(poll, intervalMs);
+        } catch (error) {
+          reject(error);
+        }
+      };
+
+      poll();
+    });
   }
 
   /**
@@ -158,13 +179,6 @@ export class DeployView {
     Event:                  ${lambda.event || 'No Event'}
     Last modified by:       ${lambda.updatedBy}
     Last modified at:       ${formatDate(lambda.updatedAt)}
-    Last deployed at:       ${
-      lambda.lastDeployment?.createdAt
-        ? formatDate(lambda.lastDeployment?.createdAt)
-        : '-'
-    }
-    Runtime:                ${lambda.manifest.runtime}
-
     `;
     return message;
   }

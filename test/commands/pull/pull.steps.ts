@@ -109,6 +109,7 @@ defineFeature(feature, (test) => {
         await pullController.pull({ lambdaFunctions: [] });
       },
     );
+
     when('I see the confirmation prompt and confirm', () => {});
 
     then('I expect the lambda to be available locally', () => {

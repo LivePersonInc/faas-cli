@@ -83,12 +83,9 @@ callback(null, 'Hello World');
           headers: [],
           payload: {},
         },
-        environmentVariables: [
-          {
-            key: 'TestKey',
-            value: 'TestValue',
-          },
-        ],
+        environmentVariables: {
+          TestKey: 'TestValue',
+        },
       }),
     );
 
@@ -117,12 +114,9 @@ callback(null, 'Hello World');
           headers: [],
           payload: {},
         },
-        environmentVariables: [
-          {
-            key: 'TestKey',
-            value: 'TestValue',
-          },
-        ],
+        environmentVariables: {
+          TestKey: 'TestValue',
+        },
       }),
     );
 
@@ -156,12 +150,9 @@ callback(null, 'Hello World');
           headers: [],
           payload: {},
         },
-        environmentVariables: [
-          {
-            key: 'TestKey',
-            value: 'TestValue',
-          },
-        ],
+        environmentVariables: {
+          TestKey: 'TestValue',
+        },
       }),
     );
     writeFileSync(
@@ -209,12 +200,9 @@ callback(null, 'Hello World');
           headers: [],
           payload: {},
         },
-        environmentVariables: [
-          {
-            key: 'TestKey',
-            value: 'TestValue',
-          },
-        ],
+        environmentVariables: {
+          TestKey: 'TestValue',
+        },
       }),
     );
     writeFileSync(

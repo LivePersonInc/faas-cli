@@ -1,7 +1,0 @@
-FunctionUUID;requestID;timestamp;level;message;extras
-113187df-1f19-4499-8c8d-06e2078d45e5;a539230f-177d-4f5f-bb95-452763de0cb8;Wed, 23 Jul 2025 07:07:13 GMT;Info;memory dump:;[{"global.global":"1.26 KB","global.performance":"0.78 KB","global.crypto":"0.02 KB"}]
-113187df-1f19-4499-8c8d-06e2078d45e5;a539230f-177d-4f5f-bb95-452763de0cb8;Wed, 23 Jul 2025 07:07:13 GMT;Info;
-Largest Objects (approximate sizes):;[]
-113187df-1f19-4499-8c8d-06e2078d45e5;a539230f-177d-4f5f-bb95-452763de0cb8;Wed, 23 Jul 2025 07:07:13 GMT;Info;Total Heap Used: 28.35 MB;[]
-113187df-1f19-4499-8c8d-06e2078d45e5;a539230f-177d-4f5f-bb95-452763de0cb8;Wed, 23 Jul 2025 07:07:13 GMT;Info;
-=== Memory Usage Analysis ===;[]

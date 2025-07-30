@@ -1,26 +1,36 @@
 /* eslint-disable no-useless-catch */
 /* eslint-disable class-methods-use-this */
+import { Got } from 'got/dist/source/types';
 import {
-  getAllLambdas,
   deploy,
   undeploy,
-  getLambdaByUUID,
+  getFunctionByUuid,
   invoke,
   getLimitCounts,
   getLambdaCounts,
   getInvocationCounts,
   getEvents,
   push,
+  getAllFunctionMetas,
+  getAllDeployments,
 } from './faasEndpoint';
 import { FileService } from '../../src/service/file.service';
 import { IFunction } from '../../src/types';
 import {
   HttpMethods,
-  IFaaSService,
+  IDeployment,
   IFaasServiceConfig,
 } from '../../src/service/faas.service';
+import { LoginController } from '../../src/controller/login.controller';
+import { CsdsClient } from '../../src/service/csds.service';
+import {
+  LPFnMeta,
+  LPFnMetaUpdateParams,
+  LPFunction,
+  LPManifestUpdateParams,
+} from '../../src/types/IFunction';
 
-export class FaasService implements IFaaSService {
+export class FaasService {
   public username: string;
 
   public accountId: string | undefined;
@@ -30,6 +40,12 @@ export class FaasService implements IFaaSService {
   public token: string | undefined;
 
   public fileService: FileService;
+
+  private readonly loginController: LoginController;
+
+  private readonly csdsClient: CsdsClient;
+
+  private readonly got: Got;
 
   constructor({ username }: Partial<IFaasServiceConfig> = {}) {
     this.username = username || 'cliUser';
@@ -107,17 +123,8 @@ export class FaasService implements IFaaSService {
     }
   }
 
-  public async getAllLambdas() {
-    const urlPart = `/lambdas`;
-    try {
-      return await this.doFetch({ urlPart, method: 'GET' });
-    } catch (error) {
-      throw error;
-    }
-  }
-
   public async getAllFunctionMetas() {
-    const urlPart = `/lambdas`;
+    const urlPart = `/functions`;
     try {
       return await this.doFetch({ urlPart, method: 'GET' });
     } catch (error) {
@@ -125,34 +132,31 @@ export class FaasService implements IFaaSService {
     }
   }
 
-  public async getLambdasByNames(
-    lambdaNames: string[],
-    collectNonExistingLambas?: boolean,
-  ) {
-    const urlPart = `/lambdas`;
-    try {
-      return await Promise.all(
-        lambdaNames.map(async (name) => {
-          const [foundLambdas] = await this.doFetch({
-            urlPart,
-            method: 'GET',
-            additionalParams: `&name=${name}`,
-          });
-          if (!foundLambdas && !collectNonExistingLambas) {
-            throw new Error(
-              `Function ${name} were not found on the platform. Please make sure the function with the name ${name} was pushed to the LivePerson Functions platform`,
-            );
-          }
-          return foundLambdas || { name };
-        }),
-      );
-    } catch (error) {
-      throw error;
-    }
+  public async getLambdasByNames(lambdaNames: string[]) {
+    const urlPart = `/functions`;
+    const allLambdas = await this.doFetch({
+      urlPart,
+      method: 'GET',
+    });
+    const existingFunctions = allLambdas.filter(({ name }) =>
+      lambdaNames.includes(name),
+    );
+    return Promise.all(
+      existingFunctions.map(async (existingFunction) => {
+        const fn = await this.doFetch({
+          urlPart: `/functions/${existingFunction.uuid}`,
+          method: 'GET',
+        });
+        if (fn && fn.versions) {
+          return { ...fn, manifest: fn.versions[0] };
+        }
+        return fn;
+      }),
+    );
   }
 
-  public async getLambdaByUUID(uuid: string) {
-    const urlPart = `/lambdas/${uuid}`;
+  public async getFunctionByUuid(uuid: string) {
+    const urlPart = `/functions/${uuid}`;
     try {
       const response = await this.doFetch({ urlPart, method: 'GET' });
       return response[0];
@@ -196,7 +200,7 @@ export class FaasService implements IFaaSService {
       const response = await this.doFetch({ urlPart, method, body });
       return response.statusCode !== 304;
     } catch (error) {
-      if (body.implementation.code.includes('lammbda')) {
+      if (body.implementation?.code.includes('lammbda')) {
         throw new Error(
           `Push Error: The code of function '${body.name}' you are trying to push is not a valid lambda.`,
         );
@@ -205,19 +209,87 @@ export class FaasService implements IFaaSService {
     }
   }
 
-  public async getRuntime(): Promise<IRuntime> {
-    return {
-      baseImageName: 'baseImage',
-      name: 'Node.js 10',
-      uuid: 'Runtime-uuid',
-    };
-  }
-
   public async invoke(uuid: string, payload: any) {
-    const urlPart = `/lambdas/${uuid}/invoke`;
+    const urlPart = `/functions/${uuid}/test`;
     try {
       return await this.doFetch({ urlPart, method: 'POST', body: payload });
     } catch (error) {
+      throw error;
+    }
+  }
+
+  public async getAllFunctions(): Promise<LPFunction[]> {
+    const urlPart = '/functions';
+    const fnMetas = (await this.doFetch({
+      urlPart,
+      method: 'GET',
+    })) as LPFnMeta[];
+
+    return this.getLambdasByNames(fnMetas.map(({ name }) => name));
+  }
+
+  public async getAllDeployments(): Promise<IDeployment[]> {
+    const urlPart = '/deployments';
+    return this.doFetch({ urlPart, method: 'GET' });
+  }
+
+  public async pushNewFunction({
+    body,
+  }: {
+    body: LPFunction;
+  }): Promise<boolean> {
+    return !!body; // TODO FIX THIS
+  }
+
+  public async pushNewMeta(meta: LPFnMeta): Promise<LPFunction> {
+    const response = await this.doFetch({
+      urlPart: `/functions`,
+      method: 'POST',
+      body: meta,
+    });
+    return response.body;
+  }
+
+  public async pushFunctionMeta(
+    uuid: string,
+    meta: LPFnMetaUpdateParams,
+  ): Promise<boolean> {
+    try {
+      await this.doFetch({
+        urlPart: `/functions/${uuid}`,
+        method: 'PUT',
+        body: meta,
+      });
+      return true;
+    } catch (error) {
+      if (
+        error.errorCode &&
+        error.errorCode === 'com.liveperson.faas.function.unchanged'
+      ) {
+        return false;
+      }
+      throw error;
+    }
+  }
+
+  public async pushFunctionManifest(
+    uuid: string,
+    manifest: LPManifestUpdateParams,
+  ): Promise<boolean> {
+    try {
+      await this.doFetch({
+        urlPart: `/functions/${uuid}/manifest`,
+        method: 'PUT',
+        body: { ...manifest },
+      });
+      return true;
+    } catch (error) {
+      if (
+        error.errorCode &&
+        error.errorCode === 'com.liveperson.faas.function.unchanged'
+      ) {
+        return false;
+      }
       throw error;
     }
   }
@@ -298,7 +370,7 @@ export class FaasService implements IFaaSService {
       const domain = await this.getCsdsEntry('faasUI');
       const url = `https://${domain}/api/account/${this.accountId}${urlPart}?userId=${this.userId}${additionalParams}`;
       let response: any;
-      if (method === 'POST' && urlPart.includes('invoke')) {
+      if (method === 'POST' && urlPart.includes('test')) {
         response = invoke(url);
       } else if (
         (method === 'PUT' || method === 'POST') &&
@@ -316,12 +388,14 @@ export class FaasService implements IFaaSService {
         response = getInvocationCounts();
       } else if (method === 'DELETE' && urlPart.includes('deployments')) {
         response = undeploy();
+      } else if (method === 'GET' && urlPart.includes('deployments')) {
+        response = getAllDeployments();
       } else if (method === 'POST' && urlPart.includes('deployments')) {
         response = deploy(url);
-      } else if (method === 'GET' && urlPart.includes('lambdas/')) {
-        response = getLambdaByUUID(url);
-      } else if (method === 'GET' && urlPart.includes('lambdas')) {
-        response = getAllLambdas(url);
+      } else if (method === 'GET' && urlPart.includes('functions/')) {
+        response = getFunctionByUuid(url);
+      } else if (method === 'GET' && urlPart.includes('/functions')) {
+        response = getAllFunctionMetas(url);
       } else if (method === 'GET' && urlPart.includes('events')) {
         response = getEvents();
       }
