@@ -41,6 +41,12 @@ export class DeployController extends DeploymentController {
       const functionsToDeploy: IFunction[] =
         await this.collectLambdaInformationForAllLambdas(lambdaFunctions);
 
+      if (functionsToDeploy.length === 0) {
+        throw new Error(
+          `Function ${lambdaFunctions} were not found on the platform.`,
+        );
+      }
+
       let confirmedFunctionsToDeploy: IFunction[] = [];
       if (inputFlags?.yes) {
         confirmedFunctionsToDeploy = functionsToDeploy;
@@ -53,9 +59,6 @@ export class DeployController extends DeploymentController {
         );
 
         /* istanbul ignore else */
-        if (confirmedFunctionsToDeploy.length === 0) {
-          return;
-        }
       }
 
       await this.deployView.showDeployments({

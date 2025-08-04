@@ -95,7 +95,6 @@ export class DeployView {
           if (response.uuid) {
             return task.skip(`${response.message} (${entry.uuid})`);
           }
-
           if (!noWatch) {
             return this.waitForDeployment(faasService, entry.uuid);
           }
@@ -111,13 +110,8 @@ export class DeployView {
     faasService: any,
     uuid: string,
   ): Promise<boolean> {
-    try {
-      const lambdaInformation = await faasService.getFunctionByUuid(uuid);
-      return lambdaInformation?.state === 'Productive';
-    } catch (error) {
-      // Log error if needed, but don't throw to allow retry
-      return false;
-    }
+    const lambdaInformation = await faasService.getFunctionByUuid(uuid);
+    return lambdaInformation?.state === 'Productive';
   }
 
   private async waitForDeployment(

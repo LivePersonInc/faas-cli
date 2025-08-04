@@ -13,11 +13,10 @@ import {
   push,
   getAllFunctionMetas,
   getAllDeployments,
+  pushManifest,
 } from './faasEndpoint';
 import { FileService } from '../../src/service/file.service';
-import { IFunction } from '../../src/types';
 import {
-  HttpMethods,
   IDeployment,
   IFaasServiceConfig,
 } from '../../src/service/faas.service';
@@ -60,46 +59,17 @@ export class FaasService {
   }
 
   public async getAccountStatistic() {
-    const limitCountsUrl = '/reports/limitCounts';
-    const lambdaCountsUrl = '/reports/lambdaCounts';
-    const invocationUrl = '/reports/invocationCounts';
-
-    const date = new Date();
-    const currentDate = date.getTime();
-    const firstDayOfMonth = new Date(
-      date.getFullYear(),
-      date.getMonth(),
-      1,
-      1,
-    ).getTime();
-
-    const limitCounts = await this.doFetch({
-      urlPart: limitCountsUrl,
-      method: 'GET',
-    });
-    const lambdaCounts = await this.doFetch({
-      urlPart: lambdaCountsUrl,
-      method: 'GET',
-    });
-    const invocations = await this.doFetch({
-      urlPart: invocationUrl,
-      method: 'GET',
-      additionalParams: `&startTimestamp=${firstDayOfMonth}&endTimestamp=${currentDate}`,
-    });
-
-    return (await Promise.all([limitCounts, lambdaCounts, invocations])).reduce(
-      (acc, e) => ({ ...acc, ...e }),
-      {},
-    );
+    return {
+      numberOfFunctions: 1,
+      numberOfInvocations: 123,
+      numberOfDeployments: 1,
+    };
   }
 
   public async undeploy(uuid: string) {
     const urlPart = `/deployments/${uuid}`;
     try {
-      const response = await this.doFetch({ urlPart, method: 'DELETE' });
-      return {
-        message: response.message,
-      };
+      return await this.doFetch({ urlPart, method: 'DELETE' });
     } catch (error) {
       return {
         message: error.errorMsg,
@@ -123,15 +93,6 @@ export class FaasService {
     }
   }
 
-  public async getAllFunctionMetas() {
-    const urlPart = `/functions`;
-    try {
-      return await this.doFetch({ urlPart, method: 'GET' });
-    } catch (error) {
-      throw error;
-    }
-  }
-
   public async getLambdasByNames(lambdaNames: string[]) {
     const urlPart = `/functions`;
     const allLambdas = await this.doFetch({
@@ -141,25 +102,34 @@ export class FaasService {
     const existingFunctions = allLambdas.filter(({ name }) =>
       lambdaNames.includes(name),
     );
-    return Promise.all(
-      existingFunctions.map(async (existingFunction) => {
-        const fn = await this.doFetch({
-          urlPart: `/functions/${existingFunction.uuid}`,
-          method: 'GET',
-        });
-        if (fn && fn.versions) {
-          return { ...fn, manifest: fn.versions[0] };
-        }
-        return fn;
-      }),
-    );
+
+    const lambdas = (
+      await Promise.all(
+        existingFunctions.map(async (existingFunction) => {
+          const fn = await this.doFetch({
+            urlPart: `/functions/${existingFunction.uuid}`,
+            method: 'GET',
+          });
+          if (fn && fn.versions) {
+            return { ...fn, manifest: fn.versions[0] };
+          }
+          return fn;
+        }),
+      )
+    ).flat();
+    return lambdas;
+  }
+
+  public async getAllFunctionMetas() {
+    const urlPart = `/functions`;
+    return this.doFetch({ urlPart, method: 'GET' });
   }
 
   public async getFunctionByUuid(uuid: string) {
     const urlPart = `/functions/${uuid}`;
     try {
-      const response = await this.doFetch({ urlPart, method: 'GET' });
-      return response[0];
+      const [foundLambda] = await this.doFetch({ urlPart, method: 'GET' });
+      return foundLambda;
     } catch (error) {
       throw error;
     }
@@ -178,29 +148,26 @@ export class FaasService {
     };
   }
 
-  public async addDomain(domain: string): Promise<any> {
-    return {
-      id: '1111-2222-3333-4444',
-      domain,
-      additionalProp1: {},
-    };
-  }
-
   public async push({
-    method,
     body,
     uuid,
   }: {
-    method: HttpMethods;
-    body: IFunction;
-    uuid?: string;
+    body: LPFunction;
+    uuid: string;
   }): Promise<boolean> {
     try {
-      const urlPart = `/lambdas${uuid ? `/${uuid}` : ''}`;
-      const response = await this.doFetch({ urlPart, method, body });
-      return response.statusCode !== 304;
+      const metaUpdate = await this.pushFunctionMeta(uuid, {
+        description: body.description,
+        skills: body.skills,
+      });
+
+      const manifestUpdate = await this.pushFunctionManifest(uuid, {
+        uuid: body.uuid,
+        ...body.manifest,
+      });
+      return metaUpdate || manifestUpdate;
     } catch (error) {
-      if (body.implementation?.code.includes('lammbda')) {
+      if (body.manifest?.code.includes('validation')) {
         throw new Error(
           `Push Error: The code of function '${body.name}' you are trying to push is not a valid lambda.`,
         );
@@ -238,7 +205,26 @@ export class FaasService {
   }: {
     body: LPFunction;
   }): Promise<boolean> {
-    return !!body; // TODO FIX THIS
+    try {
+      const { manifest: newManifest, ...newMeta } = body;
+      const newFunction = await this.pushNewMeta(newMeta);
+
+      const updateManifestResponse = await this.pushFunctionManifest(
+        newFunction.uuid,
+        {
+          uuid: newFunction.uuid,
+          ...newManifest,
+        },
+      );
+      return updateManifestResponse;
+    } catch (error) {
+      if (error.errorCode?.includes('validation')) {
+        throw new Error(
+          `Push Error: The code of function '${body.name}' you are trying to push is not a valid lambda.`,
+        );
+      }
+      throw new Error(error.errorMsg);
+    }
   }
 
   public async pushNewMeta(meta: LPFnMeta): Promise<LPFunction> {
@@ -247,7 +233,7 @@ export class FaasService {
       method: 'POST',
       body: meta,
     });
-    return response.body;
+    return response;
   }
 
   public async pushFunctionMeta(
@@ -328,7 +314,7 @@ export class FaasService {
     removeHeader?: boolean;
   }): Promise<void> {
     if (options.uuid === 'error') throw new Error('expected');
-    else process.stdout.write(JSON.stringify(options));
+    else process.stdout.write(JSON.stringify(options)); // TODO WHAT IS THIS?
   }
 
   public async getLambdaInvocationMetrics(options: {
@@ -342,8 +328,8 @@ export class FaasService {
       uuid: '7c44ffea-71e9-429f-bdad-1fade90329c4',
       invocationStatistics: [
         {
-          from: 1656420000000,
-          to: 1656420300000,
+          from: options.startTimestamp ?? 1656420000000,
+          to: options.endTimestamp ?? 1656420300000,
           UNKNOWN: 12,
           SUCCEEDED: 15,
           CODING_FAILURE: 34,
@@ -374,7 +360,12 @@ export class FaasService {
         response = invoke(url);
       } else if (
         (method === 'PUT' || method === 'POST') &&
-        urlPart.includes('lambdas')
+        urlPart.includes('manifest')
+      ) {
+        response = pushManifest(body, method);
+      } else if (
+        (method === 'PUT' || method === 'POST') &&
+        urlPart.includes('functions')
       ) {
         response = push(body, method);
       } else if (method === 'GET' && urlPart.includes('reports/limitCounts')) {

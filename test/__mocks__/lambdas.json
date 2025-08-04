@@ -20,7 +20,7 @@
         "attempts": 0
     },
     {
-        "uuid": "f791e5ca-3e78-4990-a066-59b82cdfd6a0",
+        "uuid": "f791e5ca-3e78-4990-a066-59b82cdfd123",
         "name": "TestFunctionPushSkip",
         "eventId": "bot_connectors_error_hook",
         "description": "Description TestFunctionPushSkip",
@@ -188,7 +188,7 @@
     {
         "uuid": "error",
         "name": "exampleFunction",
-        "description": "Description exampleFunction",
+        "description": "This will probably throw an error",
         "state": "Draft",
         "createdBy": "testUser@gmail.com",
         "updatedBy": "testUser@gmail.com",

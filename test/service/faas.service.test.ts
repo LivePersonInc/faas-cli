@@ -165,7 +165,6 @@ describe('faas service', () => {
     const gotDefault = jest.fn((url) => {
       callCount += 1;
       if (callCount === 1) {
-        // First call to get function metas
         return {
           body: [
             {
@@ -234,7 +233,9 @@ describe('faas service', () => {
     const response = await faasService.getAllFunctions();
     expect(response).toHaveLength(2);
     expect(response[0].name).toBe('lambda1');
+    expect(response[0].manifest.id).toBe('manifest-1');
     expect(response[1].name).toBe('lambda2');
+    expect(response[1].manifest.id).toBe('manifest-2');
   });
 
   it('should throw an error during getting all function metas', async () => {
@@ -339,7 +340,7 @@ describe('faas service', () => {
       body: mockFunction,
       uuid: '123-123-123',
     });
-    expect(result).toBe(false); // Returns false when both meta and manifest are unchanged
+    expect(result).toBe(true);
   });
 
   it('should push a new function', async () => {
@@ -377,7 +378,7 @@ describe('faas service', () => {
         version: 1,
         runtime: 'nodejs14.x',
         spec: 'v1.0.0',
-        code: 'function handler() {}',
+        code: 'async lambda123() {}',
         customDependencies: {},
         environment: {},
       },
@@ -386,7 +387,7 @@ describe('faas service', () => {
     const result = await faasService.pushNewFunction({
       body: mockFunction,
     });
-    expect(result).toBe(false); // Returns false when manifest is unchanged
+    expect(result).toBe(true);
   });
 
   it('should fail during pushing a function with generic error', async () => {
@@ -432,14 +433,18 @@ describe('faas service', () => {
     const gotDefault = jest.fn(() => {
       throw {
         response: {
-          body: { code: 'contract-error', message: 'Contract Error' },
+          body: {
+            code: 'com.liveperson.faas.fm.validation.interface-wrong',
+            message:
+              'FunctionName§! contains not allowed characters. Only numeric, letters, underscore or spaces may be included',
+          },
         },
       };
     }) as any;
     const faasService = new FaasService({ gotDefault, csdsClient });
     const mockFunction: LPFunction = {
       uuid: '123-123-123',
-      name: 'FunctionName',
+      name: 'FunctionName§!',
       description: 'Test function',
       state: 'Draft',
       isCompV1: false,
@@ -461,8 +466,8 @@ describe('faas service', () => {
         uuid: '123-123-123',
       });
     } catch (error) {
-      expect(error.message).toBe(
-        "Push Error: The code of function 'FunctionName' you are trying to push is not a valid lambda.",
+      expect(error.message).toContain(
+        'Function Validation Error: FunctionName§! contains not allowed characters. Only numeric, letters, underscore or spaces may be included',
       );
     }
   });

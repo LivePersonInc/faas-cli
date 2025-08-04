@@ -119,7 +119,8 @@
     "hooks": {
       "init": [
         "./lib/hooks/init/nodeVersion",
-        "./lib/hooks/init/warnIfUpdateAvailable"
+        "./lib/hooks/init/warnIfUpdateAvailable",
+        "./lib/hooks/init/accountMigrated"
       ],
       "command_not_found": "./lib/hooks/command_not_found/commandNotFound"
     },

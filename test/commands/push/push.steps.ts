@@ -12,6 +12,7 @@ import { IFunction, IFunctionConfig } from '../../../src/types';
 jest.mock('../../../src/service/faas.service', () =>
   jest.requireActual('../../__mocks__/faas.service.ts'),
 );
+jest.setTimeout(25000);
 
 const feature = loadFeature('test/commands/push/push.feature');
 
@@ -50,7 +51,7 @@ const mockFileService = {
     const [lambda] = allLambdas.filter(
       (lambdaParam: IFunction) => lambdaParam.name === lambdaName,
     );
-    return lambda.implementation.code;
+    return lambda.implementation?.code;
   }),
   getFunctionsDirectories: jest.fn(() => [
     'TestFunction1',

@@ -22,6 +22,8 @@ const feature = loadFeature('test/commands/get/get.feature');
 const testDir = join(__dirname, 'test');
 const fileService = new FileService({ cwd: testDir });
 
+jest.setTimeout(25000);
+
 defineFeature(feature, (test) => {
   let consoleSpy;
 

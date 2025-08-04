@@ -1,6 +1,7 @@
 import { PrettyPrintableError } from '@oclif/core/lib/interfaces';
 import { CLIErrorCodes } from '../shared/errorCodes';
 import { factory } from '../service/faasFactory.service';
+import { LPFunction } from '../types/IFunction';
 
 interface ILogsConfig {
   lambdaFunction: string;
@@ -26,7 +27,7 @@ export class LogsController {
     const faasService = await factory.get();
     const [currentLambda] = (await faasService.getLambdasByNames([
       lambdaFunction,
-    ])) as any;
+    ])) as LPFunction[];
     /* istanbul ignore next */
     if (!currentLambda) {
       const prettyError: PrettyPrintableError = {

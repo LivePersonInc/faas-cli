@@ -1,203 +1,67 @@
-import type { SecretClientOptions, SecretEntry, SecretRequestOptions } from './types.js';
-import type { ISecretClient } from './IsecretClient.js';
-import type { ICache } from './ICache.js';
+import { ISecretClient } from './IsecretClient';
+import { SecretError } from '../errors/secretError';
+import { ErrorCodes } from '../errors/errorCodes';
+import { join } from 'path';
 
-import { makeSpecificError } from '../errors/toolbeltError.js';
-import { ErrorCodes } from '../errors/errorCodes.js';
-import { SecretManagerServiceClient } from '@google-cloud/secret-manager';
-import { isError, isGCPError, isToolbeltError, isV1CompatSecretObject } from '../shared/typesPredicates.js';
-import { google } from '@google-cloud/secret-manager/build/protos/protos.js';
-import { SYSTEM_SECRET_PREFIX } from '../shared/const.js';
+import * as fsDefault from 'fs-extra';
+import { SecretEntry } from './types';
 
-const DEADLINE_EXCEEDED_CODE = 1;
-const NOT_FOUND_CODE = 5;
-const PERMISSION_ISSUE_CODE = 7;
+export class VaultSecretClient implements ISecretClient {
+  private path: string;
+  private fs: any;
 
-const MAX_KEPT_VERSIONS = 2;
+  constructor(fs: any = fsDefault) {
+    this.path = join(process.cwd(), 'functions', 'settings.json');
+    this.fs = fs;
+  }
 
-const newSecretClientError = makeSpecificError('SecretClient');
-export const defaultSecretClientOptions: SecretClientOptions = {
-    cache: {
-        ttl: 5 * 60 * 1000,
-    },
-};
-
-const defaultRequestOptions: SecretRequestOptions = {
-    useCache: true,
-    timeout: 5000,
-};
-
-const MAX_SECRET_SIZE = 16384;
-export class FunctionsSecretClient implements ISecretClient {
-    /**
-     *
-     * @param options used for configuring the secret client e.g. caching secrets
-     */
-    constructor(
-        private readonly secretCache: ICache<string, SecretEntry>,
-        private readonly gcpSecretManagerClient: SecretManagerServiceClient,
-
-        private readonly options?: Partial<SecretClientOptions>,
-
-        private readonly projectId = process.env.X_LIVEPERSON_PROJECT_ID,
-    ) {
-        if (this.options?.cache?.ttl) {
-            this.secretCache.setDefaultTtl(this.options.cache.ttl);
+  readSecret(key: string): Promise<SecretEntry> {
+    return new Promise((resolve, reject) => {
+      try {
+        const settings = JSON.parse(this.fs.readFileSync(this.path, 'utf8'));
+        const secret = settings.secrets.find((e: SecretEntry) => e.key === key);
+        if (!secret) {
+          throw Error;
         }
-    }
+        resolve(secret);
+      } catch (err) {
+        reject(
+          new SecretError(
+            ErrorCodes.Secret.NotFound,
+            `There is no Secret ${key} for this account`,
+          ),
+        );
+      }
+    });
+  }
 
-    public async readSecret(key: string, options?: Partial<SecretRequestOptions>): Promise<SecretEntry> {
-        const finalOptions: SecretRequestOptions = Object.assign({}, defaultRequestOptions, options);
-
-        try {
-            if (finalOptions.useCache && this.secretCache.has(key)) {
-                return this.secretCache.get(key) as SecretEntry;
-            }
-
-            // see: https://cloud.google.com/secret-manager/docs/samples/secretmanager-access-secret-version?hl=en#secretmanager_access_secret_version-nodejs
-            const [version] = await this.gcpSecretManagerClient.accessSecretVersion(
-                { name: `projects/${this.projectId}/secrets/${key}/versions/latest` },
-                { timeout: finalOptions.timeout },
-            );
-
-            const secret = this.payloadToString(version.payload);
-
-            this.secretCache.set(key, { key, value: secret });
-
-            return { key, value: secret };
-        } catch (error) {
-            if (isToolbeltError(error)) {
-                throw error;
-            }
-
-            if (isGCPError(error)) {
-                if (error.code === NOT_FOUND_CODE) {
-                    throw newSecretClientError(ErrorCodes.Secret.NotFound, `There is no secret ${key} for this account`);
-                }
-
-                if (error.code === PERMISSION_ISSUE_CODE) {
-                    throw newSecretClientError(ErrorCodes.Secret.AuthFailure, `Failed to authenticate with secret store for secret ${key}`);
-                }
-
-                if (error.code === DEADLINE_EXCEEDED_CODE) {
-                    throw newSecretClientError(ErrorCodes.Secret.Timeout, `Failed to read secret ${key} within ${finalOptions.timeout}ms`);
-                }
-            }
-
-            throw newSecretClientError(ErrorCodes.Secret.Failure, `Reading secret ${key} failed: ${isError(error) ? error.message : 'unknown'}`);
+  updateSecret(updatedSecret: SecretEntry): Promise<SecretEntry> {
+    return new Promise((resolve, reject) => {
+      if (updatedSecret.value.length > 10000) {
+        throw new SecretError(
+          ErrorCodes.Secret.Invalid,
+          'Provided Secret Value exceeds allowed length of 10000',
+        );
+      }
+      try {
+        const settings = JSON.parse(this.fs.readFileSync(this.path, 'utf8'));
+        const index = settings.secrets.findIndex(
+          (e: SecretEntry) => e.key === updatedSecret.key,
+        );
+        if (index === -1) {
+          throw Error;
         }
-    }
-
-    public async updateSecret({ key: secretKey, value: newSecretValue }: SecretEntry, options?: Omit<SecretRequestOptions, 'useCache'>): Promise<SecretEntry> {
-        const finalOptions: SecretRequestOptions = Object.assign({}, defaultRequestOptions, options);
-        if (secretKey.startsWith(SYSTEM_SECRET_PREFIX)) {
-            throw newSecretClientError(ErrorCodes.Secret.SystemSecret, 'You are not allowed to update secrets added by the system');
-        }
-
-        if (typeof newSecretValue !== 'string') {
-            throw newSecretClientError(ErrorCodes.Secret.Invalid, 'Provided secret value must be of type string');
-        }
-
-        if (newSecretValue.length > MAX_SECRET_SIZE) {
-            throw newSecretClientError(ErrorCodes.Secret.Invalid, 'Provided secret value exceeds allowed length of 16kb');
-        }
-
-        try {
-            const parent = `projects/${this.projectId}/secrets/${secretKey}`;
-
-            await this.gcpSecretManagerClient.addSecretVersion(
-                {
-                    parent,
-                    payload: {
-                        data: Buffer.from(newSecretValue, 'utf-8'),
-                    },
-                },
-                { timeout: finalOptions.timeout },
-            );
-
-            this.secretCache.set(secretKey, { key: secretKey, value: newSecretValue });
-
-            this.limitSecretVersionsInBackground(parent).catch((error) =>
-                console.warn('Limiting secret versions threw error', { error: isError(error) ? `${error.name}: ${error.message}` : 'unknown' }),
-            );
-
-            return {
-                key: secretKey,
-                value: newSecretValue,
-            };
-        } catch (error) {
-            if (isGCPError(error)) {
-                if (error.code === NOT_FOUND_CODE) {
-                    throw newSecretClientError(ErrorCodes.Secret.NotFound, `There is no secret ${secretKey} for this account`);
-                }
-
-                if (error.code === PERMISSION_ISSUE_CODE) {
-                    throw newSecretClientError(ErrorCodes.Secret.AuthFailure, `Failed to authenticate with secret store for secret ${secretKey}`);
-                }
-
-                if (error.code === DEADLINE_EXCEEDED_CODE) {
-                    throw newSecretClientError(ErrorCodes.Secret.Timeout, `Failed to read secret ${secretKey} within ${finalOptions.timeout}ms`);
-                }
-            }
-
-            throw newSecretClientError(ErrorCodes.Secret.Failure, `Updating secret ${secretKey} failed: ${isError(error) ? error.message : 'unknown'}`);
-        }
-    }
-    /**
-     * Limit the secrets to the two latest versions
-     * @param parent string for identifying secret
-     */
-    private async limitSecretVersionsInBackground(parent: string): Promise<void> {
-        const [versions] = await this.gcpSecretManagerClient.listSecretVersions({
-            parent,
-            filter: 'state:ENABLED',
-        });
-
-        if (versions.length > MAX_KEPT_VERSIONS) {
-            // Index 0 is the latest
-            for (let i = 2; i < versions.length; i++) {
-                const version = versions[i];
-                await this.gcpSecretManagerClient.destroySecretVersion({ name: version.name, etag: version.etag });
-            }
-        }
-    }
-
-    private payloadToString(payload: google.cloud.secretmanager.v1.ISecretPayload | null | undefined): string {
-        if (!payload || !payload.data) {
-            return '';
-        }
-
-        const stringPayload = payload.data.toString();
-
-        if (!stringPayload.startsWith('{"LP_COMPAT_SECRET_TYPE')) {
-            return stringPayload; // V2 secret
-        }
-
-        let storedSecretObject: unknown;
-
-        try {
-            storedSecretObject = JSON.parse(stringPayload);
-        } catch (error) {
-            // Do nothing
-        }
-
-        if (!isV1CompatSecretObject(storedSecretObject)) {
-            throw newSecretClientError(ErrorCodes.Secret.Invalid, `The stored secret does not have a valid format and cannot be retrieved`);
-        }
-
-        // V1 comp secrets returned always string
-        return this.convertSecretToString(storedSecretObject.LP_COMPAT_SECRET_TYPE, storedSecretObject.secret);
-    }
-
-    private convertSecretToString(type: string, secret: unknown): string {
-        // Primitive type Symbol does not work with Vault so we don't need to check, and undefined is a string in Vault
-        // BigInt also does not work with Vault so not need to check
-
-        if (type === 'string' && typeof secret === 'string') return secret;
-
-        if (type === 'number') return Number(secret).toString();
-
-        // Default
-        return JSON.stringify(secret);
-    }
+        settings.secrets[index] = updatedSecret;
+        this.fs.writeFileSync(this.path, JSON.stringify(settings, null, 4));
+        resolve(updatedSecret);
+      } catch {
+        reject(
+          new SecretError(
+            ErrorCodes.Secret.Failure,
+            `Updating Secret ${updatedSecret.key} failed`,
+          ),
+        );
+      }
+    });
+  }
 }

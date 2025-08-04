@@ -31,7 +31,7 @@ describe('node version', () => {
       id: 'invoke',
     };
 
-    await nodeVersion(opts, '10.0.0');
+    await nodeVersion(opts, '20.0.0');
 
     expect(consoleSpy).toBeCalledTimes(0);
   });

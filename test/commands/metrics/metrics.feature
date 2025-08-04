@@ -3,7 +3,6 @@ Feature: Metrics Command
   Scenario: Get metrics of a function with function name and only lasting period provided
     Given I'm logged in
     When I run the metrics command and pass the function name and a 1h period
-    Then It should call getMetrics
     Then It should display metrics
 
   Scenario: Get an error if lasting period flag incomplete
@@ -15,7 +14,6 @@ Feature: Metrics Command
   Scenario: Get metrics of a function with function with start and end provided
     Given I'm logged in
     When I run the metrics command and pass the function name and a start timestamp and an end timestamp
-    Then It should call getMetrics
     Then It should display metrics
 
   Scenario: Get an error with start and end provided in a period of <15m

@@ -10,7 +10,6 @@ require('events').EventEmitter.defaultMaxListeners = 15;
 interface IDeployViewConfig {
   error?: ErrorMessage;
   log?: LogMessage;
-  cliUx?: any;
 }
 
 export class GetView {

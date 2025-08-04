@@ -1,5 +1,6 @@
 import { Answers } from 'inquirer';
 import { PrettyPrintableError } from '@oclif/core/lib/interfaces';
+import { difference } from 'lodash';
 import { IFunction } from '../../types';
 import { UndeployView } from '../../view/undeploy.view';
 import { DeploymentController } from './deployment.controller';
@@ -41,6 +42,16 @@ export class UndeployController extends DeploymentController {
       const functionsToUndeploy: IFunction[] =
         await this.collectLambdaInformationForAllLambdas(lambdaFunctions);
 
+      const notUndeployableFunctions = difference(
+        lambdaFunctions,
+        functionsToUndeploy.map(({ name }) => name),
+      );
+
+      if (notUndeployableFunctions.length !== 0) {
+        throw new Error(
+          `Function ${notUndeployableFunctions} were not found on the platform.`,
+        );
+      }
       let confirmedFunctionsToUndeploy: IFunction[] = [];
       if (inputFlags?.yes) {
         confirmedFunctionsToUndeploy = functionsToUndeploy;
@@ -51,11 +62,6 @@ export class UndeployController extends DeploymentController {
         confirmedFunctionsToUndeploy = functionsToUndeploy.filter(
           (entry: IFunction) => answer[entry.name],
         );
-
-        /* istanbul ignore else */
-        if (confirmedFunctionsToUndeploy.length === 0) {
-          return;
-        }
       }
 
       await this.undeployView.showDeployments({

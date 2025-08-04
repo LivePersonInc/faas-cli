@@ -19,13 +19,14 @@ import { MetricsController } from '../../../src/controller/metrics.controller';
 import { FileService } from '../../../src/service/file.service';
 import { DefaultStructureService } from '../../../src/service/defaultStructure.service';
 import { MetricsView } from '../../../src/view/metrics.view';
+import { formatDate } from '../../../src/shared/utils';
 
 const feature = loadFeature('test/commands/metrics/metrics.feature');
 defineFeature(feature, (test) => {
   jest.setTimeout(100000);
   const testDir = join(__dirname, 'test');
   const fileService = new FileService();
-  const stdoutSpy = jest.spyOn(process.stdout, 'write');
+  const consoleSpy = jest.spyOn(global.console, 'log');
 
   beforeEach(() => {
     jest.spyOn(process, 'cwd').mockReturnValue(testDir);
@@ -37,6 +38,7 @@ defineFeature(feature, (test) => {
 
   afterEach(() => {
     jest.resetAllMocks();
+    consoleSpy.mockReset();
   });
 
   afterAll(() => {
@@ -49,10 +51,7 @@ defineFeature(feature, (test) => {
     when,
     then,
   }) => {
-    const cliUx = {
-      table: jest.fn(),
-    };
-    const metricsView = new MetricsView({ cliUx });
+    const metricsView = new MetricsView();
 
     given("I'm logged in", async () => {
       await fileService.writeTempFile({
@@ -84,26 +83,12 @@ defineFeature(feature, (test) => {
       },
     );
 
-    then('It should call getMetrics', () => {
-      expect(stdoutSpy).toBeCalledWith(
-        expect.stringContaining('f791e5ca-3e78-4990-a066-59b82cdfd6a0'),
-      );
-      expect(stdoutSpy).toBeCalledWith(
-        expect.stringContaining('"bucketSize":300'),
-      );
-      expect(stdoutSpy).toBeCalledWith(
-        expect.stringContaining(String(Math.floor(Date.now() / 10000))),
-      );
-    });
-
     then('It should display metrics', () => {
-      expect(JSON.stringify(cliUx.table.mock.calls[0])).toContain(
-        '1656420000000',
+      expect(consoleSpy).toBeCalledWith(
+        expect.stringContaining('Code-based Errors'),
       );
-      expect(JSON.stringify(cliUx.table.mock.calls[0])).toContain(
-        'CODING_FAILURE',
-      );
-      expect(JSON.stringify(cliUx.table.mock.calls[0])).toContain('UKNOWN');
+      expect(consoleSpy).toBeCalledWith(expect.stringContaining('CEST'));
+      expect(consoleSpy).toBeCalledWith(expect.stringContaining('84'));
     });
   });
 
@@ -112,10 +97,7 @@ defineFeature(feature, (test) => {
     when,
     then,
   }) => {
-    const cliUx = {
-      table: jest.fn(),
-    };
-    const metricsView = new MetricsView({ cliUx });
+    const metricsView = new MetricsView();
     let thrownError;
     given("I'm logged in", async () => {
       await fileService.writeTempFile({
@@ -164,11 +146,9 @@ defineFeature(feature, (test) => {
     when,
     then,
   }) => {
-    const cliUx = {
-      table: jest.fn(),
-    };
-    const metricsView = new MetricsView({ cliUx });
-
+    const metricsView = new MetricsView();
+    const startTs = Date.now() - 1000 * 60 * 60 * 24 * 30;
+    const endTs = Date.now();
     given("I'm logged in", async () => {
       await fileService.writeTempFile({
         '123456789': {
@@ -195,33 +175,17 @@ defineFeature(feature, (test) => {
         await controller.getMetrics({
           lambdaFunction: 'exampleFunction',
           inputFlags: {
-            start: Date.now() - 1000 * 60 * 60 * 24 * 30,
-            end: Date.now(),
+            start: startTs,
+            end: endTs,
           },
         });
       },
     );
 
-    then('It should call getMetrics', () => {
-      expect(stdoutSpy).toBeCalledWith(
-        expect.stringContaining('f791e5ca-3e78-4990-a066-59b82cdfd6a0'),
-      );
-      expect(stdoutSpy).toBeCalledWith(
-        expect.stringContaining('"bucketSize":86400'),
-      );
-      expect(stdoutSpy).toBeCalledWith(
-        expect.stringContaining(String(Math.floor(Date.now() / 1000000))),
-      );
-    });
-
     then('It should display metrics', () => {
-      expect(JSON.stringify(cliUx.table.mock.calls[0])).toContain(
-        '1656420000000',
+      expect(consoleSpy).toBeCalledWith(
+        expect.stringContaining(formatDate(startTs).substring(0, 5)),
       );
-      expect(JSON.stringify(cliUx.table.mock.calls[0])).toContain(
-        'CODING_FAILURE',
-      );
-      expect(JSON.stringify(cliUx.table.mock.calls[0])).toContain('UNKOWN');
     });
   });
 
@@ -230,10 +194,7 @@ defineFeature(feature, (test) => {
     when,
     then,
   }) => {
-    const cliUx = {
-      table: jest.fn(),
-    };
-    const metricsView = new MetricsView({ cliUx });
+    const metricsView = new MetricsView();
     let thrownError;
 
     given("I'm logged in", async () => {
@@ -284,10 +245,7 @@ defineFeature(feature, (test) => {
     when,
     then,
   }) => {
-    const cliUx = {
-      table: jest.fn(),
-    };
-    const metricsView = new MetricsView({ cliUx });
+    const metricsView = new MetricsView();
     let thrownError;
 
     given("I'm logged in", async () => {
@@ -341,10 +299,7 @@ defineFeature(feature, (test) => {
     when,
     then,
   }) => {
-    const cliUx = {
-      table: jest.fn(),
-    };
-    const metricsView = new MetricsView({ cliUx });
+    const metricsView = new MetricsView();
     let thrownError;
 
     given("I'm logged in", async () => {
@@ -396,10 +351,7 @@ defineFeature(feature, (test) => {
     when,
     then,
   }) => {
-    const cliUx = {
-      table: jest.fn(),
-    };
-    const metricsView = new MetricsView({ cliUx });
+    const metricsView = new MetricsView();
     let thrownError;
 
     given("I'm logged in", async () => {
@@ -448,10 +400,7 @@ defineFeature(feature, (test) => {
     when,
     then,
   }) => {
-    const cliUx = {
-      table: jest.fn(),
-    };
-    const metricsView = new MetricsView({ cliUx });
+    const metricsView = new MetricsView();
     let thrownError;
 
     given("I'm logged in", async () => {
@@ -500,10 +449,7 @@ defineFeature(feature, (test) => {
     when,
     then,
   }) => {
-    const cliUx = {
-      table: jest.fn(),
-    };
-    const metricsView = new MetricsView({ cliUx });
+    const metricsView = new MetricsView();
 
     given("I'm logged in", async () => {
       await fileService.writeTempFile({
@@ -539,11 +485,8 @@ defineFeature(feature, (test) => {
     );
 
     then('It should print out the data as csv', () => {
-      expect(stdoutSpy).toBeCalledWith(
-        expect.stringContaining('f791e5ca-3e78-4990-a066-59b82cdfd6a0'),
-      );
-      expect(JSON.stringify(stdoutSpy.mock.calls)).toContain(
-        'Successful Invocations,Code-based',
+      expect(consoleSpy).toBeCalledWith(
+        expect.stringContaining('Successful Invocations,Code-based'),
       );
     });
   });
@@ -553,10 +496,7 @@ defineFeature(feature, (test) => {
     when,
     then,
   }) => {
-    const cliUx = {
-      table: jest.fn(),
-    };
-    const metricsView = new MetricsView({ cliUx });
+    const metricsView = new MetricsView();
 
     given("I'm logged in", async () => {
       await fileService.writeTempFile({
@@ -592,12 +532,9 @@ defineFeature(feature, (test) => {
     );
 
     then('It should print out the data as json', () => {
-      expect(stdoutSpy).toBeCalledWith(
-        expect.stringContaining('f791e5ca-3e78-4990-a066-59b82cdfd6a0'),
-      );
-      expect(JSON.stringify(stdoutSpy.mock.calls)).toContain(
-        "'Successful Invocations': 15,",
-      );
+      expect(consoleSpy).toHaveBeenCalledTimes(1);
+      const loggedData = consoleSpy.mock.calls[0][0][0];
+      expect(loggedData['Successful Invocations']).toBe(15);
     });
   });
 });

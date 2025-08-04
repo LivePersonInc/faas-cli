@@ -210,18 +210,22 @@ export class FaasService implements IFaaSService {
     const existingFunctions = allFnMetas.filter(({ name }) =>
       lambdaNames.includes(name),
     );
-    return Promise.all(
-      existingFunctions.map(async (existingFunction) => {
-        const fn = await this.doFetch({
-          urlPart: `/functions/${existingFunction.uuid}`,
-          method: 'GET',
-        });
-        if (fn && fn.versions) {
-          return { ...fn, manifest: fn.versions[0] };
-        }
-        return fn;
-      }),
-    );
+
+    const fns = (
+      await Promise.all(
+        existingFunctions.map(async (existingFunction) => {
+          const fn = await this.doFetch({
+            urlPart: `/functions/${existingFunction.uuid}`,
+            method: 'GET',
+          });
+          if (fn && fn.versions) {
+            return { ...fn, manifest: fn.versions[0] };
+          }
+          return fn;
+        }),
+      )
+    ).flat();
+    return fns;
   }
 
   public async getAllFunctionMetas(): Promise<LPFnMeta[]> {
@@ -236,7 +240,22 @@ export class FaasService implements IFaaSService {
       method: 'GET',
     })) as LPFnMeta[];
 
-    return this.getLambdasByNames(fnMetas.map(({ name }) => name));
+    const uuids = fnMetas.map(({ uuid }) => uuid);
+
+    const fns = await Promise.all(
+      uuids.map(async (uuid) => {
+        const fn = await this.doFetch({
+          urlPart: `/functions/${uuid}`,
+          method: 'GET',
+        });
+        if (fn && fn.versions) {
+          return { ...fn, manifest: fn.versions[0] };
+        }
+        return fn;
+      }),
+    );
+
+    return fns;
   }
 
   public async getAllDeployments(): Promise<IDeployment[]> {
@@ -329,9 +348,9 @@ export class FaasService implements IFaaSService {
       });
       return metaUpdate || manifestUpdate;
     } catch (error) {
-      if (error.errorCode?.includes('contract-error')) {
+      if (error.errorCode?.includes('validation')) {
         throw new Error(
-          `Push Error: The code of function '${body.name}' you are trying to push is not a valid lambda.`,
+          `Function Validation Error: ${error.errorMsg || error.message}`,
         );
       }
       throw new Error(error.errorMsg || error.message);
@@ -356,9 +375,9 @@ export class FaasService implements IFaaSService {
       );
       return updateManifestResponse;
     } catch (error) {
-      if (error.errorCode?.includes('contract-error')) {
+      if (error.errorCode?.includes('validation')) {
         throw new Error(
-          `Push Error: The code of function '${body.name}' you are trying to push is not a valid lambda.`,
+          `Function Validation Error: ${error.errorMsg || error.message}`,
         );
       }
       throw new Error(error.errorMsg || error.message);
@@ -370,9 +389,9 @@ export class FaasService implements IFaaSService {
       urlPart: `/functions`,
       method: 'POST',
       body: meta,
-      resolveBody: false,
+      resolveBody: true,
     });
-    return response.body;
+    return response;
   }
 
   public async pushFunctionMeta(
@@ -422,7 +441,7 @@ export class FaasService implements IFaaSService {
   }
 
   public async getFunctionByUuid(uuid: string): Promise<IFunction> {
-    const urlPart = `/lambdas/${uuid}`;
+    const urlPart = `/functions/${uuid}`;
     const [foundLambda] = await this.doFetch({ urlPart, method: 'GET' });
     return foundLambda;
   }
@@ -542,8 +561,8 @@ export class FaasService implements IFaaSService {
       }
       if (error.response?.body) {
         throw {
-          errorCode: error.response.body.errorCode,
-          errorMsg: error.response.body.errorMsg,
+          errorCode: error.response.body.code,
+          errorMsg: error.response.body.message,
           ...(error.response.body.errorLogs && {
             errorLogs: error.response.body.errorLogs,
           }),

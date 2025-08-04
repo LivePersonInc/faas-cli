@@ -89,10 +89,14 @@ export class GetController {
       if (domains.includes('deployments')) {
         const allDeployments = await faasService.getAllDeployments();
         const deployedLambdas = updatedLambdas
-          .filter(
-            (lambda) =>
-              lambda.state === 'Productive' || lambda.state === 'Modified',
-          )
+          .filter((fn) => {
+            if (fn.state === 'Productive' || fn.state === 'Modified') {
+              return !!allDeployments.find(
+                ({ functionUuid }) => functionUuid === fn.uuid,
+              );
+            }
+            return false;
+          })
           .map((fn) => {
             const relatedDeployment = allDeployments.find(
               ({ functionUuid }) => functionUuid === fn.uuid,

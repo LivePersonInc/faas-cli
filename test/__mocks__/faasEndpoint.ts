@@ -215,15 +215,19 @@ export function getEvents() {
 }
 
 export function push(body: any, method: string): any {
-  if (body.name === 'TestFunction1' && method === 'PUT') {
-    return {
-      body: JSON.stringify({
-        statusCode: 304,
-      }),
-    };
+  if (body.description === 'Description TestFunction1' && method === 'PUT') {
+    const error = new Error('Function Manifest not modified');
+    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+    // @ts-ignore
+    error.errorCode = 'com.liveperson.faas.function.unchanged';
+    throw error;
   }
   if (body.name === 'TestFunction7') {
-    throw new Error('wrong code');
+    const error = new Error('Function implementation not correct');
+    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+    // @ts-ignore
+    error.errorCode = 'com.liveperson.faas.fm.validation.interface-wrong';
+    throw error;
   }
   if (method === 'PUT') {
     return {
@@ -235,12 +239,30 @@ export function push(body: any, method: string): any {
   if (method === 'POST') {
     return {
       body: JSON.stringify({
-        statusCode: 201,
+        uuid: '123-123-123',
       }),
     };
   }
   return {
     body: {},
+  };
+}
+
+export function pushManifest(body: any, method: string): any {
+  if (
+    body.uuid === 'f791e5ca-3e78-4990-a066-59b82cdfd6a0' &&
+    method === 'PUT'
+  ) {
+    const error = new Error('Function Manifest not modified');
+    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+    // @ts-ignore
+    error.errorCode = 'com.liveperson.faas.function.unchanged';
+    throw error;
+  }
+  return {
+    body: JSON.stringify({
+      statusCode: 202,
+    }),
   };
 }
 

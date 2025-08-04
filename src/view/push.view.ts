@@ -123,13 +123,12 @@ export class PushView {
             await faasService.pushNewFunction({
               body: entry,
             });
-            return task.skip(`Push Successful: new function added to account`);
+            return true;
           }
           const wasModified = await faasService.push({
             body: entry,
-            ...(!isNewLambda && { uuid: entry.uuid }),
+            uuid: entry.uuid,
           });
-
           if (!wasModified) {
             return task.skip(
               `Push Skipped: The update contained no changes compared to the server version.`,
@@ -145,7 +144,7 @@ export class PushView {
   private preparePromptMessage(pushBody, accountId) {
     const event = pushBody.eventId || 'No Event';
     let eventHint = '';
-    if (pushBody.version !== -1) {
+    if (pushBody.manifest.version !== -1) {
       const localConfig = this.fileService.getFunctionConfig(pushBody.name);
       /* istanbul ignore else */
       if (localConfig.event !== event) {
