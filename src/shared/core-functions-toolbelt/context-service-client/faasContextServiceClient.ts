@@ -7,7 +7,7 @@ import type {
   Entity,
   IContextServiceClient,
   ContextServiceClient,
-} from '@liveperson/context-service';
+} from '../context-service-sdk/lib';
 
 export type ContextSessionServiceClientFactory = (
   url: string,

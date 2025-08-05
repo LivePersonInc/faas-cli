@@ -14,3 +14,4 @@ node_modules
 !/bin/example/bin/core-functions-toolbelt/package.json
 /functions
 .DS_Store
+/local_test

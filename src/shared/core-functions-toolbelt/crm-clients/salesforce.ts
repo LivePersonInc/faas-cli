@@ -15,6 +15,6 @@ const { Connection } = pkg;
  *     ConnectToSalesforce({loginUrl:'https://test.salesforce.com',accessToken:'secret',refreshToken:'secret'})
  * ```
  */
-export function ConnectToSalesforce(params: ConnectionOptions): pkg.Connection {
-    return new Connection(params);
+export function ConnectToSalesforce(params: ConnectionOptions) {
+  return new Connection(params);
 }

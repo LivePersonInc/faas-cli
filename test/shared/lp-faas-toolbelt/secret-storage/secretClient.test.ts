@@ -1,175 +1,345 @@
-import { VaultSecretClient } from '../../../../src/shared/core-functions-toolbelt/secret-storage/secretClient';
+import { FunctionsSecretClient } from '../../../../src/shared/core-functions-toolbelt/secret-storage/secretClient';
+import { ErrorCodes } from '../../../../src/shared/core-functions-toolbelt/errors/errorCodes';
+import { ICache } from '../../../../src/shared/core-functions-toolbelt/secret-storage/ICache';
+import { SecretEntry } from '../../../../src/shared/core-functions-toolbelt/secret-storage/types';
+import {
+  MAX_SECRET_SIZE,
+  SYSTEM_SECRET_PREFIX,
+} from '../../../../src/shared/core-functions-toolbelt/shared/const';
 
-describe('faas toolbelt - secret storage', () => {
-  it('should read a secret from the local storage', async () => {
-    const fs = {
-      readFileSync: jest.fn(
-        () => `{
-        "secrets": [
-            {
-              "key": "Key",
-              "value": "Value"
-            }
-        ]
-      }`,
-      ),
-    };
+// Mock the cache
+const mockCache: jest.Mocked<ICache<string, SecretEntry>> = {
+  get: jest.fn(),
+  getAll: jest.fn(),
+  set: jest.fn(),
+  has: jest.fn(),
+  delete: jest.fn(),
+  clear: jest.fn(),
+  size: jest.fn(),
+  setDefaultTtl: jest.fn(),
+};
 
-    const secretClient = new VaultSecretClient(fs);
-    const secret = await secretClient.readSecret('Key');
-    expect(secret).toEqual({
-      key: 'Key',
-      value: 'Value',
+// Mock fs
+const mockFs = {
+  readFileSync: jest.fn(),
+  writeFileSync: jest.fn(),
+};
+
+describe('FunctionsSecretClient', () => {
+  let secretClient: FunctionsSecretClient;
+
+  beforeEach(() => {
+    jest.clearAllMocks();
+    secretClient = new FunctionsSecretClient(mockCache, {}, mockFs);
+  });
+
+  describe('constructor', () => {
+    it('should set default TTL when cache TTL option is provided', () => {
+      const ttl = 10000;
+      // eslint-disable-next-line no-new
+      new FunctionsSecretClient(mockCache, { cache: { ttl } }, mockFs);
+
+      expect(mockCache.setDefaultTtl).toHaveBeenCalledWith(ttl);
+    });
+
+    it('should not set default TTL when no cache TTL option is provided', () => {
+      // eslint-disable-next-line no-new
+      new FunctionsSecretClient(mockCache, {}, mockFs);
+
+      expect(mockCache.setDefaultTtl).not.toHaveBeenCalled();
     });
   });
 
-  it('should throw an error if no secret with the related key is found', async () => {
-    const fs = {
-      readFileSync: jest.fn(
-        () => `{
-        "secrets": [
-            {
-              "key": "Key",
-              "value": "Value"
-            }
-        ]
-      }`,
-      ),
+  describe('readSecret', () => {
+    const mockSecret: SecretEntry = { key: 'TestKey', value: 'TestValue' };
+    const mockSettings = {
+      secrets: [mockSecret],
     };
 
-    const secretClient = new VaultSecretClient(fs);
-    try {
-      await secretClient.readSecret('Key2');
-    } catch (error) {
-      expect(error.code).toBe('com.liveperson.faas.secret.not-found');
-      expect(error.message).toBe('There is no Secret Key2 for this account');
-    }
-  });
+    it('should return secret from cache when useCache is true and secret exists in cache', async () => {
+      mockCache.has.mockReturnValue(true);
+      mockCache.get.mockReturnValue(mockSecret);
 
-  it('should throw an error if no secret storage is found', async () => {
-    const secretClient = new VaultSecretClient();
-    try {
-      await secretClient.readSecret('Key2');
-    } catch (error) {
-      expect(error.code).toBe('com.liveperson.faas.secret.not-found');
-      expect(error.message).toBe('There is no Secret Key2 for this account');
-    }
-  });
+      const result = await secretClient.readSecret('TestKey');
 
-  it('should update a secret to the local storage', async () => {
-    const fs = {
-      readFileSync: jest.fn(
-        () => `{
-        "secrets": [
-            {
-              "key": "Key",
-              "value": "Value"
-            }
-        ]
-      }`,
-      ),
-      writeFileSync: jest.fn(),
-    };
-
-    const secretClient = new VaultSecretClient(fs);
-    const updatedSecret = {
-      key: 'Key',
-      value: 'New Value',
-    };
-    const secret = await secretClient.updateSecret(updatedSecret);
-    expect(secret).toEqual({
-      key: 'Key',
-      value: 'New Value',
+      expect(result).toEqual(mockSecret);
+      expect(mockCache.has).toHaveBeenCalledWith('TestKey');
+      expect(mockCache.get).toHaveBeenCalledWith('TestKey');
+      expect(mockFs.readFileSync).not.toHaveBeenCalled();
     });
-  });
 
-  it('should throw while updating secret because value length is to long', async () => {
-    const fs = {
-      readFileSync: jest.fn(
-        () => `{
-        "secrets": [
-            {
-              "key": "Key",
-              "value": "Value"
-            }
-        ]
-      }`,
-      ),
-      writeFileSync: jest.fn(),
-    };
+    it('should read secret from file system when not in cache', async () => {
+      mockCache.has.mockReturnValue(false);
+      mockFs.readFileSync.mockReturnValue(JSON.stringify(mockSettings));
 
-    const secretClient = new VaultSecretClient(fs);
-    const updatedSecret = {
-      key: 'Key',
-      value: `Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua. At vero eos et accusam et justo duo dolores et ea rebum. Stet clita kasd gubergren, no sea takimata sanctus est Lorem ipsum dolor sit amet. Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua. At vero eos et accusam et justo duo dolores et ea rebum. Stet clita kasd gubergren, no sea takimata sanctus est Lorem ipsum dolor sit amet. Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua. At vero eos et accusam et justo duo dolores et ea rebum. Stet clita kasd gubergren, no sea takimata sanctus est Lorem ipsum dolor sit amet.
+      const result = await secretClient.readSecret('TestKey');
 
-      Duis autem vel eum iriure dolor in hendrerit in vulputate velit esse molestie consequat, vel illum dolore eu feugiat nulla facilisis at vero eros et accumsan et iusto odio dignissim qui blandit praesent luptatum zzril delenit augue duis dolore te feugait nulla facilisi. Lorem ipsum dolor sit amet, consectetuer adipiscing elit, sed diam nonummy nibh euismod tincidunt ut laoreet dolore magna aliquam erat volutpat.
-
-      Ut wisi enim ad minim veniam, quis nostrud exerci tation ullamcorper suscipit lobortis nisl ut aliquip ex ea commodo consequat. Duis autem vel eum iriure dolor in hendrerit in vulputate velit esse molestie consequat, vel illum dolore eu feugiat nulla facilisis at vero eros et accumsan et iusto odio dignissim qui blandit praesent luptatum zzril delenit augue duis dolore te feugait nulla facilisi.
-
-      Nam liber tempor cum soluta nobis eleifend option congue nihil imperdiet doming id quod mazim placerat facer possim assum. Lorem ipsum dolor sit amet, consectetuer adipiscing elit, sed diam nonummy nibh euismod tincidunt ut laoreet dolore magna aliquam erat volutpat. Ut wisi enim ad minim veniam, quis nostrud exerci tation ullamcorper suscipit lobortis nisl ut aliquip ex ea commodo consequat.
-
-      Duis autem vel eum iriure dolor in hendrerit in vulputate velit esse molestie consequat, vel illum dolore eu feugiat nulla facilisis.
-
-      At vero eos et accusam et justo duo dolores et ea rebum. Stet clita kasd gubergren, no sea takimata sanctus est Lorem ipsum dolor sit amet. Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua. At vero eos et accusam et justo duo dolores et ea rebum. Stet clita kasd gubergren, no sea takimata sanctus est Lorem ipsum dolor sit amet. Lorem ipsum dolor sit amet, consetetur sadipscing elitr, At accusam aliquyam diam diam dolore dolores duo eirmod eos erat, et nonumy sed tempor et et invidunt justo labore Stet clita ea et gubergren, kasd magna no rebum. sanctus sea sed takimata ut vero voluptua. est Lorem ipsum dolor sit amet. Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat.
-
-      Consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua. At vero eos et accusam et justo duo dolores et ea rebum. Stet clita kasd gubergren, no sea takimata sanctus est Lorem ipsum dolor sit amet. Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua. At vero eos et accusam et justo duo dolores et ea rebum. Stet clita kasd gubergren, no sea takimata sanctus est Lorem ipsum dolor sit amet. Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua. At vero eos et accusam et justo duo dolores et ea rebum. Stet clita kasd gubergren, no sea takimata sanctus. Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua. At vero eos et accusam et justo duo dolores et ea rebum. Stet clita kasd gubergren, no sea takimata sanctus est Lorem ipsum dolor sit amet. Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua. At vero eos et accusam et justo duo dolores et ea rebum. Stet clita kasd gubergren, no sea takimata sanctus est Lorem ipsum dolor sit amet. Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua. At vero eos et accusam et justo duo dolores et ea rebum. Stet clita kasd gubergren, no sea takimata sanctus est Lorem ipsum dolor sit amet.
-
-      Duis autem vel eum iriure dolor in hendrerit in vulputate velit esse molestie consequat, vel illum dolore eu feugiat nulla facilisis at vero eros et accumsan et iusto odio dignissim qui blandit praesent luptatum zzril delenit augue duis dolore te feugait nulla facilisi. Lorem ipsum dolor sit amet, consectetuer adipiscing elit, sed diam nonummy nibh euismod tincidunt ut laoreet dolore magna aliquam erat volutpat.
-
-      Ut wisi enim ad minim veniam, quis nostrud exerci tation ullamcorper suscipit lobortis nisl ut aliquip ex ea commodo consequat. Duis autem vel eum iriure dolor in hendrerit in vulputate velit esse molestie consequat, vel illum dolore eu feugiat nulla facilisis at vero eros et accumsan et iusto odio dignissim qui blandit praesent luptatum zzril delenit augue duis dolore te feugait nulla facilisi.
-
-      Nam liber tempor cum soluta nobis eleifend option congue nihil imperdiet doming id quod mazim placerat facer possim assum. Lorem ipsum dolor sit amet, consectetuer adipiscing elit, sed diam nonummy nibh euismod tincidunt ut laoreet dolore magna aliquam erat volutpat. Ut wisi enim ad minim veniam, quis nostrud exerci tation ullamcorper suscipit lobortis nisl ut aliquip ex ea commodo consequat.
-
-      Duis autem vel eum iriure dolor in hendrerit in vulputate velit esse molestie consequat, vel illum dolore eu feugiat nulla facilisis.
-
-      At vero eos et accusam et justo duo dolores et ea rebum. Stet clita kasd gubergren, no sea takimata sanctus est Lorem ipsum dolor sit amet. Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua. At vero eos et accusam et justo duo dolores et ea rebum. Stet clita kasd gubergren, no sea takimata sanctus est Lorem ipsum dolor sit amet. Lorem ipsum dolor sit amet, consetetur sadipscing elitr, At accusam aliquyam diam diam dolore dolores duo eirmod eos erat, et nonumy sed tempor et et invidunt justo labore Stet clita ea et gubergren, kasd magna no rebum. sanctus sea sed takimata ut vero voluptua. est Lorem ipsum dolor sit amet. Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat.
-
-      Consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua. At vero eos et accusam et justo duo dolores et ea rebum. Stet clita kasd gubergren, no sea takimata sanctus est Lorem ipsum dolor sit amet. Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua. At vero eos et accusam et justo duo dolores et ea rebum. Stet clita kasd gubergren, no sea takimata sanctus est Lorem ipsum dolor sit amet. Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua. At vero eos et accusam et justo duo dolores et ea rebum. Stet clita kasd gubergren, no sea takimata sanctus. Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua. At vero eos et accusam et justo duo dolores et ea rebum. Stet clita kasd gubergren, no sea takimata sanctus est Lorem ipsum dolor sit amet. Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua. At vero eos et accusam et justo duo dolores et ea rebum. Stet clita kasd gubergren, no sea takimata sanctus est Lorem ipsum dolor sit amet. Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua. At vero eos et accusam et justo duo dolores et ea rebum. Stet clita kasd gubergren, no sea takimata sanctus est Lorem ipsum dolor sit amet.
-
-      Duis autem vel eum iriure dolor in hendrerit in vulputate velit esse molestie consequat, vel illum dolore eu feugiat nulla facilisis at vero eros et accumsan et iusto odio dignissim qui blandit praesent luptatum zzril delenit augue duis dolore te feugait nulla facilisi. Lorem ipsum dolor sit amet, consectetuer adipiscing elit, sed diam nonummy nibh euismod tincidunt ut laoreet dolore magna aliquam erat volutpat.
-
-      Ut wisi enim ad minim veniam, quis nostrud exerci tation ullamcorper suscipit lobortis nisl ut aliquip ex ea commodo consequat. Duis autem vel eum iriure dolor in hendrerit in vulputate velit esse molestie consequat, vel illum dolore eu feugiat nulla facilisis at vero eros et accumsan et iusto odio dignissim qui blandit praesent luptatum zzril delenit augue duis dolore te feugait nulla facilisi.
-
-      Nam liber tempor cum soluta nobis eleifend option congue nihil imperdiet doming id quod mazim placerat facer possim assum. Lorem ipsum dolor sit amet, consectetuer adipiscing elit, sed diam nonummy nibh euismod tincidunt ut laoreet dolore magna aliquam erat volutpat. Ut wisi enim ad minim veniam, quis nostrud exerci tation ullamcorper suscipit lobortis nisl ut aliquip ex ea commodo consequat.
-
-      Duis autem vel eu`,
-    };
-    try {
-      await secretClient.updateSecret(updatedSecret);
-    } catch (error) {
-      expect(error.code).toBe('com.liveperson.faas.secret.invalid-format');
-      expect(error.message).toBe(
-        'Provided Secret Value exceeds allowed length of 10000',
+      expect(result).toEqual(mockSecret);
+      expect(mockFs.readFileSync).toHaveBeenCalledWith(
+        expect.stringContaining('functions/settings.json'),
+        'utf8',
       );
-    }
+      expect(mockCache.set).toHaveBeenCalledWith('TestKey', {
+        key: 'TestKey',
+        value: mockSecret,
+      });
+    });
+
+    it('should read secret from file system when useCache is false', async () => {
+      mockFs.readFileSync.mockReturnValue(JSON.stringify(mockSettings));
+
+      const result = await secretClient.readSecret('TestKey', {
+        useCache: false,
+      });
+
+      expect(result).toEqual(mockSecret);
+      expect(mockCache.has).not.toHaveBeenCalled();
+      expect(mockFs.readFileSync).toHaveBeenCalled();
+      expect(mockCache.set).toHaveBeenCalledWith('TestKey', {
+        key: 'TestKey',
+        value: mockSecret,
+      });
+    });
+
+    it('should throw error when secret is not found in file', async () => {
+      mockCache.has.mockReturnValue(false);
+      mockFs.readFileSync.mockReturnValue(JSON.stringify({ secrets: [] }));
+
+      await expect(
+        secretClient.readSecret('NonExistentKey'),
+      ).rejects.toMatchObject({
+        code: ErrorCodes.Secret.NotFound,
+        message: 'There is no Secret NonExistentKey for this account',
+      });
+    });
+
+    it('should throw error when file cannot be read', async () => {
+      mockCache.has.mockReturnValue(false);
+      mockFs.readFileSync.mockImplementation(() => {
+        throw new Error('File not found');
+      });
+
+      await expect(secretClient.readSecret('TestKey')).rejects.toMatchObject({
+        code: ErrorCodes.Secret.NotFound,
+        message: 'There is no Secret TestKey for this account',
+      });
+    });
+
+    it('should throw error when JSON is malformed', async () => {
+      mockCache.has.mockReturnValue(false);
+      mockFs.readFileSync.mockReturnValue('invalid json');
+
+      await expect(secretClient.readSecret('TestKey')).rejects.toMatchObject({
+        code: ErrorCodes.Secret.NotFound,
+        message: 'There is no Secret TestKey for this account',
+      });
+    });
   });
 
-  it('should throw an error while updating secret because secret is not found', async () => {
-    const fs = {
-      readFileSync: jest.fn(
-        () => `{
-        "secrets": [
-            {
-              "key": "Key",
-              "value": "Value"
-            }
-        ]
-      }`,
-      ),
-      writeFileSync: jest.fn(),
+  describe('updateSecret', () => {
+    const mockSettings = {
+      secrets: [
+        { key: 'ExistingKey', value: 'ExistingValue' },
+        { key: 'AnotherKey', value: 'AnotherValue' },
+      ],
     };
 
-    const secretClient = new VaultSecretClient(fs);
-    const updatedSecret = {
-      key: 'Key2',
-      value: `Lorem ipsum`,
-    };
-    try {
+    beforeEach(() => {
+      mockFs.readFileSync.mockReturnValue(JSON.stringify(mockSettings));
+    });
+
+    it('should successfully update an existing secret', async () => {
+      const updatedSecret: SecretEntry = {
+        key: 'ExistingKey',
+        value: 'NewValue',
+      };
+
+      const result = await secretClient.updateSecret(updatedSecret);
+
+      expect(result).toEqual(updatedSecret);
+      expect(mockFs.writeFileSync).toHaveBeenCalledWith(
+        expect.stringContaining('functions/settings.json'),
+        expect.stringContaining('"NewValue"'),
+      );
+      expect(mockCache.set).toHaveBeenCalledWith('ExistingKey', updatedSecret);
+    });
+
+    it('should throw error when trying to update system secret', async () => {
+      const systemSecret: SecretEntry = {
+        key: `${SYSTEM_SECRET_PREFIX}SystemKey`,
+        value: 'SystemValue',
+      };
+
+      await expect(
+        secretClient.updateSecret(systemSecret),
+      ).rejects.toMatchObject({
+        code: ErrorCodes.Secret.SystemSecret,
+        message: 'You are not allowed to update secrets added by the system',
+      });
+
+      expect(mockFs.readFileSync).not.toHaveBeenCalled();
+      expect(mockFs.writeFileSync).not.toHaveBeenCalled();
+    });
+
+    it('should throw error when secret value is not a string', async () => {
+      const invalidSecret = { key: 'TestKey', value: 123 as any };
+
+      await expect(
+        secretClient.updateSecret(invalidSecret),
+      ).rejects.toMatchObject({
+        code: ErrorCodes.Secret.Invalid,
+        message: 'Provided secret value must be of type string',
+      });
+
+      expect(mockFs.readFileSync).not.toHaveBeenCalled();
+      expect(mockFs.writeFileSync).not.toHaveBeenCalled();
+    });
+
+    it('should throw error when secret value exceeds maximum size', async () => {
+      const largeValue = 'x'.repeat(MAX_SECRET_SIZE + 1);
+      const largeSecret: SecretEntry = { key: 'TestKey', value: largeValue };
+
+      await expect(
+        secretClient.updateSecret(largeSecret),
+      ).rejects.toMatchObject({
+        code: ErrorCodes.Secret.Invalid,
+        message: 'Provided secret value exceeds allowed length of 16kb',
+      });
+
+      expect(mockFs.readFileSync).not.toHaveBeenCalled();
+      expect(mockFs.writeFileSync).not.toHaveBeenCalled();
+    });
+
+    it('should throw error when secret key does not exist', async () => {
+      const nonExistentSecret: SecretEntry = {
+        key: 'NonExistentKey',
+        value: 'Value',
+      };
+
+      await expect(
+        secretClient.updateSecret(nonExistentSecret),
+      ).rejects.toThrow();
+
+      expect(mockFs.writeFileSync).not.toHaveBeenCalled();
+      expect(mockCache.set).not.toHaveBeenCalled();
+    });
+
+    it('should handle file read errors during update', async () => {
+      mockFs.readFileSync.mockImplementation(() => {
+        throw new Error('File read error');
+      });
+
+      const secret: SecretEntry = { key: 'TestKey', value: 'TestValue' };
+
+      await expect(secretClient.updateSecret(secret)).rejects.toThrow();
+
+      expect(mockFs.writeFileSync).not.toHaveBeenCalled();
+      expect(mockCache.set).not.toHaveBeenCalled();
+    });
+
+    it('should handle JSON parse errors during update', async () => {
+      mockFs.readFileSync.mockReturnValue('invalid json');
+
+      const secret: SecretEntry = { key: 'TestKey', value: 'TestValue' };
+
+      await expect(secretClient.updateSecret(secret)).rejects.toThrow();
+
+      expect(mockFs.writeFileSync).not.toHaveBeenCalled();
+      expect(mockCache.set).not.toHaveBeenCalled();
+    });
+
+    it('should preserve other secrets when updating one', async () => {
+      const updatedSecret: SecretEntry = {
+        key: 'ExistingKey',
+        value: 'UpdatedValue',
+      };
+
       await secretClient.updateSecret(updatedSecret);
-    } catch (error) {
-      expect(error.code).toBe('com.liveperson.faas.secret.op-failed');
-      expect(error.message).toBe('Updating Secret Key2 failed');
-    }
+
+      const writeCall = mockFs.writeFileSync.mock.calls[0];
+      const writtenData = JSON.parse(writeCall[1]);
+
+      expect(writtenData.secrets).toHaveLength(2);
+      expect(writtenData.secrets[0]).toEqual({
+        key: 'ExistingKey',
+        value: 'UpdatedValue',
+      });
+      expect(writtenData.secrets[1]).toEqual({
+        key: 'AnotherKey',
+        value: 'AnotherValue',
+      });
+    });
+
+    it('should format JSON with proper indentation', async () => {
+      const updatedSecret: SecretEntry = {
+        key: 'ExistingKey',
+        value: 'NewValue',
+      };
+
+      await secretClient.updateSecret(updatedSecret);
+
+      const writeCall = mockFs.writeFileSync.mock.calls[0];
+      const writtenContent = writeCall[1];
+
+      // Check that JSON is formatted with 4-space indentation
+      expect(writtenContent).toContain('    ');
+      expect(() => JSON.parse(writtenContent)).not.toThrow();
+    });
+  });
+
+  describe('edge cases and error scenarios', () => {
+    it('should handle empty secrets array in settings file', async () => {
+      mockCache.has.mockReturnValue(false);
+      mockFs.readFileSync.mockReturnValue(JSON.stringify({ secrets: [] }));
+
+      await expect(secretClient.readSecret('AnyKey')).rejects.toMatchObject({
+        code: ErrorCodes.Secret.NotFound,
+        message: 'There is no Secret AnyKey for this account',
+      });
+    });
+
+    it('should handle missing secrets property in settings file', async () => {
+      mockCache.has.mockReturnValue(false);
+      mockFs.readFileSync.mockReturnValue(JSON.stringify({}));
+
+      await expect(secretClient.readSecret('AnyKey')).rejects.toMatchObject({
+        code: ErrorCodes.Secret.NotFound,
+        message: 'There is no Secret AnyKey for this account',
+      });
+    });
+
+    it('should handle null secret value in file', async () => {
+      mockCache.has.mockReturnValue(false);
+      mockFs.readFileSync.mockReturnValue(
+        JSON.stringify({
+          secrets: [{ key: 'TestKey', value: null }],
+        }),
+      );
+
+      const result = await secretClient.readSecret('TestKey');
+      expect(result).toEqual({ key: 'TestKey', value: null });
+    });
+
+    it('should handle empty string secret value', async () => {
+      const emptySecret: SecretEntry = { key: 'ExistingKey', value: '' };
+      mockFs.readFileSync.mockReturnValue(
+        JSON.stringify({
+          secrets: [{ key: 'ExistingKey', value: 'old value' }],
+        }),
+      );
+
+      const result = await secretClient.updateSecret(emptySecret);
+      expect(result).toEqual(emptySecret);
+    });
+
+    it('should use default request options when none provided', async () => {
+      mockCache.has.mockReturnValue(true);
+      mockCache.get.mockReturnValue({ key: 'TestKey', value: 'TestValue' });
+
+      await secretClient.readSecret('TestKey');
+
+      // Should use cache by default (useCache: true)
+      expect(mockCache.has).toHaveBeenCalled();
+    });
   });
 });

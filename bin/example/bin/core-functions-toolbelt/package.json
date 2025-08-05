@@ -9,9 +9,8 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "@google-cloud/secret-manager": "^5.6.0",
-    "@liveperson/context-service": "0.1.4",
-    "jsforce": "1.10.1",
+    "get-port": "7.1.0",
+    "jsforce": "3.9.1",
     "undici": "6.19.2"
   }
 }
