@@ -10,7 +10,6 @@ import type { SecretClientOptions, SecretEntry } from './secret-storage/types';
 import type { ICache } from './secret-storage/ICache';
 import type { ISecretClient } from './secret-storage/IsecretClient';
 import type { IOrchestratorClient } from './orchestrator-client/IOrchestratorClient';
-
 import { ConnectToSalesforce } from './crm-clients/salesforce';
 import { MTLSClient } from './mtls-client/mtlsClient';
 import { SecretCache } from './secret-storage/secretCache';

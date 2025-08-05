@@ -1,7 +1,4 @@
-import type { ConnectionOptions } from './types';
-import pkg from 'jsforce';
-
-const { Connection } = pkg;
+import { Connection, ConnectionConfig } from '@jsforce/jsforce-node';
 
 /**
  * ConnectToSalesforce creates a standard JSForce Connection object and preconfigures it
@@ -15,6 +12,6 @@ const { Connection } = pkg;
  *     ConnectToSalesforce({loginUrl:'https://test.salesforce.com',accessToken:'secret',refreshToken:'secret'})
  * ```
  */
-export function ConnectToSalesforce(params: ConnectionOptions) {
+export function ConnectToSalesforce(params: ConnectionConfig): Connection {
   return new Connection(params);
 }

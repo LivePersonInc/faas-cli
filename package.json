@@ -11,6 +11,7 @@
   },
   "bugs": "https://github.com/LivePersonInc/faas-cli/issues",
   "dependencies": {
+    "@jsforce/jsforce-node": "3.9.1",
     "@oclif/color": "^1.0.13",
     "@oclif/core": "^1",
     "@oclif/plugin-autocomplete": "^3.2.31",
@@ -28,7 +29,6 @@
     "hpagent": "1.0.0",
     "inquirer": "^8.0.0",
     "js-yaml": "^4.0.0",
-    "jsforce": "3.9.1",
     "jsonwebtoken": "^9.0.0",
     "latest-version": "^7.0.0",
     "listr": "^0.14.3",
@@ -42,7 +42,8 @@
     "semver": "^7.2.1",
     "set-interval-async": "^2.0.0",
     "systeminformation": "^5.27.6",
-    "tty-table": "^4.2.3"
+    "tty-table": "^4.2.3",
+    "undici": "6.19.2"
   },
   "devDependencies": {
     "@babel/core": "7.20.12",
@@ -59,7 +60,7 @@
     "@types/listr": "0.14.4",
     "@types/loglevel": "1.6.3",
     "@types/moment-timezone": "0.5.30",
-    "@types/node": "14.18.36",
+    "@types/node": "^24.2.0",
     "@types/node-emoji": "1.8.2",
     "@types/request-promise-native": "1.0.18",
     "@types/semver": "7.3.13",
