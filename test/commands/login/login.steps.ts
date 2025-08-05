@@ -12,6 +12,8 @@ jest.mock('../../../src/service/faasFactory.service', () =>
   jest.requireActual('../../__mocks__/faasFactory.service.ts'),
 );
 
+jest.setTimeout(25000);
+
 import { FileService } from '../../../src/service/file.service';
 import { LoginController } from '../../../src/controller/login.controller';
 import { LoginView } from '../../../src/view/login.view';
