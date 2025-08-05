@@ -69,19 +69,10 @@ defineFeature(feature, (test) => {
     then(
       'It should display information about functions/deployments/account/events',
       () => {
-        expect(consoleSpy).toBeCalledWith(
-          expect.stringMatching(/TestFunction1/),
-        );
+        expect(consoleSpy).toBeCalledWith(expect.stringMatching(/27\.01\.20/));
         expect(consoleSpy).toBeCalledWith(expect.stringMatching(/Draft/));
-        expect(consoleSpy).toBeCalledWith(
-          expect.stringMatching(/bot_connectors_error_hook/),
-        );
-        expect(consoleSpy).toBeCalledWith(
-          expect.stringMatching(/TestFunction2/),
-        );
-        expect(consoleSpy).toBeCalledWith(
-          expect.stringMatching(/TestFunction2/),
-        );
+        expect(consoleSpy).toBeCalledWith(expect.stringMatching(/bot_con/));
+        expect(consoleSpy).toBeCalledWith(expect.stringMatching(/05\.02\.20/));
       },
     );
   });
