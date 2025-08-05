@@ -85,7 +85,8 @@ defineFeature(feature, (test) => {
 
     then('It should display metrics', () => {
       expect(consoleSpy).toBeCalledWith(expect.stringContaining('Failures'));
-      expect(consoleSpy).toBeCalledWith(expect.stringContaining('CEST'));
+      expect(consoleSpy).toBeCalledWith(expect.stringContaining('From'));
+      expect(consoleSpy).toBeCalledWith(expect.stringContaining('To'));
       expect(consoleSpy).toBeCalledWith(expect.stringContaining('84'));
     });
   });

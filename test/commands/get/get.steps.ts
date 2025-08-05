@@ -70,7 +70,7 @@ defineFeature(feature, (test) => {
       'It should display information about functions/deployments/account/events',
       () => {
         expect(consoleSpy).toBeCalledWith(expect.stringMatching(/27\.01\.20/));
-        expect(consoleSpy).toBeCalledWith(expect.stringMatching(/Draft/));
+        expect(consoleSpy).toBeCalledWith(expect.stringMatching(/Mod/));
         expect(consoleSpy).toBeCalledWith(expect.stringMatching(/bot_con/));
         expect(consoleSpy).toBeCalledWith(expect.stringMatching(/05\.02\.20/));
       },
