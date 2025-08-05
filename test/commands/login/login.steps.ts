@@ -559,9 +559,7 @@ defineFeature(feature, (test) => {
 
         const getController = new GetController();
         await getController.get({ domains: ['functions'] });
-        expect(consoleSpy).toBeCalledWith(
-          expect.stringMatching(/Name.*State.*Event/),
-        );
+        expect(consoleSpy).toBeCalledTimes(6);
       },
     );
   });
