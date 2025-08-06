@@ -1,3 +1,4 @@
+/* eslint-disable camelcase */
 Object.defineProperty(exports, '__esModule', { value: true });
 exports.FaasDebugger = void 0;
 /* eslint-disable no-console */
@@ -7,12 +8,14 @@ const path_1 = require('path');
 const perf_hooks_1 = require('perf_hooks');
 
 const EXECUTION_EXCEED_TIMEOUT = 60000;
-export const EXTERNAL_PACKAGE_MAPPING = [
+const EXTERNAL_PACKAGE_MAPPING = [
   'luxon',
   'jsforce',
   'jsonwebtoken',
   'es-toolkit',
 ];
+exports.EXTERNAL_PACKAGE_MAPPING = EXTERNAL_PACKAGE_MAPPING;
+
 function isLogLevel(input) {
   return Object.keys({
     Debug: 'Debug',
