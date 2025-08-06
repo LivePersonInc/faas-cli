@@ -289,7 +289,6 @@ export class FaasDebugger {
         'utf8',
       ),
     );
-
     // eslint-disable-next-line no-restricted-syntax
     for (const key of Object.keys(environmentVariables)) {
       if (key !== 'key' && environmentVariables[key] !== 'value') {
@@ -310,7 +309,7 @@ ${file}
   try {
     console = require('../../bin/rewire').InvokeLogger;
     const input = require('functions/${this.lambdaToInvoke}/config').input;
-    const response = await require('../../bin/rewire').convertToPromisifiedLambda((input, cb) => lambda(input, cb))(input);
+    const response = await lambda(input);
     console.response(response);
     process.send(console.getHistory());
   } catch (error) {
@@ -318,8 +317,6 @@ ${file}
     process.send(console.getHistory());
   }
 })();`;
-
-    file = mapExternalPackagesToToolbelt(file);
     writeFileSync(this.indexPath, file);
   }
 
@@ -338,7 +335,7 @@ ${originalCode}
   try {
     console = require('../../bin/rewire').DebugLogger;
     const input = require('functions/${process.argv[2]}/config').input;
-    const response = await require('../../bin/rewire').convertToPromisifiedLambda((input, cb) => lambda(input, cb))(input);
+    const response = await await(input);
     console.response(response);
     console.printHistory();
   } catch (error) {

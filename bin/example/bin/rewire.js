@@ -163,36 +163,9 @@ class Logger {
   }
 }
 
-function convertToPromisifiedLambda(fn) {
-  return (input) => {
-    // eslint-disable-next-line consistent-return
-    return new Promise((resolve, reject) => {
-      try {
-        // Resolving will be only possible via callback
-        const callback = (err, response) => {
-          if (err === undefined || err === null) {
-            return resolve(response);
-          }
-          return reject(err);
-        };
-        const returnValue = fn(input, callback);
-
-        if (returnValue && typeof returnValue.then === 'function') {
-          // We only consider the result returned via the callback. However we will catch errors.
-          // eslint-disable-next-line @typescript-eslint/no-empty-function
-          return returnValue.then((_) => {}).catch(reject);
-        }
-      } catch (error) {
-        return reject(error);
-      }
-    });
-  };
-}
-
 module.exports = {
   proxy,
   DebugLogger: new Logger(true),
   InvokeLogger: new Logger(),
   LogLevels,
-  convertToPromisifiedLambda,
 };
