@@ -335,7 +335,7 @@ ${originalCode}
   try {
     console = require('../../bin/rewire').DebugLogger;
     const input = require('functions/${process.argv[2]}/config').input;
-    const response = await await(input);
+    const response = await lambda(input);
     console.response(response);
     console.printHistory();
   } catch (error) {

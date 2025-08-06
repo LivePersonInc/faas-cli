@@ -1,4 +1,3 @@
-/* eslint-disable camelcase */
 Object.defineProperty(exports, '__esModule', { value: true });
 exports.FaasDebugger = void 0;
 /* eslint-disable no-console */
@@ -9,13 +8,12 @@ const perf_hooks_1 = require('perf_hooks');
 
 const EXECUTION_EXCEED_TIMEOUT = 60000;
 const EXTERNAL_PACKAGE_MAPPING = [
+  'oauth-1.0a',
   'luxon',
   'jsforce',
   'jsonwebtoken',
-  'es-toolkit',
+  'lodash',
 ];
-exports.EXTERNAL_PACKAGE_MAPPING = EXTERNAL_PACKAGE_MAPPING;
-
 function isLogLevel(input) {
   return Object.keys({
     Debug: 'Debug',
@@ -31,13 +29,7 @@ function didExecutionExceedTimewindow(timeStart, timeEnd) {
 }
 function didExecutionFailWithError(result) {
   return (
-    result.filter((e) => {
-      let _a;
-      return (
-        e.level === 'Error' &&
-        ((_a = e.message) === null || _a === void 0 ? void 0 : _a.errorMsg)
-      );
-    }).length > 0
+    result.filter((e) => e.level === 'Error' && e.message?.errorMsg).length > 0
   );
 }
 function throwInvalidProjectFolderError() {
@@ -46,19 +38,12 @@ function throwInvalidProjectFolderError() {
   );
 }
 function didIncorrectErrorFormat(result) {
-  return result.some((e) => {
-    let _a;
-    let _b;
-    return (
-      ((_a = e.extras[0]) === null || _a === void 0
-        ? void 0
-        : _a.originalFailure) &&
-      ((_b = e.message) === null || _b === void 0
-        ? void 0
-        : _b.errorMsg.includes('incorrect format')) &&
-      e.level === 'Warn'
-    );
-  });
+  return result.some(
+    (e) =>
+      e.extras[0]?.originalFailure &&
+      e.message?.errorMsg.includes('incorrect format') &&
+      e.level === 'Warn',
+  );
 }
 function mapExternalPackagesToToolbelt(file) {
   const isReverse = EXTERNAL_PACKAGE_MAPPING.some((pkg) =>
@@ -84,6 +69,22 @@ function mapExternalPackagesToToolbelt(file) {
   return file;
 }
 class FaasDebugger {
+  result;
+
+  configPath;
+
+  errorLogs;
+
+  indexPath;
+
+  lambdaToInvoke;
+
+  functionPath;
+
+  port;
+
+  cwd;
+
   constructor(
     /* istanbul ignore next */ {
       indexPath = '',
@@ -120,7 +121,7 @@ class FaasDebugger {
       this.updateLambdaFunctionForInvoke();
       this.setEnvironmentVariables(true);
       await this.createChildProcessForInvokeLocal();
-    } catch (error) {
+    } catch {
       throwInvalidProjectFolderError();
     }
   }
@@ -155,60 +156,37 @@ class FaasDebugger {
           return;
         }
         if (didIncorrectErrorFormat(result)) {
-          const error = result.filter((e) => {
-            let _a;
-            let _b;
-            return (
-              ((_a = e.extras[0]) === null || _a === void 0
-                ? void 0
-                : _a.originalFailure) &&
-              ((_b = e.message) === null || _b === void 0
-                ? void 0
-                : _b.errorMsg.includes('incorrect format')) &&
-              e.level === 'Warn'
-            );
-          })[0];
+          const error = result.filter(
+            (e) =>
+              e.extras[0]?.originalFailure &&
+              e.message?.errorMsg.includes('incorrect format') &&
+              e.level === 'Warn',
+          )[0];
           this.errorLogs.errorCode = error.message.errorCode;
           this.errorLogs.errorMsg = error.extras[0].originalFailure;
           result[
-            result.findIndex((e) => {
-              let _a;
-              return (
+            result.findIndex(
+              (e) =>
                 e.level === 'Warn' &&
-                ((_a = e.message) === null || _a === void 0
-                  ? void 0
-                  : _a.errorMsg.includes('incorrect format'))
-              );
-            })
+                e.message?.errorMsg.includes('incorrect format'),
+            )
           ].message = error.message.errorMsg;
           this.errorLogs.errorLogs = result;
           console.log(JSON.stringify(this.errorLogs, null, 4));
           return;
         }
         if (didExecutionFailWithError(result)) {
-          const enrichedError = result.filter((e) => {
-            let _a;
-            return (
-              e.level === 'Error' &&
-              ((_a = e.message) === null || _a === void 0
-                ? void 0
-                : _a.errorMsg)
-            );
-          })[0];
+          const enrichedError = result.filter(
+            (e) => e.level === 'Error' && e.message?.errorMsg,
+          )[0];
           /* istanbul ignore else */
           if (enrichedError) {
             this.errorLogs.errorCode = enrichedError.message.errorCode;
             this.errorLogs.errorMsg = enrichedError.message.errorMsg;
             result[
-              result.findIndex((e) => {
-                let _a;
-                return (
-                  e.level === 'Error' &&
-                  ((_a = e.message) === null || _a === void 0
-                    ? void 0
-                    : _a.errorMsg)
-                );
-              })
+              result.findIndex(
+                (e) => e.level === 'Error' && e.message?.errorMsg,
+              )
             ].message = `Received Error - ${enrichedError.message.errorMsg}`;
           }
           this.errorLogs.errorLogs = result;
@@ -289,23 +267,11 @@ class FaasDebugger {
         'utf8',
       ),
     );
-    // better readable than forEach
     // eslint-disable-next-line no-restricted-syntax
-    for (const env of environmentVariables) {
-      if (
-        !Object.prototype.hasOwnProperty.call(env, 'key') ||
-        !Object.prototype.hasOwnProperty.call(env, 'value')
-      ) {
-        // eslint-disable-next-line no-console
-        console.log(
-          'Invalid environment variables! Please make sure to have key-value pairs as variables',
-        );
-        return;
+    for (const key of Object.keys(environmentVariables)) {
+      if (key !== 'key' && environmentVariables[key] !== 'value') {
+        process.env[key] = environmentVariables[key];
       }
-      if (env.key === '') {
-        return;
-      }
-      process.env[env.key] = env.value;
     }
   }
 
@@ -321,7 +287,7 @@ ${file}
   try {
     console = require('../../bin/rewire').InvokeLogger;
     const input = require('functions/${this.lambdaToInvoke}/config').input;
-    const response = await require('../../bin/rewire').convertToPromisifiedLambda((input, cb) => lambda(input, cb))(input);
+    const response = await lambda(input);
     console.response(response);
     process.send(console.getHistory());
   } catch (error) {
@@ -329,7 +295,6 @@ ${file}
     process.send(console.getHistory());
   }
 })();`;
-    file = mapExternalPackagesToToolbelt(file);
     (0, fs_1.writeFileSync)(this.indexPath, file);
   }
 
@@ -348,7 +313,7 @@ ${originalCode}
   try {
     console = require('../../bin/rewire').DebugLogger;
     const input = require('functions/${process.argv[2]}/config').input;
-    const response = await require('../../bin/rewire').convertToPromisifiedLambda((input, cb) => lambda(input, cb))(input);
+    const response = await lambda(input);
     console.response(response);
     console.printHistory();
   } catch (error) {
