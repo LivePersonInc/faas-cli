@@ -30,7 +30,7 @@ jobs:
           registry-url: https://registry.npmjs.org/
 
       - name: Build
-        run: npm ci
+        run: yarn install --frozen-lockfile
 
 #      - name: End-2-End Testing
 #        run: npm run e2e
