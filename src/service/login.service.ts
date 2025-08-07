@@ -87,7 +87,6 @@ export class LoginService {
     try {
       const domain = await this.csdsClient.getUri(accountId, 'agentVep');
       const url = `https://${domain}/api/account/${accountId}/login?v=1.3`;
-
       return await this.got(url, {
         method: 'POST',
         headers: {

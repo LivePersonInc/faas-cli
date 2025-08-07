@@ -66,7 +66,7 @@ function didIncorrectErrorFormat(result: any[]) {
 
 function mapExternalPackagesToToolbelt(file: string): string {
   const isReverse = EXTERNAL_PACKAGE_MAPPING.some((pkg) =>
-    file.includes(`require('../bin/lp-faas-toolbelt/${pkg}')`),
+    file.includes(`require('../bin/core-functions-toolbelt/${pkg}')`),
   );
   const needsMapping =
     isReverse ||
@@ -76,12 +76,12 @@ function mapExternalPackagesToToolbelt(file: string): string {
       /* istanbul ignore next */
       file = isReverse
         ? file.replace(
-            `require('../bin/lp-faas-toolbelt/${pkg}')`,
+            `require('../bin/core-functions-toolbelt/${pkg}')`,
             `require('${pkg}')`,
           )
         : file.replace(
             `require('${pkg}')`,
-            `require('../bin/lp-faas-toolbelt/${pkg}')`,
+            `require('../bin/core-functions-toolbelt/${pkg}')`,
           );
     });
   }
@@ -243,7 +243,7 @@ export class FaasDebugger {
     /* istanbul ignore next */
     if (!this.port) {
       /* eslint-disable */
-      const getPort = require('./lp-faas-toolbelt/node_modules/get-port');
+      const getPort = require('./core-functions-toolbelt/node_modules/get-port');
       /* eslint-enable */
       this.port = await getPort({ port: getPort.makeRange(30500, 31000) });
     }
@@ -289,23 +289,11 @@ export class FaasDebugger {
         'utf8',
       ),
     );
-    // better readable than forEach
     // eslint-disable-next-line no-restricted-syntax
-    for (const env of environmentVariables) {
-      if (
-        !Object.prototype.hasOwnProperty.call(env, 'key') ||
-        !Object.prototype.hasOwnProperty.call(env, 'value')
-      ) {
-        // eslint-disable-next-line no-console
-        console.log(
-          'Invalid environment variables! Please make sure to have key-value pairs as variables',
-        );
-        return;
+    for (const key of Object.keys(environmentVariables)) {
+      if (key !== 'key' && environmentVariables[key] !== 'value') {
+        process.env[key] = environmentVariables[key];
       }
-      if (env.key === '') {
-        return;
-      }
-      process.env[env.key] = env.value;
     }
   }
 
@@ -321,7 +309,7 @@ ${file}
   try {
     console = require('../../bin/rewire').InvokeLogger;
     const input = require('functions/${this.lambdaToInvoke}/config').input;
-    const response = await require('../../bin/rewire').convertToPromisifiedLambda((input, cb) => lambda(input, cb))(input);
+    const response = await lambda(input);
     console.response(response);
     process.send(console.getHistory());
   } catch (error) {
@@ -329,8 +317,6 @@ ${file}
     process.send(console.getHistory());
   }
 })();`;
-
-    file = mapExternalPackagesToToolbelt(file);
     writeFileSync(this.indexPath, file);
   }
 
@@ -349,7 +335,7 @@ ${originalCode}
   try {
     console = require('../../bin/rewire').DebugLogger;
     const input = require('functions/${process.argv[2]}/config').input;
-    const response = await require('../../bin/rewire').convertToPromisifiedLambda((input, cb) => lambda(input, cb))(input);
+    const response = await lambda(input);
     console.response(response);
     console.printHistory();
   } catch (error) {

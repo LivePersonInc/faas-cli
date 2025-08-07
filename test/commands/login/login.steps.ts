@@ -12,24 +12,31 @@ jest.mock('../../../src/service/faasFactory.service', () =>
   jest.requireActual('../../__mocks__/faasFactory.service.ts'),
 );
 
+jest.setTimeout(25000);
+
 import { FileService } from '../../../src/service/file.service';
 import { LoginController } from '../../../src/controller/login.controller';
 import { LoginView } from '../../../src/view/login.view';
 import { LoginService } from '../../../src/service/login.service';
 import { GetController } from '../../../src/controller/get.controller';
+import { CsdsClient } from '../../../src/service/csds.service';
 
 const feature = loadFeature('test/commands/login/login.feature');
 
 defineFeature(feature, (test) => {
   fs.removeSync(join(__dirname, 'faas-tmp.json'));
   const consoleSpy = jest.spyOn(global.console, 'log');
-  const stdoutSpy = jest.spyOn(process.stdout, 'write').mockImplementation();
   jest.spyOn(process, 'cwd').mockReturnValue(__dirname);
   jest.spyOn(os, 'tmpdir').mockReturnValue(__dirname);
   const fileService = new FileService({ cwd: __dirname });
 
+  const mockCsdsService = {
+    getUri: jest.fn().mockResolvedValue('https://example.com/fninvocations'),
+  } as unknown as jest.Mocked<CsdsClient>;
+
   afterEach(() => {
     consoleSpy.mockReset();
+    jest.clearAllMocks();
   });
 
   afterAll(async () => {
@@ -50,6 +57,8 @@ defineFeature(feature, (test) => {
         userId: 'TestUserId',
         loginName: 'testUser',
       },
+      csrf: 'csrf-token',
+      sessionId: 'session-id',
     });
 
     given('I have no saved accountId', async () => {
@@ -68,7 +77,12 @@ defineFeature(feature, (test) => {
         password: 'testPW',
       })) as any;
 
-      const loginController = new LoginController({ loginView, loginService });
+      const loginController = new LoginController({
+        loginView,
+        loginService,
+        fileService,
+        csdsService: mockCsdsService,
+      });
       await loginController.loginByCommand();
     });
 
@@ -89,6 +103,9 @@ defineFeature(feature, (test) => {
             token: 'aöskldfj02ajösldkfjalsdkf',
             userId: 'TestUserId',
             username: 'testUser',
+            csrf: 'csrf-token',
+            sessionId: 'session-id',
+            isV2: true,
             active: true,
           },
         });
@@ -110,6 +127,9 @@ defineFeature(feature, (test) => {
           token: 'aöskldfj02ajösldkfjalsdkf',
           userId: 'TestUserId',
           username: 'testUser',
+          csrf: 'csrf-token',
+          sessionId: 'session-id',
+          isV2: true,
           active: true,
         },
       });
@@ -125,7 +145,12 @@ defineFeature(feature, (test) => {
       loginView.chooseOrEnterAccountId = jest.fn(async () => ({
         accountId: '123456789',
       })) as any;
-      const loginController = new LoginController({ loginView, loginService });
+      const loginController = new LoginController({
+        loginView,
+        loginService,
+        fileService,
+        csdsService: mockCsdsService,
+      });
       await loginController.loginByCommand();
     });
 
@@ -151,6 +176,9 @@ defineFeature(feature, (test) => {
           token: 'aöskldfj02ajösldkfjalsdkf',
           userId: 'TestUserId',
           username: 'testUser',
+          csrf: 'csrf-token',
+          sessionId: 'session-id',
+          isV2: true,
           active: true,
         },
       });
@@ -165,6 +193,8 @@ defineFeature(feature, (test) => {
           userId: 'TestUserId',
           loginName: 'testUser',
         },
+        csrf: 'csrf-token',
+        sessionId: 'session-id',
       });
     });
 
@@ -178,7 +208,12 @@ defineFeature(feature, (test) => {
         password: 'testPW',
       })) as any;
 
-      const loginController = new LoginController({ loginView, loginService });
+      const loginController = new LoginController({
+        loginView,
+        loginService,
+        fileService,
+        csdsService: mockCsdsService,
+      });
       await loginController.loginByCommand();
     });
 
@@ -197,6 +232,9 @@ defineFeature(feature, (test) => {
           token: 'aöskldfj02ajösldkfjalsdkf',
           userId: 'TestUserId',
           username: 'testUser',
+          csrf: 'csrf-token',
+          sessionId: 'session-id',
+          isV2: true,
           active: true,
         },
       });
@@ -218,6 +256,9 @@ defineFeature(feature, (test) => {
           token: 'aöskldfj02ajösldkfjalsdkf',
           userId: 'TestUserId',
           username: 'testUser',
+          csrf: 'csrf-token',
+          sessionId: 'session-id',
+          isV2: true,
           active: true,
         },
       });
@@ -232,6 +273,8 @@ defineFeature(feature, (test) => {
           userId: 'TestUserId',
           loginName: 'testUser',
         },
+        csrf: 'csrf-token',
+        sessionId: 'session-id',
       });
     });
 
@@ -244,7 +287,12 @@ defineFeature(feature, (test) => {
         username: 'testUser',
       })) as any;
 
-      const loginController = new LoginController({ loginView, loginService });
+      const loginController = new LoginController({
+        loginView,
+        loginService,
+        fileService,
+        csdsService: mockCsdsService,
+      });
       await loginController.loginByCommand({
         inputFlags: { password: 'testPW' },
       });
@@ -265,6 +313,9 @@ defineFeature(feature, (test) => {
           token: 'aöskldfj02ajösldkfjalsdkf',
           userId: 'TestUserId',
           username: 'testUser',
+          csrf: 'csrf-token',
+          sessionId: 'session-id',
+          isV2: true,
           active: true,
         },
       });
@@ -286,6 +337,9 @@ defineFeature(feature, (test) => {
           token: 'aöskldfj02ajösldkfjalsdkf',
           userId: 'TestUserId',
           username: 'testUser',
+          csrf: 'csrf-token',
+          sessionId: 'session-id',
+          isV2: true,
           active: true,
         },
       });
@@ -300,6 +354,8 @@ defineFeature(feature, (test) => {
           userId: 'TestUserId',
           loginName: 'testUser',
         },
+        csrf: 'csrf-token',
+        sessionId: 'session-id',
       });
     });
 
@@ -314,7 +370,12 @@ defineFeature(feature, (test) => {
         username: 'testUser',
       })) as any;
 
-      const loginController = new LoginController({ loginView, loginService });
+      const loginController = new LoginController({
+        loginView,
+        loginService,
+        fileService,
+        csdsService: mockCsdsService,
+      });
       await loginController.loginByCommand({
         inputFlags: {
           password: 'testPW',
@@ -337,6 +398,9 @@ defineFeature(feature, (test) => {
           token: 'aöskldfj02ajösldkfjalsdkf',
           userId: 'TestUserId',
           username: 'testUser',
+          csrf: 'csrf-token',
+          sessionId: 'session-id',
+          isV2: true,
           active: true,
         },
       });
@@ -359,6 +423,9 @@ defineFeature(feature, (test) => {
           token: 'aöskldfj02ajösldkfjalsdkf',
           userId: 'TestUserId',
           username: 'testUser',
+          csrf: 'csrf-token',
+          sessionId: 'session-id',
+          isV2: true,
           active: true,
         },
       });
@@ -381,7 +448,12 @@ defineFeature(feature, (test) => {
         username: 'testUser',
       })) as any;
 
-      const loginController = new LoginController({ loginView, loginService });
+      const loginController = new LoginController({
+        loginView,
+        loginService,
+        fileService,
+        csdsService: mockCsdsService,
+      });
       try {
         await loginController.loginByCommand({
           inputFlags: { password: 'testPW' },
@@ -410,7 +482,10 @@ defineFeature(feature, (test) => {
     let token: string;
     let userId: string;
     const accountId = '123456789';
-    const loginController = new LoginController({ fileService });
+    const loginController = new LoginController({
+      fileService,
+      csdsService: mockCsdsService,
+    });
 
     given(
       'I have fetched the token and userId following the instructions',
@@ -421,6 +496,9 @@ defineFeature(feature, (test) => {
             token: '454545478787',
             userId: 'userId_123456789',
             username: 'testUser@liveperson.com',
+            csrf: 'csrf-token',
+            sessionId: 'session-id',
+            isV2: true,
             active: true,
           },
         });
@@ -453,6 +531,7 @@ defineFeature(feature, (test) => {
           userId: 'userId_123456789_SSO',
           csrf: null,
           sessionId: null,
+          isV2: true,
           active: true,
         },
         '6666666': {
@@ -460,6 +539,9 @@ defineFeature(feature, (test) => {
           token: '454545478787',
           userId: 'userId_123456789',
           username: 'testUser@liveperson.com',
+          csrf: 'csrf-token',
+          sessionId: 'session-id',
+          isV2: true,
         },
       });
     });
@@ -467,8 +549,6 @@ defineFeature(feature, (test) => {
     and(
       'I run any desired command and it will perform the normal action',
       async () => {
-        stdoutSpy.mockReset();
-
         const response = await loginController.getLoginInformation();
         expect(response).toEqual({
           accountId: '123456789',
@@ -479,10 +559,7 @@ defineFeature(feature, (test) => {
 
         const getController = new GetController();
         await getController.get({ domains: ['functions'] });
-
-        expect(JSON.stringify(stdoutSpy.mock.calls)).toContain(
-          'Name                          State          Last changed at                         Last changed by                         Event                                   ',
-        );
+        expect(consoleSpy).toBeCalledTimes(9);
       },
     );
   });

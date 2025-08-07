@@ -1,5 +1,5 @@
-import { LogMessage, ErrorMessage, cliUX } from './printer';
-
+import * as Table from 'tty-table';
+import { LogMessage, ErrorMessage } from './printer';
 import { INVOCATION_STATE_LABELS } from '../shared/constants';
 import { formatDate, transformToCSV } from '../shared/utils';
 
@@ -8,20 +8,15 @@ export class MetricsView {
 
   private error: ErrorMessage;
 
-  private readonly cliUx: any;
-
   constructor({
     log = new LogMessage(),
     error = new ErrorMessage(),
-    cliUx = cliUX,
   }: {
     log?: LogMessage;
     error?: ErrorMessage;
-    cliUx?: any;
   } = {}) {
     this.log = log;
     this.error = error;
-    this.cliUx = cliUx;
   }
 
   /**
@@ -32,31 +27,43 @@ export class MetricsView {
    */
   public printMetricsTable(metrics: any): void {
     this.log.print('');
-    this.cliUx.table(metrics, {
-      from: {
-        header: 'From',
-        get: (row: any) => formatDate(row.from),
-      },
-      to: {
-        header: 'To',
-        get: (row: any) => formatDate(row.to),
-      },
-      SUCCEEDED: {
-        header: INVOCATION_STATE_LABELS.SUCCEEDED,
-      },
-      UNKOWN: {
-        header: INVOCATION_STATE_LABELS.UNKOWN,
-      },
-      CODING_FAILURE: {
-        header: INVOCATION_STATE_LABELS.CODING_FAILURE,
-      },
-      PLATFORM_FAILURE: {
-        header: INVOCATION_STATE_LABELS.PLATFORM_FAILURE,
-      },
-      TIMEOUT: {
-        header: INVOCATION_STATE_LABELS.TIMEOUT,
-      },
-    });
+    const table = Table(
+      [
+        {
+          value: 'from',
+          alias: 'From',
+          formatter: (from) => (from ? formatDate(from) : '-'),
+        },
+        {
+          value: 'to',
+          alias: 'To',
+          formatter: (to) => (to ? formatDate(to) : '-'),
+        },
+        {
+          value: 'SUCCEEDED',
+          alias: INVOCATION_STATE_LABELS.SUCCEEDED,
+        },
+        {
+          value: 'CODING_FAILURE',
+          alias: INVOCATION_STATE_LABELS.UNKNOWN,
+        },
+        {
+          value: 'PLATFORM_FAILURE',
+          alias: INVOCATION_STATE_LABELS.CODING_FAILURE,
+        },
+        {
+          value: 'SUCCEEDED',
+          alias: INVOCATION_STATE_LABELS.PLATFORM_FAILURE,
+        },
+        {
+          value: 'TIMEOUT',
+          alias: INVOCATION_STATE_LABELS.TIMEOUT,
+        },
+      ],
+      metrics,
+      { defaultValue: '-' },
+    ).render();
+    this.log.print(table);
     this.log.print('');
   }
 
@@ -84,6 +91,6 @@ export class MetricsView {
         };
       }, {});
     });
-    return transformedMetrics;
+    return transformedMetrics.flat();
   }
 }

@@ -1,0 +1,16 @@
+{
+  "name": "core-functions-toolbelt",
+  "version": "1.31.3",
+  "description": "",
+  "main": "core-functions-toolbelt/index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "get-port": "7.1.0",
+    "@jsforce/jsforce-node": "3.9.1",
+    "undici": "6.19.2"
+  }
+}

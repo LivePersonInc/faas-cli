@@ -1,20 +1,33 @@
 /* eslint-disable no-useless-catch */
 /* eslint-disable class-methods-use-this */
+import { Got } from 'got/dist/source/types';
 import {
-  getAllLambdas,
   deploy,
   undeploy,
-  getLambdaByUUID,
+  getFunctionByUuid,
   invoke,
   getLimitCounts,
   getLambdaCounts,
   getInvocationCounts,
   getEvents,
   push,
+  getAllFunctionMetas,
+  getAllDeployments,
+  pushManifest,
 } from './faasEndpoint';
 import { FileService } from '../../src/service/file.service';
-import { ILambda, IRuntime } from '../../src/types';
-import { HttpMethods } from '../../src/service/faas.service';
+import {
+  IDeployment,
+  IFaasServiceConfig,
+} from '../../src/service/faas.service';
+import { LoginController } from '../../src/controller/login.controller';
+import { CsdsClient } from '../../src/service/csds.service';
+import {
+  LPFnMeta,
+  LPFnMetaUpdateParams,
+  LPFunction,
+  LPManifestUpdateParams,
+} from '../../src/types/IFunction';
 
 export class FaasService {
   public username: string;
@@ -27,15 +40,18 @@ export class FaasService {
 
   public fileService: FileService;
 
-  constructor({
-    username,
-    fileService = new FileService(),
-  }: { username?: string; fileService?: FileService } = {}) {
+  private readonly loginController: LoginController;
+
+  private readonly csdsClient: CsdsClient;
+
+  private readonly got: Got;
+
+  constructor({ username }: Partial<IFaasServiceConfig> = {}) {
     this.username = username || 'cliUser';
     this.accountId = undefined;
     this.token = undefined;
     this.userId = undefined;
-    this.fileService = fileService;
+    this.fileService = new FileService();
   }
 
   public pull(): void {
@@ -43,46 +59,17 @@ export class FaasService {
   }
 
   public async getAccountStatistic() {
-    const limitCountsUrl = '/reports/limitCounts';
-    const lambdaCountsUrl = '/reports/lambdaCounts';
-    const invocationUrl = '/reports/invocationCounts';
-
-    const date = new Date();
-    const currentDate = date.getTime();
-    const firstDayOfMonth = new Date(
-      date.getFullYear(),
-      date.getMonth(),
-      1,
-      1,
-    ).getTime();
-
-    const limitCounts = await this.doFetch({
-      urlPart: limitCountsUrl,
-      method: 'GET',
-    });
-    const lambdaCounts = await this.doFetch({
-      urlPart: lambdaCountsUrl,
-      method: 'GET',
-    });
-    const invocations = await this.doFetch({
-      urlPart: invocationUrl,
-      method: 'GET',
-      additionalParams: `&startTimestamp=${firstDayOfMonth}&endTimestamp=${currentDate}`,
-    });
-
-    return (await Promise.all([limitCounts, lambdaCounts, invocations])).reduce(
-      (acc, e) => ({ ...acc, ...e }),
-      {},
-    );
+    return {
+      numberOfFunctions: 1,
+      numberOfInvocations: 123,
+      numberOfDeployments: 1,
+    };
   }
 
   public async undeploy(uuid: string) {
     const urlPart = `/deployments/${uuid}`;
     try {
-      const response = await this.doFetch({ urlPart, method: 'DELETE' });
-      return {
-        message: response.message,
-      };
+      return await this.doFetch({ urlPart, method: 'DELETE' });
     } catch (error) {
       return {
         message: error.errorMsg,
@@ -106,46 +93,43 @@ export class FaasService {
     }
   }
 
-  public async getAllLambdas() {
-    const urlPart = `/lambdas`;
-    try {
-      return await this.doFetch({ urlPart, method: 'GET' });
-    } catch (error) {
-      throw error;
-    }
-  }
+  public async getLambdasByNames(lambdaNames: string[]) {
+    const urlPart = `/functions`;
+    const allLambdas = await this.doFetch({
+      urlPart,
+      method: 'GET',
+    });
+    const existingFunctions = allLambdas.filter(({ name }) =>
+      lambdaNames.includes(name),
+    );
 
-  public async getLambdasByNames(
-    lambdaNames: string[],
-    collectNonExistingLambas?: boolean,
-  ) {
-    const urlPart = `/lambdas`;
-    try {
-      return await Promise.all(
-        lambdaNames.map(async (name) => {
-          const [foundLambdas] = await this.doFetch({
-            urlPart,
+    const lambdas = (
+      await Promise.all(
+        existingFunctions.map(async (existingFunction) => {
+          const fn = await this.doFetch({
+            urlPart: `/functions/${existingFunction.uuid}`,
             method: 'GET',
-            additionalParams: `&name=${name}`,
           });
-          if (!foundLambdas && !collectNonExistingLambas) {
-            throw new Error(
-              `Function ${name} were not found on the platform. Please make sure the function with the name ${name} was pushed to the LivePerson Functions platform`,
-            );
+          if (fn && fn.versions) {
+            return { ...fn, manifest: fn.versions[0] };
           }
-          return foundLambdas || { name };
+          return fn;
         }),
-      );
-    } catch (error) {
-      throw error;
-    }
+      )
+    ).flat();
+    return lambdas;
   }
 
-  public async getLambdaByUUID(uuid: string) {
-    const urlPart = `/lambdas/${uuid}`;
+  public async getAllFunctionMetas() {
+    const urlPart = `/functions`;
+    return this.doFetch({ urlPart, method: 'GET' });
+  }
+
+  public async getFunctionByUuid(uuid: string) {
+    const urlPart = `/functions/${uuid}`;
     try {
-      const response = await this.doFetch({ urlPart, method: 'GET' });
-      return response[0];
+      const [foundLambda] = await this.doFetch({ urlPart, method: 'GET' });
+      return foundLambda;
     } catch (error) {
       throw error;
     }
@@ -164,29 +148,26 @@ export class FaasService {
     };
   }
 
-  public async addDomain(domain: string): Promise<any> {
-    return {
-      id: '1111-2222-3333-4444',
-      domain,
-      additionalProp1: {},
-    };
-  }
-
   public async push({
-    method,
     body,
     uuid,
   }: {
-    method: HttpMethods;
-    body: ILambda;
-    uuid?: string;
+    body: LPFunction;
+    uuid: string;
   }): Promise<boolean> {
     try {
-      const urlPart = `/lambdas${uuid ? `/${uuid}` : ''}`;
-      const response = await this.doFetch({ urlPart, method, body });
-      return response.statusCode !== 304;
+      const metaUpdate = await this.pushFunctionMeta(uuid, {
+        description: body.description,
+        skills: body.skills,
+      });
+
+      const manifestUpdate = await this.pushFunctionManifest(uuid, {
+        uuid: body.uuid,
+        ...body.manifest,
+      });
+      return metaUpdate || manifestUpdate;
     } catch (error) {
-      if (body.implementation.code.includes('lammbda')) {
+      if (body.manifest?.code.includes('validation')) {
         throw new Error(
           `Push Error: The code of function '${body.name}' you are trying to push is not a valid lambda.`,
         );
@@ -195,19 +176,106 @@ export class FaasService {
     }
   }
 
-  public async getRuntime(): Promise<IRuntime> {
-    return {
-      baseImageName: 'baseImage',
-      name: 'Node.js 10',
-      uuid: 'Runtime-uuid',
-    };
-  }
-
   public async invoke(uuid: string, payload: any) {
-    const urlPart = `/lambdas/${uuid}/invoke`;
+    const urlPart = `/functions/${uuid}/test`;
     try {
       return await this.doFetch({ urlPart, method: 'POST', body: payload });
     } catch (error) {
+      throw error;
+    }
+  }
+
+  public async getAllFunctions(): Promise<LPFunction[]> {
+    const urlPart = '/functions';
+    const fnMetas = (await this.doFetch({
+      urlPart,
+      method: 'GET',
+    })) as LPFnMeta[];
+
+    return this.getLambdasByNames(fnMetas.map(({ name }) => name));
+  }
+
+  public async getAllDeployments(): Promise<IDeployment[]> {
+    const urlPart = '/deployments';
+    return this.doFetch({ urlPart, method: 'GET' });
+  }
+
+  public async pushNewFunction({
+    body,
+  }: {
+    body: LPFunction;
+  }): Promise<boolean> {
+    try {
+      const { manifest: newManifest, ...newMeta } = body;
+      const newFunction = await this.pushNewMeta(newMeta);
+
+      const updateManifestResponse = await this.pushFunctionManifest(
+        newFunction.uuid,
+        {
+          uuid: newFunction.uuid,
+          ...newManifest,
+        },
+      );
+      return updateManifestResponse;
+    } catch (error) {
+      if (error.errorCode?.includes('validation')) {
+        throw new Error(
+          `Push Error: The code of function '${body.name}' you are trying to push is not a valid lambda.`,
+        );
+      }
+      throw new Error(error.errorMsg);
+    }
+  }
+
+  public async pushNewMeta(meta: LPFnMeta): Promise<LPFunction> {
+    const response = await this.doFetch({
+      urlPart: `/functions`,
+      method: 'POST',
+      body: meta,
+    });
+    return response;
+  }
+
+  public async pushFunctionMeta(
+    uuid: string,
+    meta: LPFnMetaUpdateParams,
+  ): Promise<boolean> {
+    try {
+      await this.doFetch({
+        urlPart: `/functions/${uuid}`,
+        method: 'PUT',
+        body: meta,
+      });
+      return true;
+    } catch (error) {
+      if (
+        error.errorCode &&
+        error.errorCode === 'com.liveperson.faas.function.unchanged'
+      ) {
+        return false;
+      }
+      throw error;
+    }
+  }
+
+  public async pushFunctionManifest(
+    uuid: string,
+    manifest: LPManifestUpdateParams,
+  ): Promise<boolean> {
+    try {
+      await this.doFetch({
+        urlPart: `/functions/${uuid}/manifest`,
+        method: 'PUT',
+        body: { ...manifest },
+      });
+      return true;
+    } catch (error) {
+      if (
+        error.errorCode &&
+        error.errorCode === 'com.liveperson.faas.function.unchanged'
+      ) {
+        return false;
+      }
       throw error;
     }
   }
@@ -246,7 +314,7 @@ export class FaasService {
     removeHeader?: boolean;
   }): Promise<void> {
     if (options.uuid === 'error') throw new Error('expected');
-    else process.stdout.write(JSON.stringify(options));
+    else process.stdout.write(JSON.stringify(options)); // TODO WHAT IS THIS?
   }
 
   public async getLambdaInvocationMetrics(options: {
@@ -260,9 +328,9 @@ export class FaasService {
       uuid: '7c44ffea-71e9-429f-bdad-1fade90329c4',
       invocationStatistics: [
         {
-          from: 1656420000000,
-          to: 1656420300000,
-          UNKOWN: 12,
+          from: options.startTimestamp ?? 1656420000000,
+          to: options.endTimestamp ?? 1656420300000,
+          UNKNOWN: 12,
           SUCCEEDED: 15,
           CODING_FAILURE: 34,
           PLATFORM_FAILURE: 84,
@@ -286,13 +354,18 @@ export class FaasService {
   }) {
     try {
       const domain = await this.getCsdsEntry('faasUI');
-      const url = `https://${domain}/api/account/${this.accountId}${urlPart}?userId=${this.userId}&v=1${additionalParams}`;
+      const url = `https://${domain}/api/account/${this.accountId}${urlPart}?userId=${this.userId}${additionalParams}`;
       let response: any;
-      if (method === 'POST' && urlPart.includes('invoke')) {
+      if (method === 'POST' && urlPart.includes('test')) {
         response = invoke(url);
       } else if (
         (method === 'PUT' || method === 'POST') &&
-        urlPart.includes('lambdas')
+        urlPart.includes('manifest')
+      ) {
+        response = pushManifest(body, method);
+      } else if (
+        (method === 'PUT' || method === 'POST') &&
+        urlPart.includes('functions')
       ) {
         response = push(body, method);
       } else if (method === 'GET' && urlPart.includes('reports/limitCounts')) {
@@ -306,12 +379,14 @@ export class FaasService {
         response = getInvocationCounts();
       } else if (method === 'DELETE' && urlPart.includes('deployments')) {
         response = undeploy();
+      } else if (method === 'GET' && urlPart.includes('deployments')) {
+        response = getAllDeployments();
       } else if (method === 'POST' && urlPart.includes('deployments')) {
         response = deploy(url);
-      } else if (method === 'GET' && urlPart.includes('lambdas/')) {
-        response = getLambdaByUUID(url);
-      } else if (method === 'GET' && urlPart.includes('lambdas')) {
-        response = getAllLambdas(url);
+      } else if (method === 'GET' && urlPart.includes('functions/')) {
+        response = getFunctionByUuid(url);
+      } else if (method === 'GET' && urlPart.includes('/functions')) {
+        response = getAllFunctionMetas(url);
       } else if (method === 'GET' && urlPart.includes('events')) {
         response = getEvents();
       }

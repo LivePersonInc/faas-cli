@@ -84,7 +84,6 @@ export class InvokeController {
     const [currentLambda] = (await faasService.getLambdasByNames([
       this.lambdaToInvoke.name,
     ])) as any;
-
     /* istanbul ignore next */
     if (!currentLambda) {
       const prettyError: PrettyPrintableError = {

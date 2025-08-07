@@ -1,3 +1,4 @@
+import { CsdsClient } from '../service/csds.service';
 import { FileService } from '../service/file.service';
 import { ILoginResponse, LoginService } from '../service/login.service';
 import { LoginView } from '../view/login.view';
@@ -28,6 +29,7 @@ export interface ITempFile {
     active: boolean;
     csrf: string;
     sessionId: string;
+    isV2: boolean;
   };
 }
 
@@ -35,6 +37,7 @@ interface ILoginConfig {
   loginView?: LoginView;
   loginService?: LoginService;
   fileService?: FileService;
+  csdsService?: CsdsClient;
 }
 
 export class LoginController {
@@ -48,16 +51,20 @@ export class LoginController {
 
   private fileService: FileService;
 
+  private csdsService: CsdsClient;
+
   constructor({
     loginView = new LoginView(),
     loginService = new LoginService(),
     fileService = new FileService(),
+    csdsService = new CsdsClient(),
   }: ILoginConfig = {}) {
     this.fileService = fileService;
     this.loginView = loginView;
     this.loginService = loginService;
     this.accountId = '';
     this.tempFile = {};
+    this.csdsService = csdsService;
   }
 
   /**
@@ -159,6 +166,7 @@ export class LoginController {
           username: response.config.loginName,
           csrf: response.csrf,
           sessionId: response.sessionId,
+          isV2: await this.isAccountV2Migrated(this.accountId),
           active: true,
         },
       });
@@ -244,6 +252,7 @@ export class LoginController {
         csrf: null,
         sessionId: null,
         active: true,
+        isV2: await this.isAccountV2Migrated(this.accountId),
       },
     });
     this.tempFile = await this.fileService.getTempFile();
@@ -294,5 +303,10 @@ export class LoginController {
       csrf,
       sessionId,
     });
+  }
+
+  private async isAccountV2Migrated(accountId: string): Promise<boolean> {
+    const faasUrl = await this.csdsService.getUri(accountId, 'faasGW');
+    return faasUrl && faasUrl.includes('fninvocations');
   }
 }

@@ -1,12 +1,14 @@
 {
   "compilerOptions": {
     "declaration": true,
+    "skipLibCheck": true,
     "importHelpers": true,
     "module": "commonjs",
     "outDir": "lib",
     "rootDir": "src",
+    "lib": ["ES2022", "DOM"],
     "strict": false,
-    "target": "es2019",
+    "target": "es2022",
     "moduleResolution": "node",
     "sourceMap": true,
     "allowSyntheticDefaultImports": true,

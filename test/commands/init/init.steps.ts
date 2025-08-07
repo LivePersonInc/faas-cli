@@ -65,7 +65,7 @@ defineFeature(feature, (test) => {
             fs.existsSync(join(testDir, 'bin', 'faas-debugger.js')),
           ).toBeTruthy();
           expect(
-            fs.existsSync(join(testDir, 'bin', 'lp-faas-toolbelt.js')),
+            fs.existsSync(join(testDir, 'bin', 'core-functions-toolbelt.js')),
           ).toBeTruthy();
           expect(
             fs.existsSync(join(testDir, 'bin', 'package.json')),
@@ -101,11 +101,11 @@ defineFeature(feature, (test) => {
     when(/I run the init command with lpf init ("--.*") (".*")/, async () => {
       fs.ensureDirSync(testDir);
       fs.writeFileSync(
-        join(testDir, 'bin', 'lp-faas-toolbelt', 'package-lock.json'),
+        join(testDir, 'bin', 'core-functions-toolbelt', 'package-lock.json'),
         JSON.stringify({}),
       );
       fs.ensureDirSync(
-        join(testDir, 'bin', 'lp-faas-toolbelt', 'node_modules'),
+        join(testDir, 'bin', 'core-functions-toolbelt', 'node_modules'),
       );
       initController = new InitController({ initView });
       await initController.init({ functionNames: ['functionWithName'] });
@@ -129,7 +129,7 @@ defineFeature(feature, (test) => {
             fs.existsSync(join(testDir, 'bin', 'faas-debugger.js')),
           ).toBeTruthy();
           expect(
-            fs.existsSync(join(testDir, 'bin', 'lp-faas-toolbelt.js')),
+            fs.existsSync(join(testDir, 'bin', 'core-functions-toolbelt.js')),
           ).toBeTruthy();
           expect(
             fs.existsSync(join(testDir, 'bin', 'package.json')),

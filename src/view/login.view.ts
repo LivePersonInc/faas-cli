@@ -127,11 +127,30 @@ export class LoginView {
     /* istanbul ignore else */
     if (showBanner) {
       this.log.print('Welcome to');
-      this.log.print(figlet.textSync('LP Functions'));
+      this.log.print(figlet.textSync('LP Functions v2'));
       this.log.print(
         `Use ${this.chalk.green('lpf help')} or ${this.chalk.green(
           'lpf <command> --help',
         )} for further informations.`,
+      );
+      this.log.print(
+        `This is the ${this.chalk.green(
+          'Functions V2 Alpha',
+        )} Version of the CLI. ${this.chalk.red(
+          'Only use if your account has been migrated!',
+        )} !`,
+      );
+      this.log.print(
+        `To downgrade back to use ${this.chalk.green(
+          'npm install -g liveperson-functions-cli@1.31.3',
+        )}`,
+      );
+      this.log.print(
+        `If you want to use the legacy cli simultaneously try ${this.chalk.green(
+          'sudo mv "$(which lpf)" "$(dirname $(which lpf))/lpf2"',
+        )} and then reinstall the legacy cli ${this.chalk.green(
+          'npm install -g liveperson-functions-cli@1.31.3',
+        )}`,
       );
     }
   }

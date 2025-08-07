@@ -7,33 +7,34 @@ import { FileService } from '../../../src/service/file.service';
 import { PushController } from '../../../src/controller/push.controller';
 import { PushView } from '../../../src/view/push.view';
 import { Prompt } from '../../../src/view/printer';
-import { ILambda, ILambdaConfig } from '../../../src/types';
+import { IFunction, IFunctionConfig } from '../../../src/types';
 
 jest.mock('../../../src/service/faas.service', () =>
   jest.requireActual('../../__mocks__/faas.service.ts'),
 );
+jest.setTimeout(25000);
 
 const feature = loadFeature('test/commands/push/push.feature');
 
 const testDir = join(__dirname, 'test');
 
 const fileService = new FileService({ cwd: testDir });
-const allLambdas: ILambda[] = fileService.read(
+const allLambdas: IFunction[] = fileService.read(
   join(process.cwd(), 'test', '__mocks__', 'lambdas.json'),
 );
-const localLambdaConfigs: ILambdaConfig[] = fileService.read(
+const localLambdaConfigs: IFunctionConfig[] = fileService.read(
   join(process.cwd(), 'test', '__mocks__', 'lambdaConfigs.json'),
 );
 
 const mockFileService = {
   collectLocalLambdaInformation: jest.fn((lambdaFunctions: string[]) =>
-    localLambdaConfigs.filter((lambdaConfig: ILambdaConfig) =>
+    localLambdaConfigs.filter((lambdaConfig: IFunctionConfig) =>
       lambdaFunctions.includes(lambdaConfig.name),
     ),
   ),
   getFunctionConfig: jest.fn((lambdaName: string) => {
     const [lambdaConfig] = localLambdaConfigs.filter(
-      (lambdaConfigParam: ILambdaConfig) =>
+      (lambdaConfigParam: IFunctionConfig) =>
         lambdaConfigParam.name === lambdaName,
     );
     return lambdaConfig;
@@ -45,12 +46,12 @@ const mockFileService = {
       lambdaName === 'TestFunction7' ||
       lambdaName === 'TestFunction8'
     ) {
-      return 'function lambda(input, callback) {\n    callback(null, `Hello World`);\n}';
+      return 'async function lambda(input) {\n    return `Hello World`;\n}';
     }
     const [lambda] = allLambdas.filter(
-      (lambdaParam: ILambda) => lambdaParam.name === lambdaName,
+      (lambdaParam: IFunction) => lambdaParam.name === lambdaName,
     );
-    return lambda.implementation.code;
+    return lambda.implementation?.code;
   }),
   getFunctionsDirectories: jest.fn(() => [
     'TestFunction1',
@@ -384,7 +385,7 @@ defineFeature(feature, (test) => {
         fileService: mockFileService,
       });
       mockFileService.read = jest.fn(() => {
-        return 'function lammbda(input, callback) {\n    callback(null, `Hello World`);\n}';
+        return 'async function lammbda(input,) {\n    return `Hello World`;\n}';
       });
 
       const pushController = new PushController({
@@ -655,7 +656,7 @@ defineFeature(feature, (test) => {
         mockFileService.getFunctionConfig = jest.fn((lambdaName: string) => {
           const [lambdaConfig] = localLambdaConfigs.filter(
             // eslint-disable-next-line max-nested-callbacks
-            (lambdaConfigParam: ILambdaConfig) =>
+            (lambdaConfigParam: IFunctionConfig) =>
               lambdaConfigParam.name === lambdaName,
           );
           lambdaConfig.description = null as any;

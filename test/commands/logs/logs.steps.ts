@@ -24,6 +24,7 @@ defineFeature(feature, (test) => {
   jest.setTimeout(100000);
   const testDir = join(__dirname, 'test');
   const fileService = new FileService();
+  const consoleSpy = jest.spyOn(global.console, 'log');
   const stdoutSpy = jest.spyOn(process.stdout, 'write');
 
   beforeEach(() => {
@@ -36,6 +37,7 @@ defineFeature(feature, (test) => {
 
   afterEach(() => {
     jest.resetAllMocks();
+    consoleSpy.mockReset();
   });
 
   afterAll(() => {
@@ -71,7 +73,7 @@ defineFeature(feature, (test) => {
         defaultStructureService.create = jest.fn(() => {
           fs.copySync(
             join(testDir, 'package.json'),
-            join(testDir, 'bin', 'lp-faas-toolbelt', 'package.json'),
+            join(testDir, 'bin', 'core-functions-toolbelt', 'package.json'),
           );
         });
         await LogsController.getLogs({
@@ -164,7 +166,7 @@ defineFeature(feature, (test) => {
       process.env.DEBUG_PATH = 'true';
       try {
         await LogsController.getLogs({
-          lambdaFunction: 'exampleFunction',
+          lambdaFunction: 'nonExistantFunction',
           inputFlags: {
             start: '1626254040000',
           },
@@ -175,7 +177,9 @@ defineFeature(feature, (test) => {
     });
 
     then('It should display an error', () => {
-      expect(thrownError.message).toEqual('expected');
+      expect(thrownError.message).toContain(
+        'Function nonExistantFunction were not found on the platform',
+      );
     });
   });
 });

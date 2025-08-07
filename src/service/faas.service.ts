@@ -6,10 +6,17 @@ import {
   ILoginInformation,
   LoginController,
 } from '../controller/login.controller';
-import { ILambda, IRuntime, ISchedule, IDomain } from '../types';
 import { IScheduleConfig } from '../controller/create.controller';
 import { CsdsClient } from './csds.service';
 import { LogsTransform } from '../transform/LogsTransform';
+import {
+  IFunction,
+  LPFnMeta,
+  LPFnMetaUpdateParams,
+  LPFunction,
+  LPManifestUpdateParams,
+} from '../types/IFunction';
+import { LPSchedule, LPScheduleCreateParams } from '../types/ISchedule';
 
 export type HttpMethods = 'POST' | 'GET' | 'DELETE' | 'PUT';
 
@@ -17,7 +24,24 @@ export interface IPayload {
   headers: string[];
   payload: any;
 }
+export type AccountStatistics = {
+  numberOfFunctions: number;
+  numberOfInvocations: number;
+  numberOfDeployments: number;
+};
 
+export interface IDeployment {
+  id: number;
+  functionUuid: string;
+  manifestVersion: number;
+  deploymentState: 'successful' | 'failed' | 'pending';
+  createdAt: string;
+  updatedAt: string;
+  deployedAt: string;
+  createdBy: string;
+  updatedBy: string;
+  functionSize: 'S' | 'M' | 'L';
+}
 export interface IInvokeResponse {
   result: any;
   logs: {
@@ -60,121 +84,27 @@ export interface IDeploymentResponse {
 }
 
 export interface IFaaSService {
-  /**
-   * Runs the initial setup for the faas service.
-   * Checks if a valid temp file is available and will use this for authentication.
-   * If not, the user will have to enter his accountId, username and password.
-   * Have to be called before all other functions.
-   * @returns {Promise<FaasService>}
-   * @memberof IFaaSService
-   */
   // eslint-disable-next-line no-use-before-define
   setup(): Promise<FaasService>;
 
-  /**
-   * Undeploys a function on the LivePerson functions platform. Setup before is necessary.
-   * The correct LivePerson url will be fetched by the accountId.
-   * @param {string} uuid - lambda uuid
-   * @returns {Promise<IDeploymentResponse>}
-   * @memberof IFaaSService
-   */
   undeploy(uuid: string): Promise<IDeploymentResponse>;
 
-  /**
-   * Deploys a function on the LivePerson functions platform. Setup before is necessary.
-   * The correct LivePerson url will be fetched by the accountId.
-   * @param {string} uuid - lambda uuid
-   * @returns {Promise<IDeploymentResponse>}
-   * @memberof IFaaSService
-   */
   deploy(uuid: string): Promise<IDeploymentResponse>;
 
-  /**
-   * Gather all information from the LivePerson functions platform by lambda names. Setup before is necessary.
-   * The correct LivePerson url will be fetched by the accountId.
-   * @param {string[]} lambdaNames - lambda names which should be collected
-   * @returns {Promise<ILambda[]>}
-   * @memberof IFaaSService
-   */
   getLambdasByNames(
     lambdaNames: string[],
-  ): Promise<(ILambda | { name: string })[]>;
+  ): Promise<(LPFunction | { name: string })[]>;
 
-  /**
-   * Gather all information from the LivePerson functions platform. Setup before is necessary.
-   * The correct LivePerson url will be fetched by the accountId.
-   * @returns {Promise<ILambda[]>}
-   * @memberof IFaaSService
-   */
-  getAllLambdas(): Promise<ILambda[]>;
+  getAllFunctionMetas(): Promise<IFunction[]>;
 
-  /**
-   * Gather the information from one lambda by uuid. Setup before is necessary.
-   * The correct LivePerson url will be fetched by the accountId.
-   * @param {string} uuid - lambda uuid
-   * @returns {Promise<ILambda>}
-   * @memberof IFaaSService
-   */
-  getLambdaByUUID(uuid: string): Promise<ILambda>;
+  getFunctionByUuid(uuid: string): Promise<IFunction>;
 
-  /**
-   * Push a local lambda to the LP-Functions platform. Either creates
-   * a new lambda or overwrites an existing one.
-   * @param {Object} input - Object containing all the other inputs
-   * @param {HttpMethods} input.method - The HTTP Method that will be used for the push request.
-   * @param {ILambda} input.body - The HTTP body that will be used for the push request.
-   * @param {string} input.uuid - Uuid that identifies a lambda to overwrite on the LP-Functions platform.
-   * Only needed if the function already exists.
-   * @returns {Promise<void>}
-   * @memberof IFaaSService
-   */
-  push(input: { method: HttpMethods; body: ILambda; uuid?: string }): void;
+  push(input: { method: HttpMethods; body: LPFunction; uuid?: string }): void;
 
-  /**
-   * Return the current runtime of the LivePerson functions platform
-   * The correct LivePerson url will be fetched by the accountId.
-   * @returns {Promise<IRuntime>}
-   * @memberof IFaaSService
-   */
-  getRuntime(): Promise<IRuntime>;
+  invoke(uuid: string, payload: IPayload): Promise<unknown>;
 
-  /**
-   * Invokes a function on the LivePerson functions platform with a provided payload
-   * The correct LivePerson url will be fetched by the accountId.
-   * @param {string} uuid
-   * @param {IPayload} payload
-   * @returns {Promise<IInvokeResponse>}
-   * @memberof IFaaSService
-   */
-  invoke(uuid: string, payload: IPayload): Promise<IInvokeResponse>;
+  createSchedule(schedule: LPScheduleCreateParams): Promise<LPSchedule>;
 
-  /**
-   * Creates a schedule in an account based on a cron expression and the lambda uuid. Every function can only be scheduled once and must be deployed.
-   * @param uuid uuid of lambda for which a schedule will be created
-   * @param cronExpression string which is in the cron expression format
-   */
-  createSchedule(schedule: {
-    uuid: string;
-    cronExpression: string;
-  }): Promise<ISchedule>;
-
-  /**
-   * Creates a schedule in an account based on a cron expression and the lambda uuid. Every function can only be scheduled once and must be deployed.
-   * @param uuid uuid of lambda for which a schedule will be created
-   * @param cronExpression string which is in the cron expression format
-   */
-  addDomain(domain: string): Promise<IDomain>;
-
-  /**
-   * Get logs from the LivePerson functions platform by lambda names. Setup before is necessary.
-   * The correct LivePerson url will be fetched by the accountId.
-   * @param {string} uuid uuid of lambda for which logs should be fetched
-   * @param {number} start  start timestamp for logs
-   * @param {number} end  end timestamp for logs
-   * @param {string[]} levels  which is in the cron expression format
-   * @returns {Promise<void>}
-   * @memberof IFaaSService
-   */
   getLogs(options: {
     uuid: string;
     start?: string;
@@ -182,9 +112,36 @@ export interface IFaaSService {
     levels?: string[];
     removeHeader?: boolean;
   }): Promise<void>;
+
+  // ✅ Newly added signatures:
+  getAllFunctions(): Promise<LPFunction[]>;
+
+  getAllDeployments(): Promise<IDeployment[]>;
+
+  getLambdaInvocationMetrics(options: {
+    uuid: string;
+    startTimestamp: number;
+    endTimestamp: number;
+    bucketSize: any;
+  }): Promise<any>;
+
+  getAccountStatistic(): Promise<AccountStatistics>;
+
+  pushNewFunction(input: { body: LPFunction }): Promise<boolean>;
+
+  pushNewMeta(meta: LPFnMeta): Promise<LPFunction>;
+
+  pushFunctionMeta(uuid: string, meta: LPFnMetaUpdateParams): Promise<boolean>;
+
+  pushFunctionManifest(
+    uuid: string,
+    manifest: LPManifestUpdateParams,
+  ): Promise<boolean>;
+
+  getEvents(): Promise<any[]>;
 }
 
-interface IFaasServiceConfig {
+export interface IFaasServiceConfig {
   username?: string;
   loginController?: LoginController;
   csdsClient?: CsdsClient;
@@ -248,41 +205,65 @@ export class FaasService implements IFaaSService {
     }
   }
 
-  public async getLambdasByNames(
-    lambdaNames: string[],
-    collectNonExistingLambas?: boolean,
-  ): Promise<(ILambda | { name: string })[]> {
-    const url = '/lambdas';
-    return Promise.all(
-      lambdaNames.map(async (name) => {
-        const lambdas = await this.doFetch({
-          urlPart: url,
-          method: 'GET',
-          additionalParams: `&name=${name}`,
-        });
-        const [foundLambda] = lambdas.filter((e: ILambda) => e.name === name);
-        if (!foundLambda && !collectNonExistingLambas) {
-          throw new Error(
-            `Function ${name} were not found on the platform. Please make sure the function with the name ${name} was pushed to the LivePerson Functions platform`,
-          );
-        }
-        return foundLambda || { name };
-      }),
+  public async getLambdasByNames(lambdaNames: string[]): Promise<LPFunction[]> {
+    const allFnMetas = await this.getAllFunctionMetas();
+    const existingFunctions = allFnMetas.filter(({ name }) =>
+      lambdaNames.includes(name),
     );
+
+    const fns = (
+      await Promise.all(
+        existingFunctions.map(async (existingFunction) => {
+          const fn = await this.doFetch({
+            urlPart: `/functions/${existingFunction.uuid}`,
+            method: 'GET',
+          });
+          if (fn && fn.versions) {
+            return { ...fn, manifest: fn.versions[0] };
+          }
+          return fn;
+        }),
+      )
+    ).flat();
+    return fns;
   }
 
-  public async getRuntime(): Promise<IRuntime> {
-    const url = '/runtimes';
-    const [runtime] = await this.doFetch({ urlPart: url, method: 'GET' });
-    return runtime;
-  }
-
-  public async getAllLambdas(): Promise<ILambda[]> {
-    const urlPart = '/lambdas';
+  public async getAllFunctionMetas(): Promise<LPFnMeta[]> {
+    const urlPart = '/functions';
     return this.doFetch({ urlPart, method: 'GET' });
   }
 
-  public async createSchedule(schedule: IScheduleConfig): Promise<ISchedule> {
+  public async getAllFunctions(): Promise<LPFunction[]> {
+    const urlPart = '/functions';
+    const fnMetas = (await this.doFetch({
+      urlPart,
+      method: 'GET',
+    })) as LPFnMeta[];
+
+    const uuids = fnMetas.map(({ uuid }) => uuid);
+
+    const fns = await Promise.all(
+      uuids.map(async (uuid) => {
+        const fn = await this.doFetch({
+          urlPart: `/functions/${uuid}`,
+          method: 'GET',
+        });
+        if (fn && fn.versions) {
+          return { ...fn, manifest: fn.versions[0] };
+        }
+        return fn;
+      }),
+    );
+
+    return fns;
+  }
+
+  public async getAllDeployments(): Promise<IDeployment[]> {
+    const urlPart = '/deployments';
+    return this.doFetch({ urlPart, method: 'GET' });
+  }
+
+  public async createSchedule(schedule: IScheduleConfig): Promise<LPSchedule> {
     const urlPart = '/schedules';
     return this.doFetch({
       urlPart,
@@ -291,18 +272,7 @@ export class FaasService implements IFaaSService {
     });
   }
 
-  public async addDomain(domain: string): Promise<IDomain> {
-    return this.doFetch({
-      urlPart: '/proxy-settings',
-      method: 'POST',
-      body: {
-        domain,
-        id: -1,
-      },
-    });
-  }
-
-  getLambdaInvocationMetrics({
+  public async getLambdaInvocationMetrics({
     uuid,
     startTimestamp,
     endTimestamp,
@@ -314,7 +284,7 @@ export class FaasService implements IFaaSService {
     bucketSize: any;
   }) {
     const url = `/reports/invocations/${uuid}`;
-    const additionalParams = `&startTimestamp=${startTimestamp}&endTimestamp=${endTimestamp}&bucketSize=${bucketSize}&invocationStates=UNKOWN&invocationStates=SUCCEEDED&invocationStates=CODING_FAILURE&invocationStates=PLATFORM_FAILURE&invocationStates=TIMEOUT`;
+    const additionalParams = `&startTimestamp=${startTimestamp}&endTimestamp=${endTimestamp}&bucketSize=${bucketSize}&invocationStates=UNKNOWN&invocationStates=SUCCEEDED&invocationStates=CODING_FAILURE&invocationStates=PLATFORM_FAILURE&invocationStates=TIMEOUT`;
     return this.doFetch({
       urlPart: url,
       additionalParams,
@@ -322,79 +292,166 @@ export class FaasService implements IFaaSService {
     });
   }
 
-  public async getAccountStatistic(): Promise<any> {
-    const limitCountsUrl = '/reports/limitCounts';
-    const lambdaCountsUrl = '/reports/lambdaCounts';
+  public async getAccountStatistic(): Promise<AccountStatistics> {
+    const lambdaCountsUrl = '/functions/count';
+    const deploymentUrl = '/deployments/count';
     const invocationUrl = '/reports/invocationCounts';
 
     const currentDate = Date.now();
 
     const firstDayOfMonth = moment.utc().startOf('month').format('x');
 
-    const limitCounts = this.doFetch({
-      urlPart: limitCountsUrl,
-      method: 'GET',
-    });
     const lambdaCounts = this.doFetch({
       urlPart: lambdaCountsUrl,
       method: 'GET',
     });
+
     const invocations = this.doFetch({
       urlPart: invocationUrl,
       method: 'GET',
       additionalParams: `&startTimestamp=${firstDayOfMonth}&endTimestamp=${currentDate}`,
     });
 
-    return (await Promise.all([limitCounts, lambdaCounts, invocations])).reduce(
-      (acc, e) => ({ ...acc, ...e }),
-      {},
-    );
+    const deployments = this.doFetch({
+      urlPart: deploymentUrl,
+      method: 'GET',
+    });
+
+    const results = await Promise.all([lambdaCounts, invocations, deployments]);
+
+    return {
+      numberOfFunctions: results[0],
+      numberOfInvocations: results[1].reduce(
+        (acc, fn) => fn.successfulInvocations + fn.failedInvocations + acc,
+        0,
+      ),
+      numberOfDeployments: results[2],
+    };
   }
 
   public async push({
-    method,
     body,
     uuid,
   }: {
-    method: HttpMethods;
-    body: ILambda;
+    body: LPFunction;
     uuid?: string;
   }): Promise<boolean> {
     try {
-      const urlPart = `/lambdas${uuid ? `/${uuid}` : ''}`;
-      const response = await this.doFetch({
-        urlPart,
-        method,
-        body,
-        resolveBody: false,
+      const metaUpdate = await this.pushFunctionMeta(uuid, {
+        description: body.description,
+        skills: body.skills,
       });
-      return response.statusCode !== 304;
+
+      const manifestUpdate = await this.pushFunctionManifest(uuid, {
+        uuid: body.uuid,
+        ...body.manifest,
+      });
+      return metaUpdate || manifestUpdate;
     } catch (error) {
-      if (error.errorCode?.includes('contract-error')) {
+      if (error.errorCode?.includes('validation')) {
         throw new Error(
-          `Push Error: The code of function '${body.name}' you are trying to push is not a valid lambda.`,
+          `Function Validation Error: ${error.errorMsg || error.message}`,
         );
       }
       throw new Error(error.errorMsg || error.message);
     }
   }
 
-  public async getLambdaByUUID(uuid: string): Promise<ILambda> {
-    const urlPart = `/lambdas/${uuid}`;
+  public async pushNewFunction({
+    body,
+  }: {
+    body: LPFunction;
+  }): Promise<boolean> {
+    try {
+      const { manifest: newManifest, ...newMeta } = body;
+      const newFunction = await this.pushNewMeta(newMeta);
+
+      const updateManifestResponse = await this.pushFunctionManifest(
+        newFunction.uuid,
+        {
+          uuid: newFunction.uuid,
+          ...newManifest,
+        },
+      );
+      return updateManifestResponse;
+    } catch (error) {
+      if (error.errorCode?.includes('validation')) {
+        throw new Error(
+          `Function Validation Error: ${error.errorMsg || error.message}`,
+        );
+      }
+      throw new Error(error.errorMsg || error.message);
+    }
+  }
+
+  public async pushNewMeta(meta: LPFnMeta): Promise<LPFunction> {
+    const response = await this.doFetch({
+      urlPart: `/functions`,
+      method: 'POST',
+      body: meta,
+      resolveBody: true,
+    });
+    return response;
+  }
+
+  public async pushFunctionMeta(
+    uuid: string,
+    meta: LPFnMetaUpdateParams,
+  ): Promise<boolean> {
+    try {
+      await this.doFetch({
+        urlPart: `/functions/${uuid}`,
+        method: 'PUT',
+        body: meta,
+        resolveBody: false,
+      });
+      return true;
+    } catch (error) {
+      if (
+        error.errorCode &&
+        error.errorCode === 'com.liveperson.faas.function.unchanged'
+      ) {
+        return false;
+      }
+      throw error;
+    }
+  }
+
+  public async pushFunctionManifest(
+    uuid: string,
+    manifest: LPManifestUpdateParams,
+  ): Promise<boolean> {
+    try {
+      await this.doFetch({
+        urlPart: `/functions/${uuid}/manifest`,
+        method: 'PUT',
+        body: { version: -1, ...manifest },
+        resolveBody: false,
+      });
+      return true;
+    } catch (error) {
+      if (
+        error.errorCode &&
+        error.errorCode === 'com.liveperson.faas.function.unchanged'
+      ) {
+        return false;
+      }
+      throw error;
+    }
+  }
+
+  public async getFunctionByUuid(uuid: string): Promise<IFunction> {
+    const urlPart = `/functions/${uuid}`;
     const [foundLambda] = await this.doFetch({ urlPart, method: 'GET' });
     return foundLambda;
   }
 
-  public async invoke(
-    uuid: string,
-    payload: IPayload,
-  ): Promise<IInvokeResponse> {
-    const urlPart = `/lambdas/${uuid}/invoke`;
+  public async invoke(uuid: string, payload: IPayload): Promise<unknown> {
+    const urlPart = `/functions/${uuid}/test`;
     return this.doFetch({
       urlPart,
       method: 'POST',
       body: payload,
-      csds: 'faasGW',
     });
   }
 
@@ -415,8 +472,8 @@ export class FaasService implements IFaaSService {
     levels?: string[];
     removeHeader?: boolean;
   }): Promise<void> {
-    const urlPart = '/logs/export';
-    let additionalParams = `&lambdaUUID=${uuid}&startTimestamp=${start}&endTimestamp=${
+    const urlPart = `/functions/${uuid}/logs/export`;
+    let additionalParams = `&startTimestamp=${start}&endTimestamp=${
       end || Date.now()
     }`;
 
@@ -425,7 +482,6 @@ export class FaasService implements IFaaSService {
         additionalParams += `&filterLevels=${level}`;
       });
     }
-
     return this.getStream(
       {
         urlPart,
@@ -461,10 +517,9 @@ export class FaasService implements IFaaSService {
   ): Promise<void> {
     try {
       const domain = await this.getCsdsEntry(csds);
-      const url = `https://${domain}/api/account/${this.accountId}${urlPart}?userId=${this.userId}&v=1${additionalParams}`;
+      const url = `https://${domain}/api/account/${this.accountId}${urlPart}?userId=${this.userId}${additionalParams}`;
       const { HTTPS_PROXY, https_proxy: httpsProxy } = process.env;
       const proxyURL = HTTPS_PROXY || httpsProxy || '';
-
       await new Promise<void>((resolve, reject) => {
         this.got
           .stream(url, {
@@ -506,8 +561,8 @@ export class FaasService implements IFaaSService {
       }
       if (error.response?.body) {
         throw {
-          errorCode: error.response.body.errorCode,
-          errorMsg: error.response.body.errorMsg,
+          errorCode: error.response.body.code,
+          errorMsg: error.response.body.message,
           ...(error.response.body.errorLogs && {
             errorLogs: error.response.body.errorLogs,
           }),
@@ -528,10 +583,9 @@ export class FaasService implements IFaaSService {
   }: IFetchConfig): Promise<any> {
     try {
       const domain = await this.getCsdsEntry(csds);
-      const url = `https://${domain}/api/account/${this.accountId}${urlPart}?userId=${this.userId}&v=1${additionalParams}`;
+      const url = `https://${domain}/api/account/${this.accountId}${urlPart}?userId=${this.userId}${additionalParams}`;
       const { HTTPS_PROXY, https_proxy: httpsProxy } = process.env;
       const proxyURL = HTTPS_PROXY || httpsProxy || '';
-
       const response = await this.got(url, {
         method,
         headers: {
@@ -557,21 +611,21 @@ export class FaasService implements IFaaSService {
       return resolveBody ? response.body : response;
     } catch (error) {
       /* eslint-disable no-throw-literal */
-      if (error.message?.includes('401')) {
+      if (error.response.statusCode === 401) {
         throw {
           errorCode: '401',
           errorMsg:
             'You are not authorized to perform this action, please check your permissions',
         };
       }
+
       throw {
-        errorCode: error.response.body.errorCode,
-        errorMsg: error.response.body.errorMsg,
+        errorCode: error.response.body.code,
+        errorMsg: error.response.body.message,
         ...(error.response.body.errorLogs && {
           errorLogs: error.response.body.errorLogs,
         }),
       };
-      /* eslint-enable no-throw-literal */
     }
   }
 }

@@ -1,8 +1,6 @@
 import { Hook } from '@oclif/core';
 import * as semver from 'semver';
 import chalk = require('chalk');
-import { factory } from '../../service/faasFactory.service';
-
 /**
  * Hook which will run if the invoke command was triggered.
  * Will display the difference of the remote and local node.js version
@@ -16,19 +14,14 @@ export async function nodeVersion(
   /* istanbul ignore else */
   if (opts.id === 'invoke') {
     try {
-      const faasService = await factory.get();
-      const runtime = await faasService.getRuntime();
       const userNodeVersion = semver.major(semver.clean(version) as string);
-
-      const remoteVersion = runtime.name.replace('Node.js ', '');
-
-      /* istanbul ignore else */
-      if (userNodeVersion > Number.parseInt(remoteVersion, 10)) {
+      const remoteVersion = semver.major(semver.clean('20.0.0') as string);
+      if (userNodeVersion !== remoteVersion) {
         // eslint-disable-next-line no-console
         console.log(
           `Please be aware that your Node.js (${chalk.yellowBright(
             `v${userNodeVersion}`,
-          )}) version is higher than the one on the LivePerson functions platform (${chalk.green(
+          )}) version is not the same as LivePerson functions platform (${chalk.green(
             `v${remoteVersion}`,
           )})!
   ${chalk.yellowBright('This can cause unexpected behaviour!')}

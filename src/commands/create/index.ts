@@ -19,7 +19,7 @@ export class Create extends Command {
   public static strict = false;
 
   public static examples = [
-    '> <%= config.bin %> create:function exampleFunction -e controllerbot_messaging_new_conversation',
+    '> <%= config.bin %> create:function -n exampleFunction -e controllerbot_messaging_new_conversation',
   ];
 
   /**

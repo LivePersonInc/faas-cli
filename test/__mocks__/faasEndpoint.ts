@@ -4,7 +4,7 @@ import { FileService } from '../../src/service/file.service';
 const fileService = new FileService();
 
 function getUserId(uri: string) {
-  const userIdRegex = /userId=(userId_.*)&v=1/;
+  const userIdRegex = /userId=(userId_[^&\s]*)/;
   const userId = new RegExp(userIdRegex).exec(uri) as any[];
   return userId[1];
 }
@@ -35,6 +35,43 @@ export function getAllLambdas(url: string) {
   };
 }
 
+export function getAllFunctionMetas(url: string) {
+  let foundLambdas = [];
+  if (getUserId(url) === 'userId_1234_NoLambdas') {
+    return {
+      body: JSON.stringify(foundLambdas),
+    };
+  }
+  const allLambdas = fileService.read(join(__dirname, 'lambdas.json'));
+  foundLambdas = allLambdas.filter((e: any) => e.userId === getUserId(url));
+  if (url.includes('name=')) {
+    const functionName = getFunctionname(url);
+    foundLambdas = foundLambdas.filter((e: any) => e.name === functionName);
+  }
+  allLambdas[0].state = 'Draft';
+  allLambdas[1].state = 'Modified';
+
+  foundLambdas = foundLambdas.map((lambda) => {
+    delete (lambda as any).manifest;
+    return lambda;
+  });
+
+  return {
+    body: JSON.stringify(foundLambdas),
+  };
+}
+
+export function undeploy() {
+  let allLambdas = fileService.read(join(__dirname, 'lambdas.json'));
+  allLambdas = allLambdas.map((e: any) => ({ ...e, state: 'Productive' }));
+  fileService.write(join(__dirname, 'lambdas.json'), allLambdas);
+  return {
+    body: JSON.stringify({
+      message: 'Successfully started undeployment',
+    }),
+  };
+}
+
 export function deploy(url: string) {
   if (getUserId(url).includes('under_deployment')) {
     // eslint-disable-next-line no-throw-literal
@@ -55,14 +92,10 @@ export function deploy(url: string) {
   }
 }
 
-export function undeploy() {
-  let allLambdas = fileService.read(join(__dirname, 'lambdas.json'));
-  allLambdas = allLambdas.map((e: any) => ({ ...e, state: 'Productive' }));
-  fileService.write(join(__dirname, 'lambdas.json'), allLambdas);
+export function getAllDeployments() {
+  const deployments = fileService.read(join(__dirname, 'deployments.json'));
   return {
-    body: JSON.stringify({
-      message: 'Successfully started undeployment',
-    }),
+    body: JSON.stringify(deployments),
   };
 }
 
@@ -79,7 +112,7 @@ function resetAttempts() {
   fileService.write(join(__dirname, 'lambdas.json'), allLambdas);
 }
 
-export function getLambdaByUUID(url: string) {
+export function getFunctionByUuid(url: string) {
   const allLambdas: any[] = fileService.read(join(__dirname, 'lambdas.json'));
 
   const index = allLambdas.findIndex(
@@ -94,7 +127,7 @@ export function getLambdaByUUID(url: string) {
     (e: any) => e.userId === getUserId(url) && e.uuid === getUUID(url),
   );
 
-  if (allLambdas[index].attempts === 3) {
+  if (allLambdas[index].attempts === 1) {
     lambda[0].state = lambda[0].state === 'Draft' ? 'Productive' : 'Draft';
     resetAttempts();
   }
@@ -182,15 +215,19 @@ export function getEvents() {
 }
 
 export function push(body: any, method: string): any {
-  if (body.name === 'TestFunction1' && method === 'PUT') {
-    return {
-      body: JSON.stringify({
-        statusCode: 304,
-      }),
-    };
+  if (body.description === 'Description TestFunction1' && method === 'PUT') {
+    const error = new Error('Function Manifest not modified');
+    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+    // @ts-ignore
+    error.errorCode = 'com.liveperson.faas.function.unchanged';
+    throw error;
   }
   if (body.name === 'TestFunction7') {
-    throw new Error('wrong code');
+    const error = new Error('Function implementation not correct');
+    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+    // @ts-ignore
+    error.errorCode = 'com.liveperson.faas.fm.validation.interface-wrong';
+    throw error;
   }
   if (method === 'PUT') {
     return {
@@ -202,12 +239,30 @@ export function push(body: any, method: string): any {
   if (method === 'POST') {
     return {
       body: JSON.stringify({
-        statusCode: 201,
+        uuid: '123-123-123',
       }),
     };
   }
   return {
     body: {},
+  };
+}
+
+export function pushManifest(body: any, method: string): any {
+  if (
+    body.uuid === 'f791e5ca-3e78-4990-a066-59b82cdfd6a0' &&
+    method === 'PUT'
+  ) {
+    const error = new Error('Function Manifest not modified');
+    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+    // @ts-ignore
+    error.errorCode = 'com.liveperson.faas.function.unchanged';
+    throw error;
+  }
+  return {
+    body: JSON.stringify({
+      statusCode: 202,
+    }),
   };
 }
 

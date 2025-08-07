@@ -52,8 +52,8 @@ describe('debugger', () => {
     );
     writeFileSync(
       join(testDir, 'functions', 'DebugFunction', 'index.js'),
-      `function lambda(input, callback) {
-callback(null, 'Hello World');
+      `async function lambda(input) {
+return 'Hello World';
 }
 `,
     );
@@ -83,12 +83,9 @@ callback(null, 'Hello World');
           headers: [],
           payload: {},
         },
-        environmentVariables: [
-          {
-            key: 'TestKey',
-            value: 'TestValue',
-          },
-        ],
+        environmentVariables: {
+          TestKey: 'TestValue',
+        },
       }),
     );
 
@@ -117,12 +114,9 @@ callback(null, 'Hello World');
           headers: [],
           payload: {},
         },
-        environmentVariables: [
-          {
-            key: 'TestKey',
-            value: 'TestValue',
-          },
-        ],
+        environmentVariables: {
+          TestKey: 'TestValue',
+        },
       }),
     );
 
@@ -156,18 +150,15 @@ callback(null, 'Hello World');
           headers: [],
           payload: {},
         },
-        environmentVariables: [
-          {
-            key: 'TestKey',
-            value: 'TestValue',
-          },
-        ],
+        environmentVariables: {
+          TestKey: 'TestValue',
+        },
       }),
     );
     writeFileSync(
       join(testDir, 'functions', 'DebugFunction', 'index.js'),
-      `function lambda(input, callback) {
-callback(null, 'Hello World');
+      `async function lambda(input {
+return 'Hello World';
 }
 `,
     );
@@ -209,24 +200,21 @@ callback(null, 'Hello World');
           headers: [],
           payload: {},
         },
-        environmentVariables: [
-          {
-            key: 'TestKey',
-            value: 'TestValue',
-          },
-        ],
+        environmentVariables: {
+          TestKey: 'TestValue',
+        },
       }),
     );
     writeFileSync(
       join(testDir, 'functions', 'DebugFunction', 'index.js'),
-      `function lambda(input, callback) {
-const Toolbelt = require('lp-faas-toolbelt');
+      `async function lambda(input) {
+const Toolbelt = require('core-functions-toolbelt');
 const OAuth = require('oauth-1.0a');
 const luxon = require('luxon');
 const jsforce = require('jsforce');
 const jsonwebtoken = require('jsonwebtoken');
 const lodash = require('lodash');
-callback(null, 'Hello World');
+return 'Hello World';
 }
 `,
     );
@@ -244,15 +232,21 @@ callback(null, 'Hello World');
       join(testDir, 'functions', 'DebugFunction', 'index.js'),
       'utf8',
     );
-    expect(indexFile).toContain("require('lp-faas-toolbelt')");
-    expect(indexFile).toContain("require('../bin/lp-faas-toolbelt/luxon')");
-    expect(indexFile).toContain("require('../bin/lp-faas-toolbelt/jsforce')");
+    expect(indexFile).toContain("require('core-functions-toolbelt')");
     expect(indexFile).toContain(
-      "require('../bin/lp-faas-toolbelt/jsonwebtoken')",
+      "require('../bin/core-functions-toolbelt/luxon')",
     );
     expect(indexFile).toContain(
-      "require('../bin/lp-faas-toolbelt/oauth-1.0a')",
+      "require('../bin/core-functions-toolbelt/jsforce')",
     );
-    expect(indexFile).toContain("require('../bin/lp-faas-toolbelt/lodash')");
+    expect(indexFile).toContain(
+      "require('../bin/core-functions-toolbelt/jsonwebtoken')",
+    );
+    expect(indexFile).toContain(
+      "require('../bin/core-functions-toolbelt/oauth-1.0a')",
+    );
+    expect(indexFile).toContain(
+      "require('../bin/core-functions-toolbelt/lodash')",
+    );
   });
 });

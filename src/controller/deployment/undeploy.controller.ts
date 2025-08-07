@@ -1,6 +1,7 @@
 import { Answers } from 'inquirer';
 import { PrettyPrintableError } from '@oclif/core/lib/interfaces';
-import { ILambda } from '../../types';
+import { difference } from 'lodash';
+import { IFunction } from '../../types';
 import { UndeployView } from '../../view/undeploy.view';
 import { DeploymentController } from './deployment.controller';
 import { FileService } from '../../service/file.service';
@@ -38,10 +39,20 @@ export class UndeployController extends DeploymentController {
     inputFlags,
   }: IUndeployConfig): Promise<void> {
     try {
-      const functionsToUndeploy: ILambda[] =
+      const functionsToUndeploy: IFunction[] =
         await this.collectLambdaInformationForAllLambdas(lambdaFunctions);
 
-      let confirmedFunctionsToUndeploy: ILambda[] = [];
+      const notUndeployableFunctions = difference(
+        lambdaFunctions,
+        functionsToUndeploy.map(({ name }) => name),
+      );
+
+      if (notUndeployableFunctions.length !== 0) {
+        throw new Error(
+          `Function ${notUndeployableFunctions} were not found on the platform.`,
+        );
+      }
+      let confirmedFunctionsToUndeploy: IFunction[] = [];
       if (inputFlags?.yes) {
         confirmedFunctionsToUndeploy = functionsToUndeploy;
       } else {
@@ -49,13 +60,8 @@ export class UndeployController extends DeploymentController {
           functionsToUndeploy,
         );
         confirmedFunctionsToUndeploy = functionsToUndeploy.filter(
-          (entry: ILambda) => answer[entry.name],
+          (entry: IFunction) => answer[entry.name],
         );
-
-        /* istanbul ignore else */
-        if (confirmedFunctionsToUndeploy.length === 0) {
-          return;
-        }
       }
 
       await this.undeployView.showDeployments({

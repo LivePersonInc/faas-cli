@@ -1,3 +1,3 @@
-function lambda(input, callback) {
-  callback(null, `Hello World`);
+async function lambda(input) {
+  return 'result';
 }

@@ -34,7 +34,7 @@ describe('Default structure service', () => {
     ).toBeTruthy();
     expect(fs.existsSync(join(testDir, 'bin', 'rewire.js'))).toBeTruthy();
     expect(
-      fs.existsSync(join(testDir, 'bin', 'lp-faas-toolbelt/')),
+      fs.existsSync(join(testDir, 'bin', 'core-functions-toolbelt/')),
     ).toBeTruthy();
     expect(
       fs.existsSync(join(testDir, 'functions', 'settings.json')),
@@ -64,7 +64,7 @@ describe('Default structure service', () => {
     ).toBeTruthy();
     expect(fs.existsSync(join(testDir, 'bin', 'rewire.js'))).toBeTruthy();
     expect(
-      fs.existsSync(join(testDir, 'bin', 'lp-faas-toolbelt/')),
+      fs.existsSync(join(testDir, 'bin', 'core-functions-toolbelt/')),
     ).toBeTruthy();
     expect(
       fs.existsSync(join(testDir, 'functions', 'settings.json')),
@@ -110,7 +110,7 @@ describe('Default structure service', () => {
     ).toBeTruthy();
     expect(fs.existsSync(join(testDir, 'bin', 'rewire.js'))).toBeTruthy();
     expect(
-      fs.existsSync(join(testDir, 'bin', 'lp-faas-toolbelt/')),
+      fs.existsSync(join(testDir, 'bin', 'core-functions-toolbelt/')),
     ).toBeTruthy();
   });
 

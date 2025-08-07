@@ -1,12 +1,13 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 /* eslint-disable global-require */
 const { join } = require('path');
-const externalLibs = ['oauth-1.0a', 'luxon', 'jsforce', 'jsonwebtoken', 'lodash'];
+
+const externalLibs = ['luxon', 'jsforce', 'jsonwebtoken', 'es-toolkit'];
 /**
  * Is used for rewiring the require, so the lambda code will stay the same
  * Uses the proxy to overwrite the module.require.
  * Based on the passed path it will rewire the following two things:
- * 1. The require('lp-faas-toolbelt') will be mapped to the local one (../../bin/lp-faas-toolbelt)
+ * 1. The require('core-functions-toolbelt') will be mapped to the local one (../../bin/core-functions-toolbelt)
  * 2. The require of the config.json will be mapped to the one of the passed function
  */
 const proxy = new Proxy(require('module').prototype.require, {
@@ -14,19 +15,19 @@ const proxy = new Proxy(require('module').prototype.require, {
     const name = argumentsList.length > 0 ? argumentsList[0] : '';
     if (
       externalLibs.some(
-        (pkg) => name.includes(pkg) && name.includes('lp-faas-toolbelt'),
+        (pkg) => name.includes(pkg) && name.includes('core-functions-toolbelt'),
       )
     ) {
       argumentsList[0] = join(
         '..',
         '..',
         'bin',
-        'lp-faas-toolbelt',
+        'core-functions-toolbelt',
         'node_modules',
         name.split('/').pop(),
       );
-    } else if (name.includes('lp-faas-toolbelt')) {
-      argumentsList[0] = join('..', '..', 'bin', 'lp-faas-toolbelt');
+    } else if (name.includes('core-functions-toolbelt')) {
+      argumentsList[0] = join('..', '..', 'bin', 'core-functions-toolbelt');
     }
     if (name.match(/functions\/.*\/config/)) {
       const [_, functionName] = name.split('/');
@@ -76,7 +77,6 @@ class Logger {
   }
 
   writeLogs(level, message, ...optionalParams) {
-
     if (this.isDebugMode) {
       if (Object.hasOwnProperty.call(message, 'errorMsg')) {
         stdout.log(`[${level}] - ${message.errorMsg}`, ...optionalParams);
@@ -163,36 +163,9 @@ class Logger {
   }
 }
 
-function convertToPromisifiedLambda(fn) {
-  return (input) => {
-    // eslint-disable-next-line consistent-return
-    return new Promise((resolve, reject) => {
-      try {
-        // Resolving will be only possible via callback
-        const callback = (err, response) => {
-          if (err === undefined || err === null) {
-            return resolve(response);
-          }
-          return reject(err);
-        };
-        const returnValue = fn(input, callback);
-
-        if (returnValue && typeof returnValue.then === 'function') {
-          // We only consider the result returned via the callback. However we will catch errors.
-          // eslint-disable-next-line @typescript-eslint/no-empty-function
-          return returnValue.then((_) => {}).catch(reject);
-        }
-      } catch (error) {
-        return reject(error);
-      }
-    });
-  };
-}
-
 module.exports = {
   proxy,
   DebugLogger: new Logger(true),
   InvokeLogger: new Logger(),
   LogLevels,
-  convertToPromisifiedLambda,
 };
