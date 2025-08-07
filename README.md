@@ -1,5 +1,24 @@
 <!-- omit in toc -->
 
+# BREAKING CHANGES - CLI v2 Alpha
+
+Liveperson Functions is currently in a transitory state towards v2. To make migration of you functions easier we have created a new version of the CLI. This version is _incompatible with functions v1_!
+If you want to use both versions of the CLI simultaniously
+
+```
+# Install v2.0.0-alpha
+> npm install -g liveperson-functions-cli@2.0.0-alpha
+
+# Symlink the command to rename it to lpf2
+> sudo mv "$(which lpf)" "$(dirname $(which lpf))/lpf2"
+
+# Install v1.31.3
+> npm install -g liveperson-functions-cli
+
+# You can now use lpf as normal and lpf2
+
+```
+
 # LivePerson Functions CLI
 
 [LivePerson Functions](https://faas.liveperson.net/) is a Function as a Service (FaaS) platform which enables brands to develop custom behaviors within LivePerson’s conversational platform, to better tailor the system to their specific needs. By offering these capabilities, Functions enables developers to write a simple function, deploy it to LivePerson's infrastructure and make it available to their LivePerson account in minutes. This allows you to create custom logic inside our conversational platform.
