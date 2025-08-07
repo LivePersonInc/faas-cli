@@ -559,7 +559,7 @@ defineFeature(feature, (test) => {
 
         const getController = new GetController();
         await getController.get({ domains: ['functions'] });
-        expect(consoleSpy).toBeCalledTimes(6);
+        expect(consoleSpy).toBeCalledTimes(9);
       },
     );
   });
