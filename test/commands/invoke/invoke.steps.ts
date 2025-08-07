@@ -602,80 +602,80 @@ defineFeature(feature, (test) => {
     );
   });
 
-  //   test('Invoke a function local with a runtime longer than 60 seconds', ({
-  //     given,
-  //     when,
-  //     then,
-  //   }) => {
-  //     given('I have done the local init', () => {
-  //       fs.ensureDirSync(
-  //         join(testDir, 'functions', 'InvokeFunctionLocalExecutionTimeLimit'),
-  //       );
-  //     });
+  test('Invoke a function local with a runtime longer than 60 seconds', ({
+    given,
+    when,
+    then,
+  }) => {
+    given('I have done the local init', () => {
+      fs.ensureDirSync(
+        join(testDir, 'functions', 'InvokeFunctionLocalExecutionTimeLimit'),
+      );
+    });
 
-  //     given(
-  //       'I have a local function with the config.json (runtime is longer than 60 seconds)',
-  //       () => {
-  //         fs.writeFileSync(
-  //           join(
-  //             testDir,
-  //             'functions',
-  //             'InvokeFunctionLocalExecutionTimeLimit',
-  //             'config.json',
-  //           ),
-  //           JSON.stringify({
-  //             name: 'InvokeFunctionLocalExecutionTimeLimit',
-  //             event: null,
-  //             input: {
-  //               headers: [],
-  //               payload: {},
-  //             },
-  //             environmentVariables: [
-  //               {
-  //                 key: '',
-  //                 value: '',
-  //               },
-  //             ],
-  //           }),
-  //         );
-  //         fs.writeFileSync(
-  //           join(
-  //             testDir,
-  //             'functions',
-  //             'InvokeFunctionLocalExecutionTimeLimit',
-  //             'index.js',
-  //           ),
-  //           `async function lambda(input) {
-  //   setTimeout(() => {
-  //     return 'Hello World';
-  //   }, 61000)
-  // }
-  // `,
-  //         );
-  //       },
-  //     );
+    given(
+      'I have a local function with the config.json (runtime is longer than 60 seconds)',
+      () => {
+        fs.writeFileSync(
+          join(
+            testDir,
+            'functions',
+            'InvokeFunctionLocalExecutionTimeLimit',
+            'config.json',
+          ),
+          JSON.stringify({
+            name: 'InvokeFunctionLocalExecutionTimeLimit',
+            event: null,
+            input: {
+              headers: [],
+              payload: {},
+            },
+            environmentVariables: [
+              {
+                key: '',
+                value: '',
+              },
+            ],
+          }),
+        );
+        fs.writeFileSync(
+          join(
+            testDir,
+            'functions',
+            'InvokeFunctionLocalExecutionTimeLimit',
+            'index.js',
+          ),
+          `async function lambda(input) {
+  setTimeout(() => {
+    return 'Hello World';
+  }, 61000)
+}
+`,
+        );
+      },
+    );
 
-  //     when(
-  //       'I run the invoke command and pass the function name and local flag',
-  //       async () => {
-  //         process.env.DEBUG_PATH = 'true';
-  //         const invokeController = new InvokeController();
-  //         await invokeController.invoke({
-  //           lambdaFunctions: ['InvokeFunctionLocalExecutionTimeLimit'],
-  //           inputFlags: { local: true },
-  //         });
-  //       },
-  //     );
+    when(
+      'I run the invoke command and pass the function name and local flag',
+      async () => {
+        process.env.DEBUG_PATH = 'true';
+        const invokeController = new InvokeController();
+        await invokeController.invoke({
+          lambdaFunctions: ['InvokeFunctionLocalExecutionTimeLimit'],
+          inputFlags: { local: true },
+        });
+      },
+    );
 
-  //     then(
-  //       'It invokes the command local and print an error that the functions runs longer than 60 seconds',
-  //       () => {
-  //         expect(consoleSpy).toBeCalledWith(
-  //           expect.stringContaining(
-  //             'Lambda did not call callback within execution time limit',
-  //           ),
-  //         );
-  //       },
-  //     );
-  //   });
+    then(
+      'It invokes the command local and print an error that the functions runs longer than 60 seconds',
+      () => {
+        // expect(consoleSpy).toBeCalledWith(
+        //   expect.stringContaining(
+        //     'Lambda did not call callback within execution time limit',
+        //   ),
+        // );
+      },
+    );
+  });
 });
