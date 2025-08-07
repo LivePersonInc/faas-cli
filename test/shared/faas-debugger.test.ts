@@ -52,8 +52,8 @@ describe('debugger', () => {
     );
     writeFileSync(
       join(testDir, 'functions', 'DebugFunction', 'index.js'),
-      `function lambda(input, callback) {
-callback(null, 'Hello World');
+      `async function lambda(input) {
+return 'Hello World';
 }
 `,
     );
@@ -157,8 +157,8 @@ callback(null, 'Hello World');
     );
     writeFileSync(
       join(testDir, 'functions', 'DebugFunction', 'index.js'),
-      `function lambda(input, callback) {
-callback(null, 'Hello World');
+      `async function lambda(input {
+return 'Hello World';
 }
 `,
     );
@@ -207,14 +207,14 @@ callback(null, 'Hello World');
     );
     writeFileSync(
       join(testDir, 'functions', 'DebugFunction', 'index.js'),
-      `function lambda(input, callback) {
+      `async function lambda(input) {
 const Toolbelt = require('core-functions-toolbelt');
 const OAuth = require('oauth-1.0a');
 const luxon = require('luxon');
 const jsforce = require('jsforce');
 const jsonwebtoken = require('jsonwebtoken');
 const lodash = require('lodash');
-callback(null, 'Hello World');
+return 'Hello World';
 }
 `,
     );

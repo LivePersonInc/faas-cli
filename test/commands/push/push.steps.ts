@@ -46,7 +46,7 @@ const mockFileService = {
       lambdaName === 'TestFunction7' ||
       lambdaName === 'TestFunction8'
     ) {
-      return 'function lambda(input, callback) {\n    callback(null, `Hello World`);\n}';
+      return 'async function lambda(input) {\n    return `Hello World`;\n}';
     }
     const [lambda] = allLambdas.filter(
       (lambdaParam: IFunction) => lambdaParam.name === lambdaName,
@@ -385,7 +385,7 @@ defineFeature(feature, (test) => {
         fileService: mockFileService,
       });
       mockFileService.read = jest.fn(() => {
-        return 'function lammbda(input, callback) {\n    callback(null, `Hello World`);\n}';
+        return 'async function lammbda(input,) {\n    return `Hello World`;\n}';
       });
 
       const pushController = new PushController({
