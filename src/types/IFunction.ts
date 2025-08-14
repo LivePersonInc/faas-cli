@@ -1,3 +1,4 @@
+export type LPFnDeploymentSize = 'S' | 'M' | 'L' | 'XL' | 'XXL';
 export type LPFnMeta = {
   /**
    * UUID that is unique for a each function
@@ -22,7 +23,7 @@ export type LPFnMeta = {
    *
    * @maxLength 30
    */
-  state: 'Draft' | 'Modified' | 'Productive';
+  state: string;
   /**
    * The skill identifiers to which the function reacts.
    *
@@ -38,6 +39,8 @@ export type LPFnMeta = {
    * @maxLength 60
    */
   eventId?: string;
+
+  size?: LPFnDeploymentSize;
 
   /**
    * Flag that indicates if a function was imported from V1 or is a V2.
@@ -65,9 +68,8 @@ export type LPFnMeta = {
 
 export type LPFnManifest = {
   /**
-   * UUID that is for a manifest
+   * Id of the manifest
    *
-   * @maxLength 36
    */
   id: string;
   /**
@@ -114,6 +116,7 @@ export type LPFnManifest = {
    */
   updatedBy?: string;
 };
+
 export type LPFnDeployment = {
   /**
    * UUID that is unique for a each deployment
@@ -176,8 +179,6 @@ export type LPFnDeployment = {
 // Only use as input during create and update deployment
 export type LPFnDeploymentConfig = Pick<LPFnDeployment, 'cpu' | 'memory'>;
 
-export type LPFnDeploymentSize = 'S' | 'M' | 'L' | 'XL' | 'XXL';
-
 export type LPFnDeploymentCreateParams = Pick<
   LPFnDeployment,
   'functionUuid' | 'manifestUUID' | 'manifestVersion' | 'cpu' | 'memory'
@@ -205,5 +206,5 @@ export type LPFnMetaUpdateParams = Partial<
 >;
 
 export type LPManifestUpdateParams = Partial<
-  Omit<LPFnManifest, 'spec' | 'uuid' | 'version'>
-> & { uuid: string; version: number };
+  Omit<LPFnManifest, 'spec' | 'id'>
+> & { version: number };

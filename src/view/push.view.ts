@@ -107,7 +107,6 @@ export class PushView {
     } else {
       this.log.print('\nPushing following functions:\n');
     }
-
     pushRequestBodies.forEach((entry: LPFunction) => {
       this.tasklist.addTask({
         title: `Pushing ${entry.name}`,

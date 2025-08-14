@@ -156,16 +156,15 @@ export class FaasService {
     uuid: string;
   }): Promise<boolean> {
     try {
-      const metaUpdate = await this.pushFunctionMeta(uuid, {
+      await this.pushFunctionMeta(uuid, {
         description: body.description,
         skills: body.skills,
       });
 
       const manifestUpdate = await this.pushFunctionManifest(uuid, {
-        uuid: body.uuid,
         ...body.manifest,
       });
-      return metaUpdate || manifestUpdate;
+      return manifestUpdate;
     } catch (error) {
       if (body.manifest?.code.includes('validation')) {
         throw new Error(
@@ -212,7 +211,6 @@ export class FaasService {
       const updateManifestResponse = await this.pushFunctionManifest(
         newFunction.uuid,
         {
-          uuid: newFunction.uuid,
           ...newManifest,
         },
       );
@@ -239,20 +237,20 @@ export class FaasService {
   public async pushFunctionMeta(
     uuid: string,
     meta: LPFnMetaUpdateParams,
-  ): Promise<boolean> {
+  ): Promise<LPFunction | undefined> {
     try {
-      await this.doFetch({
+      const fn = await this.doFetch({
         urlPart: `/functions/${uuid}`,
         method: 'PUT',
         body: meta,
       });
-      return true;
+      return fn;
     } catch (error) {
       if (
         error.errorCode &&
         error.errorCode === 'com.liveperson.faas.function.unchanged'
       ) {
-        return false;
+        return undefined;
       }
       throw error;
     }
