@@ -170,7 +170,8 @@ ${
   Description:            ${pushBody.description}
   Event:                  ${event}
   Environment variables:  ${
-    pushBody.manifest.environment.length > 0
+    pushBody.manifest.environment &&
+    Object.keys(pushBody.manifest.environment).length > 0
       ? JSON.stringify(pushBody.manifest.environment)
       : '-'
   }

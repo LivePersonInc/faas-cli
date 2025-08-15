@@ -248,11 +248,8 @@ export function push(body: any, method: string): any {
   };
 }
 
-export function pushManifest(body: any, method: string): any {
-  if (
-    body.uuid === 'f791e5ca-3e78-4990-a066-59b82cdfd6a0' &&
-    method === 'PUT'
-  ) {
+export function pushManifest(uuid: string, body: any, method: string): any {
+  if (uuid === 'f791e5ca-3e78-4990-a066-59b82cdfd6a0' && method === 'PUT') {
     const error = new Error('Function Manifest not modified');
     // eslint-disable-next-line @typescript-eslint/ban-ts-comment
     // @ts-ignore

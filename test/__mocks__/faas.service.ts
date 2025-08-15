@@ -360,7 +360,11 @@ export class FaasService {
         (method === 'PUT' || method === 'POST') &&
         urlPart.includes('manifest')
       ) {
-        response = pushManifest(body, method);
+        response = pushManifest(
+          urlPart.match(/\/functions\/([^/]+)\//)?.[1] ?? '',
+          body,
+          method,
+        );
       } else if (
         (method === 'PUT' || method === 'POST') &&
         urlPart.includes('functions')
