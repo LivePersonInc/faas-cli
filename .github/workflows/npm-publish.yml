@@ -5,16 +5,17 @@ name: Node.js Package
 
 on:
   workflow_dispatch:
-      inputs:
-        version-increment:
-          type: choice
-          description: 'Version Increment'
-          required: true
-          options:
-            - 'patch'
-            - 'minor'
-            - 'major'
-          default: 'patch'
+    inputs:
+      version-increment:
+        type: choice
+        description: 'Version Increment'
+        required: true
+        options:
+          - 'none'
+          - 'patch'
+          - 'minor'
+          - 'major'
+        default: 'none'
 
 jobs:
   publish-on-npm:
@@ -22,40 +23,48 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v3
-
+        
       - name: Setup environment
         uses: actions/setup-node@v3
         with:
           node-version: 20
           registry-url: https://registry.npmjs.org/
-
+          
       - name: Build
-        run: npm ci
-
-#      - name: End-2-End Testing
-#        run: npm run e2e
-#        env:
-#          E2E_TEST_ACCOUNT: ${{ secrets.E2E_TEST_ACCOUNT }}
-#          E2E_TEST_USERNAME: ${{ secrets.E2E_TEST_USERNAME }}
-#          E2E_TEST_PASSWORD: ${{ secrets.E2E_TEST_PASSWORD }}
-
+        run: yarn install --frozen-lockfile
+        
+      # - name: End-2-End Testing
+      #   run: npm run e2e
+      #   env:
+      #     E2E_TEST_ACCOUNT: ${{ secrets.E2E_TEST_ACCOUNT }}
+      #     E2E_TEST_USERNAME: ${{ secrets.E2E_TEST_USERNAME }}
+      #     E2E_TEST_PASSWORD: ${{ secrets.E2E_TEST_PASSWORD }}
+      
       - name: Versionate
         run: |
           git config --local user.email "action@github.com"
           git config --local user.name "GitHub Action"
-          npm version ${{ github.event.inputs.version-increment }}
-
+          if [ "${{ github.event.inputs.version-increment }}" != "none" ]; then
+            npm version ${{ github.event.inputs.version-increment }}
+          else
+            echo "Skipping version increment"
+          fi
+          
+      - name: Get current version
+        id: get-version
+        run: echo "version=$(node -p "require('./package.json').version")" >> $GITHUB_OUTPUT
+        
       - name: Publish npm
         id: publish
         uses: JS-DevTools/npm-publish@v1
         with:
           token: ${{ secrets.NPM_PUBLISH }}
-
+          
       - name: Create PR
         uses: peter-evans/create-pull-request@v4.1.3
         with:
-          commit-message: Updated repository to ${{ steps.publish.outputs.version }}
-          title: Bump version to ${{ steps.publish.outputs.version }}
+          commit-message: Updated repository to ${{ steps.get-version.outputs.version }}
+          title: Bump version to ${{ steps.get-version.outputs.version }}
           body: New release build
-          branch: release/${{ steps.publish.outputs.version }}
+          branch: release/${{ steps.get-version.outputs.version }}
           base: master

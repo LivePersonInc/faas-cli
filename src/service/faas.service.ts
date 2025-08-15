@@ -136,6 +136,7 @@ export interface IFaaSService {
     meta: LPFnMetaUpdateParams,
   ): Promise<LPFunction | boolean>;
 
+
   pushFunctionManifest(
     uuid: string,
     manifest: LPManifestUpdateParams,
@@ -387,6 +388,7 @@ export class FaasService implements IFaaSService {
       throw new Error(error.errorMsg || error.message);
     }
   }
+
 
   public async pushNewMeta(meta: LPFnMeta): Promise<LPFunction> {
     const response = await this.doFetch({

@@ -112,7 +112,6 @@ export class PushController {
       envars &&
       Object.keys(envars).length > 0 &&
       Object.keys(envars)[0] !== 'key';
-
     return {
       name: lambdaConfig.name,
       ...(lambdaConfig.event &&

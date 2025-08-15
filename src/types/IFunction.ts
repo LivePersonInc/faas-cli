@@ -1,4 +1,5 @@
 export type LPFnDeploymentSize = 'S' | 'M' | 'L' | 'XL' | 'XXL';
+
 export type LPFnMeta = {
   /**
    * UUID that is unique for a each function
@@ -24,6 +25,7 @@ export type LPFnMeta = {
    * @maxLength 30
    */
   state: string;
+
   /**
    * The skill identifiers to which the function reacts.
    *
@@ -178,6 +180,7 @@ export type LPFnDeployment = {
 
 // Only use as input during create and update deployment
 export type LPFnDeploymentConfig = Pick<LPFnDeployment, 'cpu' | 'memory'>;
+
 
 export type LPFnDeploymentCreateParams = Pick<
   LPFnDeployment,
