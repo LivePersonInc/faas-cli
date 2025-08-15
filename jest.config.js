@@ -3,11 +3,6 @@ module.exports = {
   roots: ['<rootDir>', '<rootDir>/src'],
   moduleNameMapper: {
     '^csv-parse/sync$': '<rootDir>/node_modules/csv-parse/dist/cjs/sync.cjs',
-    '^node:(.*)$': '$1',
-    '^path$': 'path',
-    '^fs$': 'fs',
-    '^os$': 'os',
-    '^util$': 'util',
   },
   testMatch: [
     '**/*.steps.[jt]s?(x)',
