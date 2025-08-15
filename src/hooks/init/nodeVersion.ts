@@ -15,7 +15,7 @@ export async function nodeVersion(
   if (opts.id === 'invoke') {
     try {
       const userNodeVersion = semver.major(semver.clean(version) as string);
-      const remoteVersion = semver.major(semver.clean('20.0.0') as string);
+      const remoteVersion = semver.major(semver.clean('22.0.0') as string);
       if (userNodeVersion !== remoteVersion) {
         // eslint-disable-next-line no-console
         console.log(

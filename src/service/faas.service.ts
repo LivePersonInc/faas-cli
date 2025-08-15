@@ -131,7 +131,10 @@ export interface IFaaSService {
 
   pushNewMeta(meta: LPFnMeta): Promise<LPFunction>;
 
-  pushFunctionMeta(uuid: string, meta: LPFnMetaUpdateParams): Promise<boolean>;
+  pushFunctionMeta(
+    uuid: string,
+    meta: LPFnMetaUpdateParams,
+  ): Promise<LPFunction | boolean>;
 
   pushFunctionManifest(
     uuid: string,
@@ -337,16 +340,16 @@ export class FaasService implements IFaaSService {
     uuid?: string;
   }): Promise<boolean> {
     try {
-      const metaUpdate = await this.pushFunctionMeta(uuid, {
+      const fn = await this.pushFunctionMeta(uuid, {
         description: body.description,
         skills: body.skills,
       });
 
       const manifestUpdate = await this.pushFunctionManifest(uuid, {
-        uuid: body.uuid,
+        id: fn ? (fn as LPFunction).manifest.id : body.manifest.id,
         ...body.manifest,
       });
-      return metaUpdate || manifestUpdate;
+      return manifestUpdate;
     } catch (error) {
       if (error.errorCode?.includes('validation')) {
         throw new Error(
@@ -369,8 +372,9 @@ export class FaasService implements IFaaSService {
       const updateManifestResponse = await this.pushFunctionManifest(
         newFunction.uuid,
         {
-          uuid: newFunction.uuid,
+          id: newFunction.manifest.id,
           ...newManifest,
+          version: newFunction.manifest.version,
         },
       );
       return updateManifestResponse;
@@ -397,15 +401,15 @@ export class FaasService implements IFaaSService {
   public async pushFunctionMeta(
     uuid: string,
     meta: LPFnMetaUpdateParams,
-  ): Promise<boolean> {
+  ): Promise<LPFunction | boolean> {
     try {
-      await this.doFetch({
+      const newMeta = await this.doFetch({
         urlPart: `/functions/${uuid}`,
         method: 'PUT',
         body: meta,
         resolveBody: false,
       });
-      return true;
+      return newMeta.body;
     } catch (error) {
       if (
         error.errorCode &&

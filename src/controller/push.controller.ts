@@ -113,60 +113,58 @@ export class PushController {
       Object.keys(envars).length > 0 &&
       Object.keys(envars)[0] !== 'key';
     return {
+      name: lambdaConfig.name,
       ...(lambdaConfig.event &&
         lambdaConfig.event !== 'No Event' && { eventId: lambdaConfig.event }),
-      uuid: '',
-      name: lambdaConfig.name,
       description: lambdaConfig.description,
-      state: 'Draft',
       manifest: {
         code: this.fileService.read(
           this.fileService.getPathToFunction(lambdaConfig.name, 'index.js'),
           false,
         ),
+        ...(hasCustomEnvars(lambdaConfig.environmentVariables) && {
+          environment: lambdaConfig.environmentVariables,
+        }),
         version: -1,
-        environment: hasCustomEnvars(lambdaConfig.environmentVariables)
-          ? lambdaConfig.environmentVariables
-          : {},
       },
     };
   }
 
   private createUpdateLambdaBody(
-    lambda: LPFunction,
+    existingLambda: LPFunction,
     lambdaConfig: any,
   ): Partial<LPFnMeta> & {
     manifest: Partial<LPFnManifest>;
   } {
-    const hasCustomEnvars = (envars) =>
-      envars &&
-      Object.keys(envars).length > 0 &&
-      Object.keys(envars)[0] !== 'key';
+    const code = this.fileService.read(
+      this.fileService.getPathToFunction(existingLambda.name, 'index.js'),
+      false,
+    );
+
+    const isCodeChanged = code !== existingLambda.manifest.code;
+
+    const envars = lambdaConfig.environmentVariables;
+
+    if (envars.key && envars.key === 'value') {
+      delete envars.key;
+    }
+    const areEnvarsChanged = !isEqual(
+      envars,
+      existingLambda.manifest.environment,
+    );
+
     return {
-      uuid: lambda.uuid,
-      state: lambda.state === 'Draft' ? 'Draft' : 'Modified',
-      name: lambda.name,
-      eventId: lambda.eventId,
+      uuid: existingLambda.uuid,
+      state: existingLambda.state === 'Draft' ? 'Draft' : 'Modified',
+      name: existingLambda.name,
+      eventId: existingLambda.eventId,
       description: lambdaConfig.description,
-      createdBy: lambda.createdBy,
-      updatedBy: lambda.updatedBy,
-      createdAt: lambda.createdAt,
-      updatedAt: lambda.updatedAt,
       manifest: {
-        code: this.fileService.read(
-          this.fileService.getPathToFunction(lambda.name, 'index.js'),
-          false,
-        ),
-        ...(!isEqual(
-          lambda.manifest.environment,
-          lambdaConfig.environmentVariables,
-        ) && {
-          environment: lambdaConfig.environmentVariables,
+        ...(isCodeChanged && { code }),
+        ...(areEnvarsChanged && {
+          environment: envars,
         }),
-        version: lambda.manifest.version,
-        environment: hasCustomEnvars(lambdaConfig.environmentVariables)
-          ? lambdaConfig.environmentVariables
-          : {},
+        version: existingLambda.manifest.version,
       },
     };
   }
