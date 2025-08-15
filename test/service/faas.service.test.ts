@@ -218,6 +218,7 @@ describe('faas service', () => {
     }) as any;
 
     const faasService = new FaasService({ gotDefault, csdsClient });
+
     const result = await faasService.pushNewFunction({
       body: mock.mockFunction1,
     });
@@ -233,6 +234,7 @@ describe('faas service', () => {
       };
     }) as any;
     const faasService = new FaasService({ gotDefault, csdsClient });
+
     try {
       await faasService.push({
         body: mock.mockFunction1,
@@ -258,6 +260,7 @@ describe('faas service', () => {
       };
     }) as any;
     const faasService = new FaasService({ gotDefault, csdsClient });
+
     try {
       await faasService.push({
         body: { ...mock.mockFunction1, name: 'FunctionName§!' },
@@ -351,7 +354,7 @@ describe('faas service', () => {
       removeHeader: true,
       levels: ['Info', 'Warn', 'Error'],
     });
-    expect(logged).toEqual(LOGS);
+    expect(logged).toEqual(mock.mockLogs.data);
   });
 
   it('should throw an error during get logs', async () => {
@@ -548,9 +551,8 @@ describe('faas service', () => {
     const gotDefault = jest.fn(async (url) => {
       if (url.includes('/functions/count')) {
         return { body: 5 };
-
       }
-      if (url.includes('/deployments/count')) {
+      if (url.includes('/reports/invocationCounts')) {
         return {
           body: [
             { successfulInvocations: 10, failedInvocations: 2 },
@@ -640,7 +642,6 @@ describe('faas service', () => {
     const csdsClient = new CsdsClient();
     csdsClient.getUri = jest.fn().mockReturnValue('faasUI');
     const gotDefault = jest.fn(() => ({ body: mock.mockFunction1 })) as any;
-
 
     const faasService = new FaasService({ gotDefault, csdsClient });
     const result = await faasService.pushFunctionMeta('123-123-123', {

@@ -181,7 +181,6 @@ export type LPFnDeployment = {
 // Only use as input during create and update deployment
 export type LPFnDeploymentConfig = Pick<LPFnDeployment, 'cpu' | 'memory'>;
 
-
 export type LPFnDeploymentCreateParams = Pick<
   LPFnDeployment,
   'functionUuid' | 'manifestUUID' | 'manifestVersion' | 'cpu' | 'memory'
