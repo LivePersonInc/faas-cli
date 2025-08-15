@@ -138,7 +138,7 @@ export class LoginView {
           'Functions V2 Alpha',
         )} Version of the CLI. ${this.chalk.red(
           'Only use if your account has been migrated!',
-        )} !`,
+        )}`,
       );
       this.log.print(
         `To downgrade back to use ${this.chalk.green(
