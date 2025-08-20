@@ -5,30 +5,25 @@ import { randomUUID } from 'node:crypto';
  * @param headers
  * @returns
  */
-export function transformFetchResponseHeaders(
-  headers: Headers,
-): Record<string, string> {
-  const responseHeaders: Record<string, string> = {};
+export function transformFetchResponseHeaders(headers: Headers): Record<string, string> {
+    const responseHeaders: Record<string, string> = {};
 
-  const keys = (headers as any).keys();
-  let headerName: IteratorResult<string | undefined> = keys.next();
+    const keys = headers.keys();
+    let headerName: IteratorResult<string | undefined> = keys.next();
 
-  while (
-    headerName.value !== undefined &&
-    typeof headerName.value == 'string'
-  ) {
-    const headerValue = headers.get(headerName.value);
+    while (headerName.value !== undefined && typeof headerName.value == 'string') {
+        const headerValue = headers.get(headerName.value);
 
-    if (headerValue !== null && typeof headerValue === 'string') {
-      responseHeaders[headerName.value] = headerValue;
+        if (headerValue !== null && typeof headerValue === 'string') {
+            responseHeaders[headerName.value] = headerValue;
+        }
+
+        headerName = keys.next();
     }
-
-    headerName = keys.next();
-  }
-  return responseHeaders;
+    return responseHeaders;
 }
 
 export type LpConsole = Console & { getTraceId: () => string };
 export function getTraceId(): string {
-  return (console as LpConsole).getTraceId() || randomUUID();
+    return (console as LpConsole).getTraceId() || randomUUID();
 }

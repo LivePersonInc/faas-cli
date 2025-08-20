@@ -25,6 +25,7 @@ const EXTERNAL_PACKAGE_MAPPING = [
   'jsforce',
   'jsonwebtoken',
   'lodash',
+  'es-toolkit',
 ];
 
 function isLogLevel(input: any) {

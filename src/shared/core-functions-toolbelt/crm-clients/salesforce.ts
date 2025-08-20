@@ -13,5 +13,5 @@ import { Connection, ConnectionConfig } from '@jsforce/jsforce-node';
  * ```
  */
 export function ConnectToSalesforce(params: ConnectionConfig): Connection {
-  return new Connection(params);
+    return new Connection(params);
 }
