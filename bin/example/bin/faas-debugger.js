@@ -1,283 +1,241 @@
-Object.defineProperty(exports, '__esModule', { value: true });
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
 exports.FaasDebugger = void 0;
 /* eslint-disable no-console */
-const fs_1 = require('fs');
-const child_process_1 = require('child_process');
-const path_1 = require('path');
-const perf_hooks_1 = require('perf_hooks');
-
+const fs_1 = require("fs");
+const child_process_1 = require("child_process");
+const path_1 = require("path");
+const perf_hooks_1 = require("perf_hooks");
 const EXECUTION_EXCEED_TIMEOUT = 60000;
-const EXTERNAL_PACKAGE_MAPPING = [
-  'oauth-1.0a',
-  'luxon',
-  'jsforce',
-  'jsonwebtoken',
-  'lodash',
-];
+const EXTERNAL_PACKAGE_MAPPING = ['luxon', 'jsonwebtoken', 'es-toolkit'];
 function isLogLevel(input) {
-  return Object.keys({
-    Debug: 'Debug',
-    Info: 'Info',
-    Warn: 'Warn',
-    Error: 'Error',
-    Callback: 'Callback',
-    History: 'History',
-  }).some((e) => input.includes(`[${e}]`));
+    return Object.keys({
+        Debug: 'Debug',
+        Info: 'Info',
+        Warn: 'Warn',
+        Error: 'Error',
+        Response: 'Response',
+        History: 'History',
+    }).some((e) => input.includes(`[${e}]`));
 }
 function didExecutionExceedTimewindow(timeStart, timeEnd) {
-  return timeEnd - timeStart > EXECUTION_EXCEED_TIMEOUT;
+    return timeEnd - timeStart > EXECUTION_EXCEED_TIMEOUT;
 }
 function didExecutionFailWithError(result) {
-  return (
-    result.filter((e) => e.level === 'Error' && e.message?.errorMsg).length > 0
-  );
+    return (result.filter((e) => e.level === 'Error' && e.message?.errorMsg)
+        .length > 0);
 }
 function throwInvalidProjectFolderError() {
-  console.log(
-    'Could not find index.js. Please make sure you have set up a functions folder with index.js and config.json',
-  );
+    console.log('Could not find index.js. Please make sure you have set up a functions folder with index.js and config.json');
 }
 function didIncorrectErrorFormat(result) {
-  return result.some(
-    (e) =>
-      e.extras[0]?.originalFailure &&
-      e.message?.errorMsg.includes('incorrect format') &&
-      e.level === 'Warn',
-  );
+    return result.some((e) => e.extras[0]?.originalFailure &&
+        e.message?.errorMsg.includes('incorrect format') &&
+        e.level === 'Warn');
 }
 function mapExternalPackagesToToolbelt(file) {
-  const isReverse = EXTERNAL_PACKAGE_MAPPING.some((pkg) =>
-    file.includes(`require('../bin/core-functions-toolbelt/${pkg}')`),
-  );
-  const needsMapping =
-    isReverse ||
-    EXTERNAL_PACKAGE_MAPPING.some((pkg) => file.includes(`require('${pkg}')`));
-  if (needsMapping) {
-    EXTERNAL_PACKAGE_MAPPING.forEach((pkg) => {
-      /* istanbul ignore next */
-      file = isReverse
-        ? file.replace(
-            `require('../bin/core-functions-toolbelt/${pkg}')`,
-            `require('${pkg}')`,
-          )
-        : file.replace(
-            `require('${pkg}')`,
-            `require('../bin/core-functions-toolbelt/${pkg}')`,
-          );
-    });
-  }
-  return file;
+    const isReverse = EXTERNAL_PACKAGE_MAPPING.some((pkg) => file.includes(`require('../bin/core-functions-toolbelt/${pkg}')`));
+    const needsMapping = isReverse ||
+        EXTERNAL_PACKAGE_MAPPING.some((pkg) => file.includes(`require('${pkg}')`));
+    if (needsMapping) {
+        EXTERNAL_PACKAGE_MAPPING.forEach((pkg) => {
+            /* istanbul ignore next */
+            file = isReverse
+                ? file.replace(`require('../bin/core-functions-toolbelt/${pkg}')`, `require('${pkg}')`)
+                : file.replace(`require('${pkg}')`, `require('../bin/core-functions-toolbelt/${pkg}')`);
+        });
+    }
+    return file;
+}
+function requireToImport(code) {
+    return (code
+        // Handle destructuring: const { a, b } = require("module");
+        .replace(/const\s+{([^}]+)}\s*=\s*require\(['"]([^'"]+)['"]\);/g, (match, destructured, module) => `import { ${destructured.trim()} } from "${module.trim()}";`)
+        // Handle default assignment: const x = require("module");
+        .replace(/const\s+([a-zA-Z0-9_$]+)\s*=\s*require\(['"]([^'"]+)['"]\);/g, (match, variable, module) => `import ${variable.trim()} from "${module.trim()}";`)
+        // Handle bare requires: require("module");
+        .replace(/require\(['"]([^'"]+)['"]\);/g, (match, module) => `import "${module.trim()}";`));
+}
+function importToRequire(code) {
+    return (code
+        // Handle `import defaultExport from "module"`
+        .replace(/import\s+([a-zA-Z0-9_$]+)\s+from\s+['"]([^'"]+)['"];?/g, (match, defaultExport, module) => `const ${defaultExport.trim()} = require("${module.trim()}");`)
+        // Handle `import * as name from "module"`
+        .replace(/import\s+\*\s+as\s+([a-zA-Z0-9_$]+)\s+from\s+['"]([^'"]+)['"];?/g, (match, name, module) => `const ${name.trim()} = require("${module.trim()}");`)
+        // Handle `import { a, b } from "module"`
+        .replace(/import\s+{([^}]+)}\s+from\s+['"]([^'"]+)['"];?/g, (match, destructured, module) => `const { ${destructured.trim()} } = require("${module.trim()}");`)
+        // Handle bare imports `import "module"`
+        .replace(/import\s+['"]([^'"]+)['"];?/g, (match, module) => `require("${module.trim()}");`));
 }
 class FaasDebugger {
-  result;
-
-  configPath;
-
-  errorLogs;
-
-  indexPath;
-
-  lambdaToInvoke;
-
-  functionPath;
-
-  port;
-
-  cwd;
-
-  constructor(
-    /* istanbul ignore next */ {
-      indexPath = '',
-      configPath = '',
-      lambdaToInvoke = '',
-      cwd = process.cwd(),
-    } = {},
-  ) {
-    this.indexPath = indexPath;
-    this.configPath = configPath;
-    this.result = {
-      result: {},
-      logs: [],
-    };
-    this.errorLogs = {
-      errorCode: '',
-      errorMsg: '',
-      errorLogs: [],
-    };
-    this.cwd = cwd;
-    this.lambdaToInvoke = lambdaToInvoke;
-    this.functionPath = (0, path_1.join)(
-      cwd,
-      'functions',
-      process.env.DEBUG_FUNCTION || process.argv[2],
-    );
-    this.port = process.env.DEBUG_PORT
-      ? Number.parseInt(process.env.DEBUG_PORT, 10)
-      : null;
-  }
-
-  async runLocalInvocation() {
-    try {
-      this.updateLambdaFunctionForInvoke();
-      this.setEnvironmentVariables(true);
-      await this.createChildProcessForInvokeLocal();
-    } catch {
-      throwInvalidProjectFolderError();
+    result;
+    configPath;
+    errorLogs;
+    indexPath;
+    lambdaToInvoke;
+    functionPath;
+    port;
+    cwd;
+    constructor(
+    /* istanbul ignore next */ { indexPath = '', configPath = '', lambdaToInvoke = '', cwd = process.cwd(), } = {}) {
+        this.indexPath = indexPath;
+        this.configPath = configPath;
+        this.result = {
+            result: {},
+            logs: [],
+        };
+        this.errorLogs = {
+            errorCode: '',
+            errorMsg: '',
+            errorLogs: [],
+        };
+        this.cwd = cwd;
+        this.lambdaToInvoke = lambdaToInvoke;
+        this.functionPath = (0, path_1.join)(cwd, 'functions', process.env.DEBUG_FUNCTION || process.argv[2]);
+        this.port = process.env.DEBUG_PORT
+            ? Number.parseInt(process.env.DEBUG_PORT, 10)
+            : null;
     }
-  }
-
-  async runDebugging() {
-    try {
-      this.updateLambdaFunctionForDebugging();
-      this.setEnvironmentVariables();
-      await this.createChildProcessForDebugging();
-    } catch {
-      throwInvalidProjectFolderError();
-    }
-  }
-
-  createChildProcessForInvokeLocal() {
-    return new Promise((resolve) => {
-      const childFork = (0, child_process_1.fork)(this.indexPath, [], {
-        env: process.env,
-        detached: true,
-      });
-      const timeStart = perf_hooks_1.performance.now();
-      childFork.on('message', (result) => {
-        const timeEnd = perf_hooks_1.performance.now();
-        if (didExecutionExceedTimewindow(timeStart, timeEnd)) {
-          this.errorLogs = {
-            errorCode: 'com.liveperson.faas.handler.custom-failure',
-            errorMsg:
-              'Lambda did not call callback within execution time limit',
-            errorLogs: result,
-          };
-          console.log(JSON.stringify(this.errorLogs, null, 4));
-          return;
+    async runLocalInvocation() {
+        try {
+            this.updateLambdaFunctionForInvoke();
+            this.setEnvironmentVariables(true);
+            await this.createChildProcessForInvokeLocal();
         }
-        if (didIncorrectErrorFormat(result)) {
-          const error = result.filter(
-            (e) =>
-              e.extras[0]?.originalFailure &&
-              e.message?.errorMsg.includes('incorrect format') &&
-              e.level === 'Warn',
-          )[0];
-          this.errorLogs.errorCode = error.message.errorCode;
-          this.errorLogs.errorMsg = error.extras[0].originalFailure;
-          result[
-            result.findIndex(
-              (e) =>
-                e.level === 'Warn' &&
-                e.message?.errorMsg.includes('incorrect format'),
-            )
-          ].message = error.message.errorMsg;
-          this.errorLogs.errorLogs = result;
-          console.log(JSON.stringify(this.errorLogs, null, 4));
-          return;
+        catch {
+            throwInvalidProjectFolderError();
         }
-        if (didExecutionFailWithError(result)) {
-          const enrichedError = result.filter(
-            (e) => e.level === 'Error' && e.message?.errorMsg,
-          )[0];
-          /* istanbul ignore else */
-          if (enrichedError) {
-            this.errorLogs.errorCode = enrichedError.message.errorCode;
-            this.errorLogs.errorMsg = enrichedError.message.errorMsg;
-            result[
-              result.findIndex(
-                (e) => e.level === 'Error' && e.message?.errorMsg,
-              )
-            ].message = `Received Error - ${enrichedError.message.errorMsg}`;
-          }
-          this.errorLogs.errorLogs = result;
-          console.log(JSON.stringify(this.errorLogs, null, 4));
-          return;
+    }
+    async runDebugging() {
+        try {
+            this.updateLambdaFunctionForDebugging();
+            this.setEnvironmentVariables();
+            await this.createChildProcessForDebugging();
         }
-        this.result.logs = result.filter((e) => e.level !== 'Callback');
-        const logs = result.filter((e) => e.level === 'Callback');
-        this.result.result = logs.length > 0 ? logs[0].message : '';
-        console.log(JSON.stringify(this.result, null, 4));
-      });
-      childFork.on('exit', () => {
-        this.revertLambdaFunction(true);
-        childFork.kill();
-        resolve();
-      });
-      /* istanbul ignore next */
-      process.on('SIGINT', () => {
-        console.log('Interrupted lambda invocation');
-        resolve();
-      });
-      /* istanbul ignore next */
-      process.on('SIGHUP', () => {
-        console.log('Interrupted lambda invocation');
-        resolve();
-      });
-    });
-  }
-
-  async createChildProcessForDebugging() {
-    /* istanbul ignore next */
-    if (!this.port) {
-      /* eslint-disable */
-      const getPort = require('./core-functions-toolbelt/node_modules/get-port');
-      /* eslint-enable */
-      this.port = await getPort({ port: getPort.makeRange(30500, 31000) });
+        catch {
+            throwInvalidProjectFolderError();
+        }
     }
-    this.updatePortForFiles();
-    const args = [
-      `--inspect-brk=${this.port}`,
-      (0, path_1.join)(this.functionPath, 'index.js'),
-    ];
-    const child = (0, child_process_1.spawn)('node', args, {
-      detached: false,
-      stdio: 'pipe',
-      serialization: 'advanced',
-    });
-    child.stdout.on('data', (e) => {
-      // eslint-disable-next-line no-console
-      if (isLogLevel(e.toString())) console.log(e.toString());
-    });
-    child.stderr.on('data', (e) => {
-      // eslint-disable-next-line no-console
-      if (isLogLevel(e.toString())) console.log(e.toString());
-    });
-    child.on('exit', () => {
-      this.revertLambdaFunction();
-      child.kill();
-    });
-    /* istanbul ignore next */
-    process.on('SIGINT', () => {
-      // eslint-disable-next-line no-console
-      console.log('Interrupted lambda invocation');
-    });
-    /* istanbul ignore next */
-    process.on('SIGHUP', () => {
-      // eslint-disable-next-line no-console
-      console.log('Interrupted lambda invocation');
-    });
-  }
-
-  setEnvironmentVariables(invoke = false) {
-    const { environmentVariables } = JSON.parse(
-      (0, fs_1.readFileSync)(
-        invoke
-          ? this.configPath
-          : (0, path_1.join)(this.functionPath, 'config.json'),
-        'utf8',
-      ),
-    );
-    // eslint-disable-next-line no-restricted-syntax
-    for (const key of Object.keys(environmentVariables)) {
-      if (key !== 'key' && environmentVariables[key] !== 'value') {
-        process.env[key] = environmentVariables[key];
-      }
+    createChildProcessForInvokeLocal() {
+        return new Promise((resolve) => {
+            const childFork = (0, child_process_1.fork)(this.indexPath, [], {
+                env: process.env,
+                detached: true,
+            });
+            const timeStart = perf_hooks_1.performance.now();
+            childFork.on('message', (result) => {
+                const timeEnd = perf_hooks_1.performance.now();
+                if (didExecutionExceedTimewindow(timeStart, timeEnd)) {
+                    this.errorLogs = {
+                        errorCode: 'com.liveperson.faas.handler.custom-failure',
+                        errorMsg: 'Function did not return within execution time limit',
+                        errorLogs: result,
+                    };
+                    console.log(JSON.stringify(this.errorLogs, null, 4));
+                    return;
+                }
+                if (didIncorrectErrorFormat(result)) {
+                    const error = result.filter((e) => e.extras[0]?.originalFailure &&
+                        e.message?.errorMsg.includes('incorrect format') &&
+                        e.level === 'Warn')[0];
+                    this.errorLogs.errorCode = error.message.errorCode;
+                    this.errorLogs.errorMsg = error.extras[0].originalFailure;
+                    result[result.findIndex((e) => e.level === 'Warn' &&
+                        e.message?.errorMsg.includes('incorrect format'))].message = error.message.errorMsg;
+                    this.errorLogs.errorLogs = result;
+                    console.log(JSON.stringify(this.errorLogs, null, 4));
+                    return;
+                }
+                if (didExecutionFailWithError(result)) {
+                    const enrichedError = result.filter((e) => e.level === 'Error' && e.message?.errorMsg)[0];
+                    /* istanbul ignore else */
+                    if (enrichedError) {
+                        this.errorLogs.errorCode = enrichedError.message.errorCode;
+                        this.errorLogs.errorMsg = enrichedError.message.errorMsg;
+                        result[result.findIndex((e) => e.level === 'Error' && e.message?.errorMsg)].message = `Received Error - ${enrichedError.message.errorMsg}`;
+                    }
+                    this.errorLogs.errorLogs = result;
+                    console.log(JSON.stringify(this.errorLogs, null, 4));
+                    return;
+                }
+                this.result.logs = result.filter((e) => e.level !== 'Response');
+                const logs = result.filter((e) => e.level === 'Response');
+                this.result.result = logs.length > 0 ? logs[0].message : '';
+                console.log(JSON.stringify(this.result, null, 4));
+            });
+            childFork.on('exit', () => {
+                this.revertLambdaFunction(true);
+                childFork.kill();
+                resolve();
+            });
+            /* istanbul ignore next */
+            process.on('SIGINT', () => {
+                console.log('Interrupted function invocation');
+                resolve();
+            });
+            /* istanbul ignore next */
+            process.on('SIGHUP', () => {
+                console.log('Interrupted function invocation');
+                resolve();
+            });
+        });
     }
-  }
-
-  updateLambdaFunctionForInvoke() {
-    let file = (0, fs_1.readFileSync)(this.indexPath, 'utf8');
-    file = `require("module").prototype.require = require('../../bin/rewire').proxy; // Rewire require
+    async createChildProcessForDebugging() {
+        /* istanbul ignore next */
+        if (!this.port) {
+            /* eslint-disable */
+            const getPort = require('./core-functions-toolbelt/node_modules/get-port');
+            /* eslint-enable */
+            this.port = await getPort({ port: getPort.makeRange(30500, 31000) });
+        }
+        this.updatePortForFiles();
+        const args = [
+            `--inspect-brk=${this.port}`,
+            (0, path_1.join)(this.functionPath, 'index.js'),
+        ];
+        const child = (0, child_process_1.spawn)('node', args, {
+            detached: false,
+            stdio: 'pipe',
+            serialization: 'advanced',
+        });
+        child.stdout.on('data', (e) => {
+            // eslint-disable-next-line no-console
+            if (isLogLevel(e.toString()))
+                console.log(e.toString());
+        });
+        child.stderr.on('data', (e) => {
+            // eslint-disable-next-line no-console
+            if (isLogLevel(e.toString()))
+                console.log(e.toString());
+        });
+        child.on('exit', () => {
+            this.revertLambdaFunction();
+            child.kill();
+        });
+        /* istanbul ignore next */
+        process.on('SIGINT', () => {
+            // eslint-disable-next-line no-console
+            console.log('Interrupted function invocation');
+        });
+        /* istanbul ignore next */
+        process.on('SIGHUP', () => {
+            // eslint-disable-next-line no-console
+            console.log('Interrupted function invocation');
+        });
+    }
+    setEnvironmentVariables(invoke = false) {
+        const { environmentVariables } = JSON.parse((0, fs_1.readFileSync)(invoke ? this.configPath : (0, path_1.join)(this.functionPath, 'config.json'), 'utf8'));
+        // eslint-disable-next-line no-restricted-syntax
+        for (const key of Object.keys(environmentVariables)) {
+            if (key !== 'key' && environmentVariables[key] !== 'value') {
+                process.env[key] = environmentVariables[key];
+            }
+        }
+    }
+    updateLambdaFunctionForInvoke() {
+        let file = (0, fs_1.readFileSync)(this.indexPath, 'utf8');
+        file = importToRequire(file);
+        file = `require("module").prototype.require = require('../../bin/rewire').proxy; // Rewire require
 
 ${file}
 
@@ -295,17 +253,14 @@ ${file}
     process.send(console.getHistory());
   }
 })();`;
-    (0, fs_1.writeFileSync)(this.indexPath, file);
-  }
+        (0, fs_1.writeFileSync)(this.indexPath, file);
+    }
+    updateLambdaFunctionForDebugging() {
+        const originalCode = (0, fs_1.readFileSync)((0, path_1.join)(this.functionPath, 'index.js'), 'utf8');
+        const requireCode = importToRequire(originalCode);
+        let updatedCode = `require("module").prototype.require = require('../../bin/rewire').proxy; // Rewire require
 
-  updateLambdaFunctionForDebugging() {
-    const originalCode = (0, fs_1.readFileSync)(
-      (0, path_1.join)(this.functionPath, 'index.js'),
-      'utf8',
-    );
-    let updatedCode = `require("module").prototype.require = require('../../bin/rewire').proxy; // Rewire require
-
-${originalCode}
+${requireCode}
 
 // This is an auto generated code during the invocation/debugging
 // It rewires the requirements and parsing the output
@@ -320,78 +275,47 @@ ${originalCode}
     console.customError(error);
   }
 })();`;
-    updatedCode = mapExternalPackagesToToolbelt(updatedCode);
-    (0, fs_1.writeFileSync)(
-      (0, path_1.join)(this.functionPath, 'index.js'),
-      updatedCode,
-    );
-  }
-
-  revertLambdaFunction(invoke = false) {
-    let updatedCode = (0, fs_1.readFileSync)(
-      invoke ? this.indexPath : (0, path_1.join)(this.functionPath, 'index.js'),
-      'utf8',
-    );
-    updatedCode = mapExternalPackagesToToolbelt(updatedCode);
-    /* istanbul ignore else */
-    if (updatedCode.includes('This is an auto generated code')) {
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
-      const [_, originalCode1] = updatedCode.split(`// Rewire require
+        updatedCode = mapExternalPackagesToToolbelt(updatedCode);
+        (0, fs_1.writeFileSync)((0, path_1.join)(this.functionPath, 'index.js'), updatedCode);
+    }
+    revertLambdaFunction(invoke = false) {
+        let updatedCode = (0, fs_1.readFileSync)(invoke ? this.indexPath : (0, path_1.join)(this.functionPath, 'index.js'), 'utf8');
+        updatedCode = mapExternalPackagesToToolbelt(updatedCode);
+        updatedCode = requireToImport(updatedCode);
+        /* istanbul ignore else */
+        if (updatedCode.includes('This is an auto generated code')) {
+            // eslint-disable-next-line @typescript-eslint/no-unused-vars
+            const [_, originalCode1] = updatedCode.split(`// Rewire require
 
 `);
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
-      const [originalCode2] = originalCode1.split(`
+            // eslint-disable-next-line @typescript-eslint/no-unused-vars
+            const [originalCode2] = originalCode1.split(`
 
 // This is an auto`);
-      (0, fs_1.writeFileSync)(
-        invoke
-          ? this.indexPath
-          : (0, path_1.join)(this.functionPath, 'index.js'),
-        originalCode2,
-      );
+            (0, fs_1.writeFileSync)(invoke ? this.indexPath : (0, path_1.join)(this.functionPath, 'index.js'), originalCode2);
+        }
     }
-  }
-
-  updatePort(filePath) {
-    let content = (0, fs_1.readFileSync)(filePath, 'utf8');
-    const oldPort = content.match(/\d{4,5}/g);
-    oldPort.forEach((e) => (content = content.replace(e, `${this.port}`)));
-    (0, fs_1.writeFileSync)(filePath, content);
-  }
-
-  updatePortForFiles() {
-    /* istanbul ignore else */
-    if (
-      (0, fs_1.existsSync)((0, path_1.join)(this.cwd, '.vscode', 'launch.json'))
-    ) {
-      this.updatePort((0, path_1.join)(this.cwd, '.vscode', 'launch.json'));
+    updatePort(filePath) {
+        let content = (0, fs_1.readFileSync)(filePath, 'utf8');
+        const oldPort = content.match(/\d{4,5}/g);
+        oldPort.forEach((e) => (content = content.replace(e, `${this.port}`)));
+        (0, fs_1.writeFileSync)(filePath, content);
     }
-    /* istanbul ignore else */
-    if (
-      (0, fs_1.existsSync)(
-        (0, path_1.join)(
-          this.cwd,
-          '.idea',
-          'runConfigurations',
-          'Attach_FaaS_Debugger.xml',
-        ),
-      )
-    ) {
-      this.updatePort(
-        (0, path_1.join)(
-          this.cwd,
-          '.idea',
-          'runConfigurations',
-          'Attach_FaaS_Debugger.xml',
-        ),
-      );
+    updatePortForFiles() {
+        /* istanbul ignore else */
+        if ((0, fs_1.existsSync)((0, path_1.join)(this.cwd, '.vscode', 'launch.json'))) {
+            this.updatePort((0, path_1.join)(this.cwd, '.vscode', 'launch.json'));
+        }
+        /* istanbul ignore else */
+        if ((0, fs_1.existsSync)((0, path_1.join)(this.cwd, '.idea', 'runConfigurations', 'Attach_FaaS_Debugger.xml'))) {
+            this.updatePort((0, path_1.join)(this.cwd, '.idea', 'runConfigurations', 'Attach_FaaS_Debugger.xml'));
+        }
     }
-  }
 }
 exports.FaasDebugger = FaasDebugger;
 /* istanbul ignore next */
 if (process.argv.some((e) => e.includes('faas-debugger.js'))) {
-  /* istanbul ignore next */
-  new FaasDebugger().runDebugging();
+    /* istanbul ignore next */
+    new FaasDebugger().runDebugging();
 }
-// # sourceMappingURL=faas-debugger.js.map
+//# sourceMappingURL=faas-debugger.js.map

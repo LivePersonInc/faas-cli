@@ -18,14 +18,12 @@ export const lpClientFactory = (csdsClient: ICsdsClient, secretClient: ISecretCl
 
     const getAppKeyCredentials = async (secretName: string, useCache: boolean = true): Promise<OAuth2ClientCreds> => {
         try {
-            const { value } = await secretClient.readSecret(secretName, { useCache });
+            const { value } = await secretClient.readSecret(secretName, { useCache }); // Creds are parsed in secretClient
 
-            const creds = JSON.parse(value) as unknown;
-
-            if (!isOAuth2ClientCreds(creds)) {
+            if (!isOAuth2ClientCreds(value)) {
                 throw newLpClientError(ErrorCodes.LpClient.Creds.Format, `Credentials have Invalid Format`);
             }
-            return creds;
+            return value;
         } catch (error) {
             if (isToolbeltError(error)) {
                 throw error;

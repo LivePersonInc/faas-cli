@@ -216,7 +216,6 @@ export class OrchestratorClient implements IOrchestratorClient {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify(body),
-        signal: null,
       };
       const response = await this.httpClient(url, requestOptions);
 
@@ -327,17 +326,15 @@ export class OrchestratorClient implements IOrchestratorClient {
     try {
       const { value } = await this.secretClient.readSecret(secretName, {
         useCache,
-      });
+      }); // Creds are parsed in secretClient
 
-      const creds = JSON.parse(value) as unknown;
-
-      if (!isOAuth2ClientCreds(creds)) {
+      if (!isOAuth2ClientCreds(value)) {
         throw newOrchestratorError(
           ErrorCodes.OrchestratorFN.Creds.Format,
           `Credentials have Invalid Format`,
         );
       }
-      return creds;
+      return value;
     } catch (error) {
       if (isToolbeltError(error)) {
         throw error;

@@ -2,7 +2,7 @@ import type {
   NamespaceOptions,
   Namespace,
   Entity,
-} from '../context-service-sdk/lib';
+} from './context-service-sdk/lib.js';
 
 export interface IFaaSContextServiceClient {
   /**

@@ -9,8 +9,8 @@ export function transformFetchResponseHeaders(
   headers: Headers,
 ): Record<string, string> {
   const responseHeaders: Record<string, string> = {};
-
-  const keys = (headers as any).keys();
+  // @ts-ignore
+  const keys = headers.keys();
   let headerName: IteratorResult<string | undefined> = keys.next();
 
   while (

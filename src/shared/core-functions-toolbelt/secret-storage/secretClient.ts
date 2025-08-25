@@ -1,17 +1,20 @@
-import { ISecretClient } from './IsecretClient';
-import { ErrorCodes } from '../errors/errorCodes';
-import { join } from 'path';
-import * as fsDefault from 'fs-extra';
-import {
+import type {
+  CachedSecret,
   SecretClientOptions,
   SecretEntry,
   SecretRequestOptions,
-} from './types';
-import { makeSpecificError } from '../errors/toolbeltError';
-import { ICache } from './ICache';
-import { MAX_SECRET_SIZE, SYSTEM_SECRET_PREFIX } from '../shared/const';
+} from './types.js';
+import type { ISecretClient } from './IsecretClient';
+import type { ICache } from './ICache.js';
 
-const newSecretError = makeSpecificError('SecretStore');
+import { ErrorCodes } from '../errors/errorCodes';
+import { join } from 'path';
+import * as fsDefault from 'fs';
+import { isError } from '../shared/typesPredicates';
+import { SYSTEM_SECRET_PREFIX } from '../shared/const';
+import { makeSpecificError } from '../errors/toolbeltError';
+
+const newSecretClientError = makeSpecificError('SecretClient');
 export const defaultSecretClientOptions: SecretClientOptions = {
   cache: {
     ttl: 5 * 60 * 1000,
@@ -23,15 +26,18 @@ const defaultRequestOptions: SecretRequestOptions = {
   timeout: 5000,
 };
 
+const MAX_SECRET_SIZE = 16384;
 export class FunctionsSecretClient implements ISecretClient {
+  /**
+   *
+   * @param options used for configuring the secret client e.g. caching secrets
+   */
   private path: string;
-
   constructor(
-    private readonly secretCache: ICache<string, SecretEntry>,
+    private readonly secretCache: ICache<string, CachedSecret>,
 
     private readonly options?: Partial<SecretClientOptions>,
-
-    private fs: any = fsDefault,
+    private readonly fs: typeof fsDefault = fsDefault,
   ) {
     this.path = join(process.cwd(), 'functions', 'settings.json');
     if (this.options?.cache?.ttl) {
@@ -39,7 +45,7 @@ export class FunctionsSecretClient implements ISecretClient {
     }
   }
 
-  readSecret(
+  public async readSecret(
     key: string,
     options?: Partial<SecretRequestOptions>,
   ): Promise<SecretEntry> {
@@ -49,79 +55,96 @@ export class FunctionsSecretClient implements ISecretClient {
       options,
     );
 
-    return new Promise((resolve, reject) => {
-      try {
-        if (finalOptions.useCache && this.secretCache.has(key)) {
-          resolve(this.secretCache.get(key) as SecretEntry);
-        } else {
-          const settings = JSON.parse(this.fs.readFileSync(this.path, 'utf8'));
-          const secret = settings.secrets.find(
-            (e: SecretEntry) => e.key === key,
-          );
-          if (!secret) {
-            throw Error;
-          }
-          this.secretCache.set(key, { key, value: secret });
-          resolve(secret);
-        }
-      } catch (err) {
-        reject(
-          newSecretError(
-            ErrorCodes.Secret.NotFound,
-            `There is no Secret ${key} for this account`,
-          ),
-        );
+    try {
+      if (finalOptions.useCache && this.secretCache.has(key)) {
+        const cached = this.secretCache.get(key);
+        return cached;
       }
-    });
+
+      const settingsString = await this.fs.readFileSync(this.path, 'utf8');
+      const settings = JSON.parse(settingsString);
+      const secret: SecretEntry = settings.secrets.find(
+        (e: SecretEntry) => e.key === key,
+      );
+
+      if (!secret) {
+        throw Error;
+      }
+
+      this.secretCache.set(secret.key, secret as CachedSecret);
+
+      return { key: secret.key, value: JSON.parse(secret.value as any) };
+    } catch (error) {
+      throw newSecretClientError(
+        ErrorCodes.Secret.NotFound,
+        `There is no secret ${key} for this account`,
+      );
+    }
   }
 
-  updateSecret({
+  public async updateSecret({
     key: secretKey,
     value: newSecretValue,
   }: SecretEntry): Promise<SecretEntry> {
-    return new Promise((resolve, reject) => {
-      try {
-        if (secretKey.startsWith(SYSTEM_SECRET_PREFIX)) {
-          throw newSecretError(
-            ErrorCodes.Secret.SystemSecret,
-            'You are not allowed to update secrets added by the system',
-          );
-        }
+    if (secretKey.startsWith(SYSTEM_SECRET_PREFIX)) {
+      throw newSecretClientError(
+        ErrorCodes.Secret.SystemSecret,
+        'You are not allowed to update secrets added by the system',
+      );
+    }
 
-        if (typeof newSecretValue !== 'string') {
-          throw newSecretError(
-            ErrorCodes.Secret.Invalid,
-            'Provided secret value must be of type string',
-          );
-        }
+    let stringifiedSecret = '';
+    try {
+      stringifiedSecret = JSON.stringify(newSecretValue);
+    } catch (error) {
+      // will throw if is BigInt or JSON has circular references
+      throw newSecretClientError(
+        ErrorCodes.Secret.Invalid,
+        `Provided secret value cannot be stringified: ${
+          isError(error) ? error.message : ''
+        }`,
+      );
+    }
 
-        if (newSecretValue.length > MAX_SECRET_SIZE) {
-          throw newSecretError(
-            ErrorCodes.Secret.Invalid,
-            'Provided secret value exceeds allowed length of 16kb',
-          );
-        }
-        const settings = JSON.parse(this.fs.readFileSync(this.path, 'utf8'));
-        const index = settings.secrets.findIndex(
-          (e: SecretEntry) => e.key === secretKey,
-        );
-        if (index === -1) {
-          throw newSecretError(ErrorCodes.Secret.NotFound, 'Secret not found');
-        }
-        settings.secrets[index] = { key: secretKey, value: newSecretValue };
-        this.fs.writeFileSync(this.path, JSON.stringify(settings, null, 4));
-        this.secretCache.set(secretKey, {
-          key: secretKey,
-          value: newSecretValue,
-        });
+    if (stringifiedSecret.length > MAX_SECRET_SIZE) {
+      throw newSecretClientError(
+        ErrorCodes.Secret.Invalid,
+        'Provided secret value exceeds allowed length of 16kb',
+      );
+    }
 
-        resolve({
-          key: secretKey,
-          value: newSecretValue,
-        });
-      } catch (error) {
-        reject(error);
+    try {
+      const settings = JSON.parse(this.fs.readFileSync(this.path, 'utf8'));
+      const index = settings.secrets.findIndex(
+        (e: SecretEntry) => e.key === secretKey,
+      );
+
+      if (index === -1) {
+        throw Error('Secret not found!');
       }
-    });
+
+      this.secretCache.set(secretKey, {
+        key: secretKey,
+        value: stringifiedSecret,
+      });
+
+      settings.secrets[index] = {
+        key: secretKey,
+        value: stringifiedSecret,
+      };
+      this.fs.writeFileSync(this.path, JSON.stringify(settings, null, 4));
+
+      return {
+        key: secretKey,
+        value: JSON.parse(stringifiedSecret),
+      };
+    } catch (error) {
+      throw newSecretClientError(
+        ErrorCodes.Secret.Failure,
+        `Updating secret ${secretKey} failed: ${
+          isError(error) ? error.message : 'unknown'
+        }`,
+      );
+    }
   }
 }

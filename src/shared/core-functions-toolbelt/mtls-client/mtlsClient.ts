@@ -169,7 +169,6 @@ export class MTLSClient implements IMtlsClient {
           body !== null && body !== undefined
             ? this.prepareBody(body, shouldParseJson)
             : undefined,
-        signal: null,
       };
 
       const response = await this.httpClient(url, baseConfig);

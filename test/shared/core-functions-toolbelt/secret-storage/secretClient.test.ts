@@ -1,14 +1,18 @@
 import { FunctionsSecretClient } from '../../../../src/shared/core-functions-toolbelt/secret-storage/secretClient';
 import { ErrorCodes } from '../../../../src/shared/core-functions-toolbelt/errors/errorCodes';
 import { ICache } from '../../../../src/shared/core-functions-toolbelt/secret-storage/ICache';
-import { SecretEntry } from '../../../../src/shared/core-functions-toolbelt/secret-storage/types';
+
+import {
+  CachedSecret,
+  SecretEntry,
+} from '../../../../src/shared/core-functions-toolbelt/secret-storage/types';
 import {
   MAX_SECRET_SIZE,
   SYSTEM_SECRET_PREFIX,
 } from '../../../../src/shared/core-functions-toolbelt/shared/const';
 
 // Mock the cache
-const mockCache: jest.Mocked<ICache<string, SecretEntry>> = {
+const mockCache: jest.Mocked<ICache<string, CachedSecret>> = {
   get: jest.fn(),
   getAll: jest.fn(),
   set: jest.fn(),
@@ -23,7 +27,7 @@ const mockCache: jest.Mocked<ICache<string, SecretEntry>> = {
 const mockFs = {
   readFileSync: jest.fn(),
   writeFileSync: jest.fn(),
-};
+} as any;
 
 describe('FunctionsSecretClient', () => {
   let secretClient: FunctionsSecretClient;
@@ -51,7 +55,7 @@ describe('FunctionsSecretClient', () => {
   });
 
   describe('readSecret', () => {
-    const mockSecret: SecretEntry = { key: 'TestKey', value: 'TestValue' };
+    const mockSecret: CachedSecret = { key: 'TestKey', value: '"TestValue"' };
     const mockSettings = {
       secrets: [mockSecret],
     };
@@ -74,14 +78,17 @@ describe('FunctionsSecretClient', () => {
 
       const result = await secretClient.readSecret('TestKey');
 
-      expect(result).toEqual(mockSecret);
+      expect(result).toEqual({
+        key: mockSecret.key,
+        value: JSON.parse(mockSecret.value),
+      });
       expect(mockFs.readFileSync).toHaveBeenCalledWith(
         expect.stringContaining('functions/settings.json'),
         'utf8',
       );
       expect(mockCache.set).toHaveBeenCalledWith('TestKey', {
         key: 'TestKey',
-        value: mockSecret,
+        value: '"TestValue"',
       });
     });
 
@@ -92,12 +99,15 @@ describe('FunctionsSecretClient', () => {
         useCache: false,
       });
 
-      expect(result).toEqual(mockSecret);
+      expect(result).toEqual({
+        key: mockSecret.key,
+        value: JSON.parse(mockSecret.value),
+      });
       expect(mockCache.has).not.toHaveBeenCalled();
       expect(mockFs.readFileSync).toHaveBeenCalled();
       expect(mockCache.set).toHaveBeenCalledWith('TestKey', {
         key: 'TestKey',
-        value: mockSecret,
+        value: mockSecret.value,
       });
     });
 
@@ -109,7 +119,7 @@ describe('FunctionsSecretClient', () => {
         secretClient.readSecret('NonExistentKey'),
       ).rejects.toMatchObject({
         code: ErrorCodes.Secret.NotFound,
-        message: 'There is no Secret NonExistentKey for this account',
+        message: 'There is no secret NonExistentKey for this account',
       });
     });
 
@@ -121,7 +131,7 @@ describe('FunctionsSecretClient', () => {
 
       await expect(secretClient.readSecret('TestKey')).rejects.toMatchObject({
         code: ErrorCodes.Secret.NotFound,
-        message: 'There is no Secret TestKey for this account',
+        message: 'There is no secret TestKey for this account',
       });
     });
 
@@ -131,7 +141,7 @@ describe('FunctionsSecretClient', () => {
 
       await expect(secretClient.readSecret('TestKey')).rejects.toMatchObject({
         code: ErrorCodes.Secret.NotFound,
-        message: 'There is no Secret TestKey for this account',
+        message: 'There is no secret TestKey for this account',
       });
     });
   });
@@ -139,8 +149,8 @@ describe('FunctionsSecretClient', () => {
   describe('updateSecret', () => {
     const mockSettings = {
       secrets: [
-        { key: 'ExistingKey', value: 'ExistingValue' },
-        { key: 'AnotherKey', value: 'AnotherValue' },
+        { key: 'ExistingKey', value: '"ExistingValue"' },
+        { key: 'AnotherKey', value: '"AnotherValue"' },
       ],
     };
 
@@ -159,9 +169,12 @@ describe('FunctionsSecretClient', () => {
       expect(result).toEqual(updatedSecret);
       expect(mockFs.writeFileSync).toHaveBeenCalledWith(
         expect.stringContaining('functions/settings.json'),
-        expect.stringContaining('"NewValue"'),
+        expect.stringContaining('"\\"NewValue\\""'),
       );
-      expect(mockCache.set).toHaveBeenCalledWith('ExistingKey', updatedSecret);
+      expect(mockCache.set).toHaveBeenCalledWith('ExistingKey', {
+        key: 'ExistingKey',
+        value: '"NewValue"',
+      });
     });
 
     it('should throw error when trying to update system secret', async () => {
@@ -182,13 +195,17 @@ describe('FunctionsSecretClient', () => {
     });
 
     it('should throw error when secret value is not a string', async () => {
-      const invalidSecret = { key: 'TestKey', value: 123 as any };
+      const invalidSecret = {
+        key: 'TestKey',
+        value: BigInt(9007199254740991) as any,
+      };
 
       await expect(
         secretClient.updateSecret(invalidSecret),
       ).rejects.toMatchObject({
         code: ErrorCodes.Secret.Invalid,
-        message: 'Provided secret value must be of type string',
+        message:
+          'Provided secret value cannot be stringified: Do not know how to serialize a BigInt',
       });
 
       expect(mockFs.readFileSync).not.toHaveBeenCalled();
@@ -262,11 +279,11 @@ describe('FunctionsSecretClient', () => {
       expect(writtenData.secrets).toHaveLength(2);
       expect(writtenData.secrets[0]).toEqual({
         key: 'ExistingKey',
-        value: 'UpdatedValue',
+        value: '"UpdatedValue"',
       });
       expect(writtenData.secrets[1]).toEqual({
         key: 'AnotherKey',
-        value: 'AnotherValue',
+        value: '"AnotherValue"',
       });
     });
 
@@ -294,7 +311,7 @@ describe('FunctionsSecretClient', () => {
 
       await expect(secretClient.readSecret('AnyKey')).rejects.toMatchObject({
         code: ErrorCodes.Secret.NotFound,
-        message: 'There is no Secret AnyKey for this account',
+        message: 'There is no secret AnyKey for this account',
       });
     });
 
@@ -304,7 +321,7 @@ describe('FunctionsSecretClient', () => {
 
       await expect(secretClient.readSecret('AnyKey')).rejects.toMatchObject({
         code: ErrorCodes.Secret.NotFound,
-        message: 'There is no Secret AnyKey for this account',
+        message: 'There is no secret AnyKey for this account',
       });
     });
 

@@ -7,7 +7,7 @@ import type {
   Entity,
   IContextServiceClient,
   ContextServiceClient,
-} from '../context-service-sdk/lib';
+} from './context-service-sdk/lib.js';
 
 export type ContextSessionServiceClientFactory = (
   url: string,

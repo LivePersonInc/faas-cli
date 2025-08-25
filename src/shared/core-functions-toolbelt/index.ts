@@ -1,40 +1,44 @@
-import type { IFaaSContextServiceClient } from './context-service-client/IFaaSContextServiceClient';
-import type { IGDPRUtil } from './GDPR-util/IGDPRUtil';
-import type { ISDEUtil } from './SDE-util/ISDEUtil';
-import type { IConversationUtil } from './conversation-util/IConversationUtil';
-import type { ILpClient } from './lp-client/types';
-import type { ILpMtlsClient } from './mtls-client/ILPMtlsClient';
-import type { IMtlsClient } from './mtls-client/IMTLSClient';
-import type { ClientTLS } from './mtls-client/types';
-import type { SecretClientOptions, SecretEntry } from './secret-storage/types';
-import type { ICache } from './secret-storage/ICache';
-import type { ISecretClient } from './secret-storage/IsecretClient';
-import type { IOrchestratorClient } from './orchestrator-client/IOrchestratorClient';
-import { ConnectToSalesforce } from './crm-clients/salesforce';
-import { MTLSClient } from './mtls-client/mtlsClient';
-import { SecretCache } from './secret-storage/secretCache';
+import type { IFaaSContextServiceClient } from './context-service-client/IFaaSContextServiceClient.js';
+import type { IGDPRUtil } from './GDPR-util/IGDPRUtil.js';
+import type { ISDEUtil } from './SDE-util/ISDEUtil.js';
+import type { IConversationUtil } from './conversation-util/IConversationUtil.js';
+import type { ILpClient } from './lp-client/types.js';
+import type { ILpMtlsClient } from './mtls-client/ILPMtlsClient.js';
+import type { IMtlsClient } from './mtls-client/IMTLSClient.js';
+import type { ClientTLS } from './mtls-client/types.js';
+import type {
+  CachedSecret,
+  SecretClientOptions,
+} from './secret-storage/types.js';
+import type { ICache } from './secret-storage/ICache.js';
+import type { ISecretClient } from './secret-storage/IsecretClient.js';
+import type { IOrchestratorClient } from './orchestrator-client/IOrchestratorClient.js';
+
+import { ConnectToSalesforce } from './crm-clients/salesforce.js';
+import { MTLSClient } from './mtls-client/mtlsClient.js';
+import { SecretCache } from './secret-storage/secretCache.js';
 import {
   FunctionsSecretClient,
   defaultSecretClientOptions,
-} from './secret-storage/secretClient';
-import { FaasContextServiceClient } from './context-service-client/faasContextServiceClient';
-import { lpClientFactory } from './lp-client/lpClient';
-import { CsdsClient } from './csds-client/csdsClient';
-import { Oauth2Client } from './oauth2-client/oauth2Client';
-import { GDPRUtil } from './GDPR-util/GDPR-util';
-import { ConversationUtil } from './conversation-util/conversationUtil';
-import { LPMtlsClient } from './mtls-client/lpMtlsClient';
-import { OrchestratorClient } from './orchestrator-client/OrchestratorClient';
-import { SDEUtil } from './SDE-util/SDEUtil';
-import { ContextServiceClient } from './context-service-sdk/lib';
+} from './secret-storage/secretClient.js';
+import { FaasContextServiceClient } from './context-service-client/faasContextServiceClient.js';
+import { ContextServiceClient } from './context-service-client/context-service-sdk/lib.js';
+import { lpClientFactory } from './lp-client/lpClient.js';
+import { CsdsClient } from './csds-client/csdsClient.js';
+import { Oauth2Client } from './oauth2-client/oauth2Client.js';
+import { GDPRUtil } from './GDPR-util/GDPR-util.js';
+import { ConversationUtil } from './conversation-util/conversationUtil.js';
+import { LPMtlsClient } from './mtls-client/lpMtlsClient.js';
+import { OrchestratorClient } from './orchestrator-client/OrchestratorClient.js';
+import { SDEUtil } from './SDE-util/SDEUtil.js';
 
-export { ErrorCodes } from './errors/errorCodes';
-export { ToolBeltError } from './errors/toolbeltError';
-export { ConversationContentTypes } from './conversation-util/types';
-export { SDETypes } from './SDE-util/types';
-export { ErrorStrategy } from './orchestrator-client/types';
-export { WellKnownLPServices as LpServices } from './lp-client/lpServices';
-export const globalSecretCache: ICache<string, SecretEntry> = new SecretCache(
+export { ErrorCodes } from './errors/errorCodes.js';
+export { ToolBeltError } from './errors/toolbeltError.js';
+export { ConversationContentTypes } from './conversation-util/types.js';
+export { SDETypes } from './SDE-util/types.js';
+export { ErrorStrategy } from './orchestrator-client/types.js';
+export { WellKnownLPServices as LpServices } from './lp-client/lpServices.js';
+export const globalSecretCache: ICache<string, CachedSecret> = new SecretCache(
   defaultSecretClientOptions.cache,
 );
 /**
@@ -96,7 +100,7 @@ export class Toolbelt {
   public static SecretClient(
     options?: Partial<SecretClientOptions>,
   ): ISecretClient {
-    return new FunctionsSecretClient(globalSecretCache);
+    return new FunctionsSecretClient(globalSecretCache, options);
   }
   /**
    * Returns a LivePerson (LP) Client which is a wrapper for the Node Fetch http Client. It simplifies the usage of LivePerson APIs by
@@ -177,7 +181,19 @@ export class Toolbelt {
   }
 
   /**
-   * Returns an Salesforce Client, that is configured to work with the proxy.
+   * @deprecated This Salesforce client wrapper is deprecated and will be removed in a future major version.
+   * For better maintainability, please use the '@jsforce/jsforce-node' library directly.
+   *
+   * @example
+   * // Before
+   * import { Toolbelt } from 'core-functions-toolbelt';
+   * const sFClient = Toolbelt.SFClient();
+   *
+   * // After
+   * import { Connection } from '@jsforce/jsforce-node';
+   * const conn = new Connection(params);
+   *
+   * Returns a Nodejs Salesforce client.
    * Read the full (documentation)[https://developers.liveperson.com/liveperson-functions-toolbelt-documentation-toolbelt.html#sfclient]
    * Use the official (SalesForce documentation)[https://jsforce.github.io/document/] for all features.
    * ### Basic example
@@ -185,7 +201,8 @@ export class Toolbelt {
    *  import { Toolbelt } from 'core-functions-toolbelt';
    *  const sFClient = Toolbelt.SFClient();
    *  try{
-   *      const client = await sFClient.connectToSalesforce({loginUrl:'https://test.salesforce.com',accessToken:'secret',refreshToken:'secret'});
+   *      const conn = sFClient.connectToSalesforce({ loginUrl: 'https://login.salesforce.com', accessToken:'secret',refreshToken:'secret' });
+   *      const result = await conn.sobject('Account').describe();
    *   } catch (error){
    *      console.error(`Received following error message: ${error.message}`);
    *   }

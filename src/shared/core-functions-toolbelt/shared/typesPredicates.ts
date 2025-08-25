@@ -5,7 +5,6 @@ import { ToolBeltError } from '../errors/toolbeltError.js';
 import { Conversation } from '../conversation-util/types.js';
 import { OrchestratorError } from '../errors/orchestratorError.js';
 import { SDEsResponse } from '../SDE-util/types.js';
-import { V1CompatSecretObject } from '../secret-storage/types.js';
 
 export function isError(error: unknown): error is Error {
   return error instanceof Error;
@@ -13,26 +12,27 @@ export function isError(error: unknown): error is Error {
 
 export function isToolbeltError(error: unknown): error is ToolBeltError {
   if (isError(error)) {
+    const err: any = error;
     return (
-      'component' in error &&
-      'code' in error &&
-      typeof (error as any).component === 'string' &&
-      typeof (error as any).code === 'string'
+      'component' in err &&
+      'code' in err &&
+      typeof err.component === 'string' &&
+      typeof err.code === 'string'
     );
   }
-
   return false;
 }
 
-// Mostly required to check that  statusCode is inclueded, since is optional a
+// Mostly required to check that statusCode is included, since it's optional
 export function isOrchestratorErrorWithStatusCode(
   error: unknown,
 ): error is OrchestratorError {
   if (isToolbeltError(error)) {
+    const err = error as any;
     return (
-      'statusCode' in error &&
-      (error as any).statusCode !== undefined &&
-      typeof (error as any).statusCode == 'number'
+      'statusCode' in err &&
+      err.statusCode !== undefined &&
+      typeof err.statusCode === 'number'
     );
   }
 
@@ -89,18 +89,24 @@ export type Cause = {
 export function isFetchTypeError(
   error: unknown,
 ): error is TypeError & { cause: Cause } {
+  if (
+    !(error instanceof TypeError) ||
+    !('cause' in error) ||
+    error.cause == undefined ||
+    typeof error.cause !== 'object'
+  ) {
+    return false;
+  }
+
+  const cause = error.cause as any;
   return (
-    error instanceof TypeError &&
-    'cause' in error &&
-    error.cause != undefined &&
-    typeof error.cause === 'object' &&
-    'message' in error.cause &&
-    (error as any).cause.message !== undefined &&
-    typeof (error as any).cause.message == 'string' &&
-    'code' in error.cause &&
-    typeof (error as any).cause.code == 'string' &&
-    'stack' in error.cause &&
-    typeof (error as any).cause.stack == 'string'
+    'message' in cause &&
+    cause.message !== undefined &&
+    typeof cause.message === 'string' &&
+    'code' in cause &&
+    typeof cause.code === 'string' &&
+    'stack' in cause &&
+    typeof cause.stack === 'string'
   );
 }
 
@@ -136,25 +142,9 @@ export function isGCPError(
   error: unknown,
 ): error is Error & { code: number; details: string; metadata: unknown } {
   if (error instanceof Error) {
-    return (
-      'code' in error &&
-      typeof (error as any).code === 'number' &&
-      'details' in error
-    );
+    const err = error as any;
+    return 'code' in err && typeof err.code === 'number' && 'details' in err;
   }
 
-  return false;
-}
-
-export function isV1CompatSecretObject(
-  payload: unknown,
-): payload is V1CompatSecretObject {
-  if (isObject(payload)) {
-    return (
-      'LP_COMPAT_SECRET_TYPE' in payload &&
-      typeof payload.LP_COMPAT_SECRET_TYPE === 'string' &&
-      'secret' in payload
-    );
-  }
   return false;
 }

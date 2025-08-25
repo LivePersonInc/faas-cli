@@ -82,7 +82,6 @@ export class LPMtlsClient implements ILpMtlsClient {
         ),
         body:
           body !== undefined ? this.prepareBody(body, shouldParseJson) : null,
-        signal: null,
       };
 
       const response = await this.httpClient(
@@ -223,17 +222,15 @@ export class LPMtlsClient implements ILpMtlsClient {
     try {
       const { value } = await this.secretClient.readSecret(secretName, {
         useCache,
-      });
+      }); // Creds are parsed in secretClient
 
-      const creds = JSON.parse(value) as unknown;
-
-      if (!isOAuth2ClientCreds(creds)) {
+      if (!isOAuth2ClientCreds(value)) {
         throw newLpMtlsError(
           ErrorCodes.Mtls.Creds.Format,
           `Credentials have Invalid Format`,
         );
       }
-      return creds;
+      return value;
     } catch (error) {
       if (isToolbeltError(error)) {
         throw error;
