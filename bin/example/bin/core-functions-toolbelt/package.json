@@ -11,6 +11,6 @@
   "dependencies": {
     "get-port": "7.1.0",
     "@jsforce/jsforce-node": "3.9.1",
-    "undici": "6.19.2"
+    "undici": "6.21.2"
   }
 }
