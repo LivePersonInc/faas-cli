@@ -19,14 +19,7 @@ interface IInvokeErrorLogs {
 
 const EXECUTION_EXCEED_TIMEOUT = 60000;
 
-const EXTERNAL_PACKAGE_MAPPING = [
-  'oauth-1.0a',
-  'luxon',
-  'jsforce',
-  'jsonwebtoken',
-  'lodash',
-  'es-toolkit',
-];
+const EXTERNAL_PACKAGE_MAPPING = ['luxon', 'jsonwebtoken', 'es-toolkit'];
 
 function isLogLevel(input: any) {
   return Object.keys({
@@ -34,7 +27,7 @@ function isLogLevel(input: any) {
     Info: 'Info',
     Warn: 'Warn',
     Error: 'Error',
-    Callback: 'Callback',
+    Response: 'Response',
     History: 'History',
   }).some((e) => input.includes(`[${e}]`));
 }
@@ -87,6 +80,58 @@ function mapExternalPackagesToToolbelt(file: string): string {
     });
   }
   return file;
+}
+
+function requireToImport(code) {
+  return (
+    code
+      // Handle destructuring: const { a, b } = require("module");
+      .replace(
+        /const\s+{([^}]+)}\s*=\s*require\(['"]([^'"]+)['"]\);/g,
+        (match, destructured, module) =>
+          `import { ${destructured.trim()} } from "${module.trim()}";`,
+      )
+      // Handle default assignment: const x = require("module");
+      .replace(
+        /const\s+([a-zA-Z0-9_$]+)\s*=\s*require\(['"]([^'"]+)['"]\);/g,
+        (match, variable, module) =>
+          `import ${variable.trim()} from "${module.trim()}";`,
+      )
+      // Handle bare requires: require("module");
+      .replace(
+        /require\(['"]([^'"]+)['"]\);/g,
+        (match, module) => `import "${module.trim()}";`,
+      )
+  );
+}
+
+function importToRequire(code) {
+  return (
+    code
+      // Handle `import defaultExport from "module"`
+      .replace(
+        /import\s+([a-zA-Z0-9_$]+)\s+from\s+['"]([^'"]+)['"];?/g,
+        (match, defaultExport, module) =>
+          `const ${defaultExport.trim()} = require("${module.trim()}");`,
+      )
+      // Handle `import * as name from "module"`
+      .replace(
+        /import\s+\*\s+as\s+([a-zA-Z0-9_$]+)\s+from\s+['"]([^'"]+)['"];?/g,
+        (match, name, module) =>
+          `const ${name.trim()} = require("${module.trim()}");`,
+      )
+      // Handle `import { a, b } from "module"`
+      .replace(
+        /import\s+{([^}]+)}\s+from\s+['"]([^'"]+)['"];?/g,
+        (match, destructured, module) =>
+          `const { ${destructured.trim()} } = require("${module.trim()}");`,
+      )
+      // Handle bare imports `import "module"`
+      .replace(
+        /import\s+['"]([^'"]+)['"];?/g,
+        (match, module) => `require("${module.trim()}");`,
+      )
+  );
 }
 
 export class FaasDebugger {
@@ -169,8 +214,7 @@ export class FaasDebugger {
         if (didExecutionExceedTimewindow(timeStart, timeEnd)) {
           this.errorLogs = {
             errorCode: 'com.liveperson.faas.handler.custom-failure',
-            errorMsg:
-              'Lambda did not call callback within execution time limit',
+            errorMsg: 'Function did not return within execution time limit',
             errorLogs: result,
           };
           console.log(JSON.stringify(this.errorLogs, null, 4));
@@ -217,8 +261,8 @@ export class FaasDebugger {
           return;
         }
 
-        this.result.logs = result.filter((e) => e.level !== 'Callback');
-        const logs = result.filter((e) => e.level === 'Callback');
+        this.result.logs = result.filter((e) => e.level !== 'Response');
+        const logs = result.filter((e) => e.level === 'Response');
         this.result.result = logs.length > 0 ? logs[0].message : '';
         console.log(JSON.stringify(this.result, null, 4));
       });
@@ -229,12 +273,12 @@ export class FaasDebugger {
       });
       /* istanbul ignore next */
       process.on('SIGINT', () => {
-        console.log('Interrupted lambda invocation');
+        console.log('Interrupted function invocation');
         resolve();
       });
       /* istanbul ignore next */
       process.on('SIGHUP', () => {
-        console.log('Interrupted lambda invocation');
+        console.log('Interrupted function invocation');
         resolve();
       });
     });
@@ -274,12 +318,12 @@ export class FaasDebugger {
     /* istanbul ignore next */
     process.on('SIGINT', () => {
       // eslint-disable-next-line no-console
-      console.log('Interrupted lambda invocation');
+      console.log('Interrupted function invocation');
     });
     /* istanbul ignore next */
     process.on('SIGHUP', () => {
       // eslint-disable-next-line no-console
-      console.log('Interrupted lambda invocation');
+      console.log('Interrupted function invocation');
     });
   }
 
@@ -300,6 +344,8 @@ export class FaasDebugger {
 
   private updateLambdaFunctionForInvoke() {
     let file = readFileSync(this.indexPath, 'utf8');
+    file = importToRequire(file);
+
     file = `require("module").prototype.require = require('../../bin/rewire').proxy; // Rewire require
 
 ${file}
@@ -326,9 +372,10 @@ ${file}
       join(this.functionPath, 'index.js'),
       'utf8',
     );
+    const requireCode = importToRequire(originalCode);
     let updatedCode = `require("module").prototype.require = require('../../bin/rewire').proxy; // Rewire require
 
-${originalCode}
+${requireCode}
 
 // This is an auto generated code during the invocation/debugging
 // It rewires the requirements and parsing the output
@@ -343,6 +390,7 @@ ${originalCode}
     console.customError(error);
   }
 })();`;
+
     updatedCode = mapExternalPackagesToToolbelt(updatedCode);
     writeFileSync(join(this.functionPath, 'index.js'), updatedCode);
   }
@@ -354,6 +402,7 @@ ${originalCode}
     );
 
     updatedCode = mapExternalPackagesToToolbelt(updatedCode);
+    updatedCode = requireToImport(updatedCode);
 
     /* istanbul ignore else */
     if (updatedCode.includes('This is an auto generated code')) {

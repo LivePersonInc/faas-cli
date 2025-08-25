@@ -1,8 +1,8 @@
 {
   "name": "core-functions-toolbelt",
-  "version": "2.0.1-alpha",
+  "version": "2.0.2-beta",
   "description": "",
-  "main": "core-functions-toolbelt/index.js",
+  "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },

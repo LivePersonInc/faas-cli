@@ -2,7 +2,7 @@
 /* eslint-disable global-require */
 const { join } = require('path');
 
-const externalLibs = ['luxon', 'jsforce', 'jsonwebtoken', 'es-toolkit'];
+const externalLibs = ['luxon', 'jsonwebtoken', 'es-toolkit'];
 /**
  * Is used for rewiring the require, so the lambda code will stay the same
  * Uses the proxy to overwrite the module.require.
@@ -46,7 +46,7 @@ const LogLevels = {
   Info: 'Info',
   Warn: 'Warn',
   Error: 'Error',
-  Callback: 'Callback',
+  Response: 'Response',
   History: 'History',
 };
 
@@ -131,13 +131,11 @@ class Logger {
       } else {
         this.writeLogs(LogLevels.Error, message, ...optionalParams);
       }
-    } else {
-      this.notLoggableErrorWarning(message);
     }
   }
 
   response(message, ...optionalParams) {
-    this.writeLogs(LogLevels.Callback, message, ...optionalParams);
+    this.writeLogs(LogLevels.Response, message, ...optionalParams);
   }
 
   printHistory() {
@@ -146,20 +144,6 @@ class Logger {
 
   getHistory() {
     return this.history;
-  }
-
-  notLoggableErrorWarning(error) {
-    this.writeLogs(
-      LogLevels.Warn,
-      {
-        errorMsg:
-          'Received error in an incorrect format. Please provide an error object to the callback.',
-        errorCode: CUSTOM_FAILURE_CODE,
-      },
-      {
-        originalFailure: error,
-      },
-    );
   }
 }
 

@@ -344,7 +344,7 @@ defineFeature(feature, (test) => {
           'utf8',
         ),
       );
-      expect(toolbeltPackage.version).toBe('2.0.1-alpha');
+      expect(toolbeltPackage.version).toBe('2.0.2-beta');
     });
 
     then(
@@ -543,12 +543,9 @@ defineFeature(feature, (test) => {
               headers: [],
               payload: {},
             },
-            environmentVariables: [
-              {
-                key: '',
-                value: '',
-              },
-            ],
+            environmentVariables: {
+              key: 'value',
+            },
           }),
         );
         fs.writeFileSync(
@@ -559,13 +556,7 @@ defineFeature(feature, (test) => {
             'index.js',
           ),
           `async function lambda(input) {
-            const promise = new Promise((resolve, reject) => {
-              setTimeout(() => {
-                resolve('Hello World');
-              }, 1500);
-              reject('ERROR DURING CALLBACK PROMISE');
-            });
-            return promise;
+            throw new Error("failed")
 }
 `,
         );
@@ -590,14 +581,7 @@ defineFeature(feature, (test) => {
         expect(consoleSpy).toBeCalledWith(
           expect.stringContaining('com.liveperson.faas.handler.custom-failure'),
         );
-        expect(consoleSpy).toBeCalledWith(
-          expect.stringContaining('ERROR DURING CALLBACK PROMISE'),
-        );
-        expect(consoleSpy).toBeCalledWith(
-          expect.stringContaining(
-            'Received error in an incorrect format. Please provide an error object to the callback.',
-          ),
-        );
+        expect(consoleSpy).toBeCalledWith(expect.stringContaining('failed'));
       },
     );
   });

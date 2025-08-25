@@ -7,103 +7,144 @@ import { OrchestratorError } from '../errors/orchestratorError.js';
 import { SDEsResponse } from '../SDE-util/types.js';
 
 export function isError(error: unknown): error is Error {
-    return error instanceof Error;
+  return error instanceof Error;
 }
 
 export function isToolbeltError(error: unknown): error is ToolBeltError {
-    if (isError(error)) {
-        return 'component' in error && 'code' in error && typeof error.component === 'string' && typeof error.code === 'string';
-    }
-
-    return false;
+  if (isError(error)) {
+    const err: any = error;
+    return (
+      'component' in err &&
+      'code' in err &&
+      typeof err.component === 'string' &&
+      typeof err.code === 'string'
+    );
+  }
+  return false;
 }
 
-// Mostly required to check that  statusCode is inclueded, since is optional a
-export function isOrchestratorErrorWithStatusCode(error: unknown): error is OrchestratorError {
-    if (isToolbeltError(error)) {
-        return 'statusCode' in error && error.statusCode !== undefined && typeof error.statusCode == 'number';
-    }
+// Mostly required to check that statusCode is included, since it's optional
+export function isOrchestratorErrorWithStatusCode(
+  error: unknown,
+): error is OrchestratorError {
+  if (isToolbeltError(error)) {
+    const err = error as any;
+    return (
+      'statusCode' in err &&
+      err.statusCode !== undefined &&
+      typeof err.statusCode === 'number'
+    );
+  }
 
-    return false;
+  return false;
 }
 
 export function isObject(obj: unknown): obj is Record<string, unknown> {
-    return obj !== undefined && obj !== null && typeof obj === 'object';
+  return obj !== undefined && obj !== null && typeof obj === 'object';
 }
 
-export function isOAuth2ClientCreds(creds: unknown): creds is OAuth2ClientCreds {
-    if (isObject(creds)) {
-        return 'client_id' in creds && typeof creds.client_id === 'string' && 'client_secret' in creds && typeof creds.client_secret === 'string';
-    }
+export function isOAuth2ClientCreds(
+  creds: unknown,
+): creds is OAuth2ClientCreds {
+  if (isObject(creds)) {
+    return (
+      'client_id' in creds &&
+      typeof creds.client_id === 'string' &&
+      'client_secret' in creds &&
+      typeof creds.client_secret === 'string'
+    );
+  }
 
-    return false;
+  return false;
 }
 
-export function isCsdsServiceResponse(response: unknown): response is CsdsServiceResponse {
-    if (isObject(response)) {
-        return 'baseURIs' in response && Array.isArray(response.baseURIs);
-    }
-    return false;
+export function isCsdsServiceResponse(
+  response: unknown,
+): response is CsdsServiceResponse {
+  if (isObject(response)) {
+    return 'baseURIs' in response && Array.isArray(response.baseURIs);
+  }
+  return false;
 }
 
 export function isBodyInit(value: unknown): value is BodyInit {
-    return (
-        value instanceof Blob ||
-        value instanceof ArrayBuffer ||
-        ArrayBuffer.isView(value) ||
-        value instanceof FormData ||
-        value instanceof URLSearchParams ||
-        value instanceof ReadableStream ||
-        typeof value === 'string'
-    );
+  return (
+    value instanceof Blob ||
+    value instanceof ArrayBuffer ||
+    ArrayBuffer.isView(value) ||
+    value instanceof FormData ||
+    value instanceof URLSearchParams ||
+    value instanceof ReadableStream ||
+    typeof value === 'string'
+  );
 }
 
 export type Cause = {
-    code: string;
-    message: string;
-    stack: string;
+  code: string;
+  message: string;
+  stack: string;
 };
 
 // There is no proper type of Fetch errors, They are instance of TypeError + the "cause" object
-export function isFetchTypeError(error: unknown): error is TypeError & { cause: Cause } {
-    return (
-        error instanceof TypeError &&
-        'cause' in error &&
-        error.cause != undefined &&
-        typeof error.cause === 'object' &&
-        'message' in error.cause &&
-        error.cause.message !== undefined &&
-        typeof error.cause.message == 'string' &&
-        'code' in error.cause &&
-        typeof error.cause.code == 'string' &&
-        'stack' in error.cause &&
-        typeof error.cause.stack == 'string'
-    );
+export function isFetchTypeError(
+  error: unknown,
+): error is TypeError & { cause: Cause } {
+  if (
+    !(error instanceof TypeError) ||
+    !('cause' in error) ||
+    error.cause == undefined ||
+    typeof error.cause !== 'object'
+  ) {
+    return false;
+  }
+
+  const cause = error.cause as any;
+  return (
+    'message' in cause &&
+    cause.message !== undefined &&
+    typeof cause.message === 'string' &&
+    'code' in cause &&
+    typeof cause.code === 'string' &&
+    'stack' in cause &&
+    typeof cause.stack === 'string'
+  );
 }
 
 // See: https://developer.mozilla.org/en-US/docs/Web/API/DOMException#timeouterror
 export function isDOMExceptionError(error: unknown): error is DOMException {
-    return error instanceof DOMException;
+  return error instanceof DOMException;
 }
 
 export function isConversation(response: unknown): response is Conversation {
-    if (isObject(response)) {
-        return '_metadata' in response && isObject(response._metadata) && 'conversationHistoryRecords' in response && Array.isArray(response.conversationHistoryRecords);
-    }
-    return false;
+  if (isObject(response)) {
+    return (
+      '_metadata' in response &&
+      isObject(response._metadata) &&
+      'conversationHistoryRecords' in response &&
+      Array.isArray(response.conversationHistoryRecords)
+    );
+  }
+  return false;
 }
 
 export function isSDEsResponse(response: unknown): response is SDEsResponse {
-    if (isObject(response)) {
-        return 'events' in response && isObject(response.events) && Array.isArray(response.events);
-    }
-    return false;
+  if (isObject(response)) {
+    return (
+      'events' in response &&
+      isObject(response.events) &&
+      Array.isArray(response.events)
+    );
+  }
+  return false;
 }
 
-export function isGCPError(error: unknown): error is Error & { code: number; details: string; metadata: unknown } {
-    if (error instanceof Error) {
-        return 'code' in error && typeof error.code === 'number' && 'details' in error;
-    }
+export function isGCPError(
+  error: unknown,
+): error is Error & { code: number; details: string; metadata: unknown } {
+  if (error instanceof Error) {
+    const err = error as any;
+    return 'code' in err && typeof err.code === 'number' && 'details' in err;
+  }
 
-    return false;
+  return false;
 }

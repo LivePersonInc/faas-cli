@@ -208,13 +208,11 @@ return 'Hello World';
     writeFileSync(
       join(testDir, 'functions', 'DebugFunction', 'index.js'),
       `async function lambda(input) {
-const Toolbelt = require('core-functions-toolbelt');
-const OAuth = require('oauth-1.0a');
-const luxon = require('luxon');
-const jsforce = require('jsforce');
-const jsonwebtoken = require('jsonwebtoken');
-const lodash = require('lodash');
-return 'Hello World';
+  import { Toolbelt } from "core-functions-toolbelt";
+  import luxon from 'luxon';
+  import jsonwebtoken from 'jsonwebtoken';
+
+  return 'Hello World';
 }
 `,
     );
@@ -232,21 +230,8 @@ return 'Hello World';
       join(testDir, 'functions', 'DebugFunction', 'index.js'),
       'utf8',
     );
-    expect(indexFile).toContain("require('core-functions-toolbelt')");
-    expect(indexFile).toContain(
-      "require('../bin/core-functions-toolbelt/luxon')",
-    );
-    expect(indexFile).toContain(
-      "require('../bin/core-functions-toolbelt/jsforce')",
-    );
-    expect(indexFile).toContain(
-      "require('../bin/core-functions-toolbelt/jsonwebtoken')",
-    );
-    expect(indexFile).toContain(
-      "require('../bin/core-functions-toolbelt/oauth-1.0a')",
-    );
-    expect(indexFile).toContain(
-      "require('../bin/core-functions-toolbelt/lodash')",
-    );
+    expect(indexFile).toContain('require("core-functions-toolbelt")');
+    expect(indexFile).toContain('require("luxon")');
+    expect(indexFile).toContain('require("jsonwebtoken")');
   });
 });
