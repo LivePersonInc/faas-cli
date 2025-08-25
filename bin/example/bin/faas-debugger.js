@@ -59,13 +59,13 @@ function requireToImport(code) {
 function importToRequire(code) {
     return (code
         // Handle `import defaultExport from "module"`
-        .replace(/import\s+([a-zA-Z0-9_$]+)\s+from\s+['"]([^'"]+)['"];/g, (match, defaultExport, module) => `const ${defaultExport.trim()} = require("${module.trim()}");`)
+        .replace(/import\s+([a-zA-Z0-9_$]+)\s+from\s+['"]([^'"]+)['"];?/g, (match, defaultExport, module) => `const ${defaultExport.trim()} = require("${module.trim()}");`)
         // Handle `import * as name from "module"`
-        .replace(/import\s+\*\s+as\s+([a-zA-Z0-9_$]+)\s+from\s+['"]([^'"]+)['"];/g, (match, name, module) => `const ${name.trim()} = require("${module.trim()}");`)
+        .replace(/import\s+\*\s+as\s+([a-zA-Z0-9_$]+)\s+from\s+['"]([^'"]+)['"];?/g, (match, name, module) => `const ${name.trim()} = require("${module.trim()}");`)
         // Handle `import { a, b } from "module"`
-        .replace(/import\s+{([^}]+)}\s+from\s+['"]([^'"]+)['"];/g, (match, destructured, module) => `const { ${destructured.trim()} } = require("${module.trim()}");`)
+        .replace(/import\s+{([^}]+)}\s+from\s+['"]([^'"]+)['"];?/g, (match, destructured, module) => `const { ${destructured.trim()} } = require("${module.trim()}");`)
         // Handle bare imports `import "module"`
-        .replace(/import\s+['"]([^'"]+)['"];/g, (match, module) => `require("${module.trim()}");`));
+        .replace(/import\s+['"]([^'"]+)['"];?/g, (match, module) => `require("${module.trim()}");`));
 }
 class FaasDebugger {
     result;
