@@ -6,8 +6,8 @@ Liveperson Functions is currently in a transitory state towards v2. To make migr
 If you want to use both versions of the CLI simultaniously
 
 ```
-# Install v2.0.2-beta
-> npm install -g liveperson-functions-cli@2.0.2-beta
+# Install v2.0.3-beta
+> npm install -g liveperson-functions-cli@2.0.3-beta
 
 # Symlink the command to rename it to lpf2
 > sudo mv "$(which lpf)" "$(dirname $(which lpf))/lpf2"
