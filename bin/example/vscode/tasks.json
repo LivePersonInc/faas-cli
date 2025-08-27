@@ -3,7 +3,7 @@
   "tasks": [
     {
       "label": "Debug Function",
-      "command": "node ${cwd}/bin/faas-debugger.js ${input:Function}",
+      "command": "lpf debug ${input:Function}",
       "type": "shell",
       "args": [],
       "isBackground": true,
