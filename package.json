@@ -44,7 +44,7 @@
     "set-interval-async": "^2.0.0",
     "systeminformation": "^5.27.6",
     "tty-table": "^4.2.3",
-    "undici": "6.19.2"
+    "undici": "6.21.2"
   },
   "devDependencies": {
     "@babel/core": "7.20.12",
