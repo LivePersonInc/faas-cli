@@ -21,6 +21,12 @@ If you want to use both versions of the CLI simultaniously
 
 # LivePerson Functions CLI
 
+> [!IMPORTANT]  
+> We have started the rollout of Functions V2 in select regions and for select customers. This comes with breaking changes to our API. If your account has been migrated please use the beta branch of this CLI
+> by installing it via:
+>
+> `` npm install -g liveperson-functions-cli@beta``.
+
 [LivePerson Functions](https://faas.liveperson.net/) is a Function as a Service (FaaS) platform which enables brands to develop custom behaviors within LivePerson’s conversational platform, to better tailor the system to their specific needs. By offering these capabilities, Functions enables developers to write a simple function, deploy it to LivePerson's infrastructure and make it available to their LivePerson account in minutes. This allows you to create custom logic inside our conversational platform.
 
 The LivePerson Functions Command Line Interface (CLI) is an open-source command-line tool provided by LivePerson that enables developers to create, edit and process their functions on their local development machines, in their favorite IDE of their choice. That way it’s very easy to keep the source code under version control in any Source Control Management (SCM).
