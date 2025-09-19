@@ -80,7 +80,7 @@ describe('FunctionsSecretClient', () => {
 
       expect(result).toEqual({
         key: mockSecret.key,
-        value: JSON.parse(mockSecret.value),
+        value: mockSecret.value,
       });
       expect(mockFs.readFileSync).toHaveBeenCalledWith(
         expect.stringContaining('functions/settings.json'),
@@ -101,7 +101,7 @@ describe('FunctionsSecretClient', () => {
 
       expect(result).toEqual({
         key: mockSecret.key,
-        value: JSON.parse(mockSecret.value),
+        value: mockSecret.value,
       });
       expect(mockCache.has).not.toHaveBeenCalled();
       expect(mockFs.readFileSync).toHaveBeenCalled();
@@ -149,8 +149,8 @@ describe('FunctionsSecretClient', () => {
   describe('updateSecret', () => {
     const mockSettings = {
       secrets: [
-        { key: 'ExistingKey', value: '"ExistingValue"' },
-        { key: 'AnotherKey', value: '"AnotherValue"' },
+        { key: 'ExistingKey', value: 'ExistingValue' },
+        { key: 'AnotherKey', value: 'AnotherValue' },
       ],
     };
 
@@ -169,7 +169,7 @@ describe('FunctionsSecretClient', () => {
       expect(result).toEqual(updatedSecret);
       expect(mockFs.writeFileSync).toHaveBeenCalledWith(
         expect.stringContaining('functions/settings.json'),
-        expect.stringContaining('"\\"NewValue\\""'),
+        expect.stringContaining('NewValue'),
       );
       expect(mockCache.set).toHaveBeenCalledWith('ExistingKey', {
         key: 'ExistingKey',
@@ -279,11 +279,11 @@ describe('FunctionsSecretClient', () => {
       expect(writtenData.secrets).toHaveLength(2);
       expect(writtenData.secrets[0]).toEqual({
         key: 'ExistingKey',
-        value: '"UpdatedValue"',
+        value: 'UpdatedValue',
       });
       expect(writtenData.secrets[1]).toEqual({
         key: 'AnotherKey',
-        value: '"AnotherValue"',
+        value: 'AnotherValue',
       });
     });
 
