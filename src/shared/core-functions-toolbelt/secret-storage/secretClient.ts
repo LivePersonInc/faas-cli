@@ -73,7 +73,7 @@ export class FunctionsSecretClient implements ISecretClient {
 
       this.secretCache.set(secret.key, secret as CachedSecret);
 
-      return { key: secret.key, value: JSON.parse(secret.value as any) };
+      return { key: secret.key, value: secret.value };
     } catch (error) {
       throw newSecretClientError(
         ErrorCodes.Secret.NotFound,
@@ -130,7 +130,7 @@ export class FunctionsSecretClient implements ISecretClient {
 
       settings.secrets[index] = {
         key: secretKey,
-        value: stringifiedSecret,
+        value: newSecretValue,
       };
       this.fs.writeFileSync(this.path, JSON.stringify(settings, null, 4));
 
