@@ -30,5 +30,7 @@ export function transformFetchResponseHeaders(
 
 export type LpConsole = Console & { getTraceId: () => string };
 export function getTraceId(): string {
-  return (console as LpConsole).getTraceId() || randomUUID();
+  return typeof (console as LpConsole).getTraceId === 'function'
+    ? (console as LpConsole).getTraceId()
+    : randomUUID();
 }
