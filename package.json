@@ -63,7 +63,7 @@
     "@types/moment-timezone": "0.5.30",
     "@types/node": "^24.2.0",
     "@types/node-emoji": "1.8.2",
-    "@types/request-promise-native": "1.0.18",
+    "@types/request-promise-native": "1.0.21",
     "@types/semver": "7.3.13",
     "@types/set-interval-async": "1.0.0",
     "@typescript-eslint/eslint-plugin": "5.30.7",
