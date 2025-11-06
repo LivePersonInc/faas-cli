@@ -3429,10 +3429,10 @@
   dependencies:
     "@types/node" "*"
 
-"@types/listr@0.14.4":
-  version "0.14.4"
-  resolved "https://registry.npmjs.org/@types/listr/-/listr-0.14.4.tgz#6ba2a4206615cf80d79d10f9ba9701c303cd57b6"
-  integrity sha512-+MWvidNujBUgJsi4yMVwEQQwaHe6oHedPSy+dwk3akGEeuIbvhWkK+TGsXSwbFup7Y0cCBb+wzzdD+yGKp7sOg==
+"@types/listr@0.14.10":
+  version "0.14.10"
+  resolved "https://registry.yarnpkg.com/@types/listr/-/listr-0.14.10.tgz#c675fca3ae2030c2ce52fa9b2839fdb6de47568b"
+  integrity sha512-g5/EazbMACM1JrM/oGtW28vXo4Bv0E03/FIsqqIXbR/CztuHEgR8QAJDrB1Y5bQH7/ISQh0jNV3v65NM29HgAQ==
   dependencies:
     "@types/node" "*"
     rxjs "^6.5.1"

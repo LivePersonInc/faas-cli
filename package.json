@@ -58,7 +58,7 @@
     "@types/js-yaml": "4.0.5",
     "@types/jsforce": "1.9.43",
     "@types/jsonwebtoken": "8.5.9",
-    "@types/listr": "0.14.4",
+    "@types/listr": "0.14.10",
     "@types/loglevel": "1.6.3",
     "@types/moment-timezone": "0.5.30",
     "@types/node": "^24.2.0",
