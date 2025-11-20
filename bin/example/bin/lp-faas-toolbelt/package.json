@@ -24,6 +24,7 @@
     "uuid": "8.3.2"
   },
   "overrides": {
-    "form-data": "^2.5.4"
+    "form-data": "^2.5.4",
+    "systeminformation": "^5.21.7"
   }
 }
