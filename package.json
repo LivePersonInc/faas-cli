@@ -1,7 +1,7 @@
 {
   "name": "liveperson-functions-cli",
   "description": "LivePerson Functions CLI",
-  "version": "1.31.4",
+  "version": "1.31.6",
   "author": {
     "name": "LivePersonInc",
     "email": "faas-lp@liveperson.com"
@@ -10,7 +10,7 @@
     "lpf": "./bin/run"
   },
   "overrides": {
-    "form-data": "2.5.4"
+    "form-data": "^2.5.4"
   },
   "bugs": "https://github.com/LivePersonInc/faas-cli/issues",
   "dependencies": {
