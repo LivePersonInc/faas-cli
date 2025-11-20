@@ -12,5 +12,6 @@ node_modules
 /test/**/*.yaml
 /bin/example/bin/lp-faas-toolbelt/*
 !/bin/example/bin/lp-faas-toolbelt/package.json
+!/bin/example/bin/lp-faas-toolbelt/package-lock.json
 /functions
 .DS_Store
