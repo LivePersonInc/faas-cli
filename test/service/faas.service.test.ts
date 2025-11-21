@@ -163,7 +163,7 @@ describe('faas service', () => {
     const csdsClient = new CsdsClient();
     csdsClient.getUri = jest.fn().mockReturnValue('faasUI');
     const gotDefault = jest.fn(() => ({
-      body: [mock.mockFunction1],
+      body: mock.mockFunction1,
     })) as any;
     const faasService = new FaasService({ gotDefault, csdsClient });
     const response = await faasService.getFunctionByUuid('123-123-123');

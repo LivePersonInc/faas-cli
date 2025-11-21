@@ -84,13 +84,17 @@ export class DeployView {
     } else {
       this.log.print('\nDeploying following functions:\n');
     }
-
     confirmedFunctionsToDeploy.forEach((entry: IFunction) => {
       this.tasklist.addTask({
         title: `Deploying ${entry.name}`,
         task: async (_, task) => {
           const faasService = await factory.get();
-          const response = await faasService.deploy(entry.uuid);
+          let response;
+          if (entry.state === 'Modified') {
+            response = await faasService.redeploy(entry.uuid);
+          } else {
+            response = await faasService.deploy(entry.uuid);
+          }
 
           if (response.uuid) {
             return task.skip(`${response.message} (${entry.uuid})`);
@@ -117,37 +121,42 @@ export class DeployView {
   private async waitForDeployment(
     faasService: any,
     uuid: string,
-    timeoutMs = 2000000,
-    intervalMs = 3000,
-  ): Promise<void> {
-    const startTime = Date.now();
+    timeoutMs = 2_000_000,
+    intervalMs = 3_000,
+  ): Promise<boolean> {
+    const start = Date.now();
 
-    return new Promise<void>((resolve, reject) => {
-      const poll = async () => {
+    return new Promise<boolean>((resolve, reject) => {
+      const poll = async (): Promise<boolean> => {
         try {
-          const isDeployed = await this.checkIfLambdaIsDeployed(
+          const deployed = await this.checkIfLambdaIsDeployed(
             faasService,
             uuid,
           );
 
-          if (isDeployed) {
-            resolve();
-            return;
+          if (deployed) {
+            resolve(true);
+            return true;
           }
 
-          const elapsed = Date.now() - startTime;
-          if (elapsed >= timeoutMs) {
+          if (Date.now() - start >= timeoutMs) {
             reject(
               new Error(
                 `Deployment timeout after ${timeoutMs}ms for function ${uuid}`,
               ),
             );
-            return;
+            return false;
           }
 
           setTimeout(poll, intervalMs);
-        } catch (error) {
-          reject(error);
+          return false;
+        } catch (err) {
+          reject(
+            new Error(
+              `Error while checking deployment for ${uuid}: ${err.message}`,
+            ),
+          );
+          return false;
         }
       };
 
@@ -165,11 +174,11 @@ export class DeployView {
   }
 
   private preparePromptMessage(lambda: any) {
-    const message = `Do you want to approve and deploy?
-
+    const message = `Do you want to approve and (re)deploy?
     AccountId:              ${this.chalk.green(lambda.accountId)}
     Description:            ${lambda.description}
     UUID:                   ${lambda.uuid}
+    UUID:                   ${lambda.state}
     Event:                  ${lambda.event || 'No Event'}
     Last modified by:       ${lambda.updatedBy}
     Last modified at:       ${formatDate(lambda.updatedAt)}
