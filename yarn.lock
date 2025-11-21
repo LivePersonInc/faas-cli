@@ -3480,7 +3480,7 @@
   resolved "https://registry.npmjs.org/@types/node-emoji/-/node-emoji-1.8.2.tgz#8f24f44dcfcbb69dcbf5a64e7f4df3c1900097fd"
   integrity sha512-PfF1qL/9veo8BSHLV84C9ORNr3lHSlnWJ6yU8OdNufoftajeWHTLVbGHvp2B7e7DPDS9gMs6cfeSsqo5rqSitg==
 
-"@types/node@*", "@types/node@>=13.7.0", "@types/node@^24.2.0":
+"@types/node@*", "@types/node@24.2.0", "@types/node@>=13.7.0":
   version "24.2.0"
   resolved "https://registry.npmjs.org/@types/node/-/node-24.2.0.tgz#cde712f88c5190006d6b069232582ecd1f94a760"
   integrity sha512-3xyG3pMCq3oYCNg7/ZP+E1ooTaGB4cG8JWRsqqOYQdbWNY4zbaV0Ennrd7stjiJEFZCaybcIgpTjJWHRfBSIDw==
@@ -9214,9 +9214,9 @@ object.values@^1.1.5:
     define-properties "^1.2.1"
     es-object-atoms "^1.0.0"
 
-oclif@^4.20.1:
+oclif@4.22.5:
   version "4.22.5"
-  resolved "https://registry.npmjs.org/oclif/-/oclif-4.22.5.tgz#5c8171cc45943377dff2e08038770965167e2665"
+  resolved "https://registry.yarnpkg.com/oclif/-/oclif-4.22.5.tgz#5c8171cc45943377dff2e08038770965167e2665"
   integrity sha512-1TViD9V+y3zLnnBzV3cNsKzXxMY7doEcxwny7eqiW4OHDU3PNTPWngG/aidzlKLDXGbajTdjtUpX69UXF78Ahw==
   dependencies:
     "@aws-sdk/client-cloudfront" "^3.850.0"
