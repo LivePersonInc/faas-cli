@@ -18,7 +18,7 @@ import {
 } from '../types/IFunction';
 import { LPSchedule, LPScheduleCreateParams } from '../types/ISchedule';
 
-export type HttpMethods = 'POST' | 'GET' | 'DELETE' | 'PUT';
+export type HttpMethods = 'POST' | 'GET' | 'DELETE' | 'PUT' | 'PATCH';
 
 export interface IPayload {
   headers: string[];
@@ -199,6 +199,20 @@ export class FaasService implements IFaaSService {
     const urlPart = `/deployments/${uuid}`;
     try {
       const response = await this.doFetch({ urlPart, method: 'POST' });
+      return response;
+    } catch (error) {
+      return {
+        message: error.errorMsg,
+        uuid,
+      };
+    }
+  }
+
+  public async redeploy(uuid: string): Promise<IDeploymentResponse> {
+    const urlPart = `/deployments/${uuid}`;
+    try {
+      const response = await this.doFetch({ urlPart, method: 'PATCH' });
+
       return response;
     } catch (error) {
       return {
@@ -446,7 +460,7 @@ export class FaasService implements IFaaSService {
 
   public async getFunctionByUuid(uuid: string): Promise<IFunction> {
     const urlPart = `/functions/${uuid}`;
-    const [foundLambda] = await this.doFetch({ urlPart, method: 'GET' });
+    const foundLambda = await this.doFetch({ urlPart, method: 'GET' });
     return foundLambda;
   }
 
