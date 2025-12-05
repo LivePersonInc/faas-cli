@@ -1,12 +1,15 @@
-import { RequestPromiseOptions } from 'request-promise-native';
 import { ICsdsClient } from '../csds-client/ICsdsClient';
 import { ISecretClient } from '../secret-storage/IsecretClient';
 import { defaultAppKeySecretName } from '../shared/const';
 import { createOauthClient, createOauthHeader } from '../shared/oauthGenerator';
 import { LpServices } from './LpServices';
 
-export interface ILpClientOptions extends RequestPromiseOptions {
+export interface ILpClientOptions  {
     appKeySecretName?: string;
+    method?: string;
+    body?: object;
+    headers?: object;
+    json?:boolean;
 }
 
 export interface IApiKeyCredentials {

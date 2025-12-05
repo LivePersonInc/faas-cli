@@ -1,4 +1,4 @@
-import * as HTTP from 'request-promise-native';
+import * as HTTP from 'dropin-request';
 import { join } from 'path';
 import { GenerateHeaders } from '../shared/headers-gen';
 import * as fsDefault from 'fs-extra';
