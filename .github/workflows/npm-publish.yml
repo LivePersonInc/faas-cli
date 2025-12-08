@@ -14,7 +14,8 @@ on:
             - 'patch'
             - 'minor'
             - 'major'
-          default: 'patch'
+            - 'none'
+          default: 'none'
 
 jobs:
   publish-on-npm:
@@ -43,7 +44,11 @@ jobs:
         run: |
           git config --local user.email "action@github.com"
           git config --local user.name "GitHub Action"
-          npm version ${{ github.event.inputs.version-increment }}
+          if [ "${{ github.event.inputs.version-increment }}" != "none" ]; then
+            npm version ${{ github.event.inputs.version-increment }}
+          else
+            echo "Skipping version increment"
+          fi
 
       - name: Publish npm
         id: publish
