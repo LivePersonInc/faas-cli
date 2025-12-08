@@ -1,4 +1,4 @@
-import { Connection, ConnectionOptions } from 'jsforce';
+import { Connection, ConnectionConfig } from 'jsforce';
 import { GenerateHeaders } from '../shared/headers-gen';
 
 function injectRequiredOptions(currentOptions: any): any {
@@ -34,7 +34,7 @@ function injectRequiredOptions(currentOptions: any): any {
  * @param params Connection Options
  * @returns Salesforce Connection
  */
-export function ConnectToSalesforce(params: ConnectionOptions): Connection {
+export function ConnectToSalesforce(params: ConnectionConfig): Connection {
     const con: any = new Connection(params);
 
     // Intercepting all outgoing HTTP Calls

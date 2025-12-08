@@ -1,11 +1,23 @@
 import { writeFileSync, ensureDirSync, removeSync } from 'fs-extra';
 import { join } from 'path';
+import * as HTTP from 'dropin-request';
 import {
   HttpClient,
   httpClient,
 } from '../../../../src/shared/lp-faas-toolbelt/http-client/httpClient';
 
+jest.mock('dropin-request', () =>
+  jest.fn(() =>
+    Promise.resolve({
+      statusCode: 200,
+    }),
+  ),
+);
+
 describe('faas toolbelt - http client', () => {
+  afterEach(() => {
+    (HTTP as jest.Mock).mockClear();
+  });
   it('should return a response with 403 because the url is not whitelisted', async () => {
     const fs = {
       readFileSync: jest.fn(
@@ -25,6 +37,7 @@ describe('faas toolbelt - http client', () => {
     });
 
     expect(response.statusCode).toBe(403);
+    expect(HTTP).not.toHaveBeenCalled();
   });
 
   it('should return a response with result because url is whitelisted (base-url)', async () => {
@@ -47,6 +60,7 @@ describe('faas toolbelt - http client', () => {
     });
 
     expect(response.statusCode).toBe(200);
+    expect(HTTP).toHaveBeenCalled();
   });
 
   it('should return a response with response called with object', async () => {
@@ -70,6 +84,7 @@ describe('faas toolbelt - http client', () => {
     });
 
     expect(response.statusCode).toBe(200);
+    expect(HTTP).toHaveBeenCalled();
   });
 
   it('should return a response with result because url is whitelisted (complete uri)', async () => {
@@ -80,7 +95,6 @@ describe('faas toolbelt - http client', () => {
         }`,
       ),
     };
-
     const client = new HttpClient({ fs });
 
     const response: any = await client.request({
@@ -93,6 +107,7 @@ describe('faas toolbelt - http client', () => {
     });
 
     expect(response.statusCode).toBe(200);
+    expect(HTTP).toHaveBeenCalled();
   });
 
   it('should throw an error if settings.json is not set up or deleted', async () => {
@@ -115,6 +130,7 @@ describe('faas toolbelt - http client', () => {
         'Please make sure you have set up a settings.json',
       );
     }
+    expect(HTTP).not.toHaveBeenCalled();
   });
 
   it('should return a response if its called by the exported const', async () => {
@@ -137,7 +153,7 @@ describe('faas toolbelt - http client', () => {
     });
 
     expect(response.statusCode).toBe(200);
-
+    expect(HTTP).toHaveBeenCalled();
     removeSync(join(__dirname, 'functions'));
   });
 });
