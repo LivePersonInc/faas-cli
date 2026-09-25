@@ -10912,9 +10912,9 @@ symbol-tree@^3.2.4:
   integrity sha512-9QNk5KwDF+Bvz+PyObkmSYjI5ksVUYtjW7AU22r2NKcfLJcXp96hkDWU3+XndOsUb+AQ9QhfzfCT2O+CNWT5Tw==
 
 systeminformation@^5.27.6:
-  version "5.27.7"
-  resolved "https://registry.npmjs.org/systeminformation/-/systeminformation-5.27.7.tgz#4dc9d436419948cd5e5f076779a1298220d19a72"
-  integrity sha512-saaqOoVEEFaux4v0K8Q7caiauRwjXC4XbD2eH60dxHXbpKxQ8kH9Rf7Jh+nryKpOUSEFxtCdBlSUx0/lO6rwRg==
+  version "5.33.13"
+  resolved "https://registry.yarnpkg.com/systeminformation/-/systeminformation-5.33.13.tgz#6b5e8d2f3203e1e7bb5e4bb0e897c496179fc60e"
+  integrity sha512-GtyakkchTQKymM1WeAB652zi3rM1q00RKdc+jZe9KGstuc/mWUwAnQGN/RE5gVYvHIR8xYOUIUD9irVKDtA0wA==
 
 table@^6.0.9:
   version "6.9.0"
